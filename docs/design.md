@@ -69,6 +69,9 @@ needed. Any exception requires a host adapter.
 - Maps, syntax trees, and graph snapshots are immutable.
 - Every semantic item has a source range; diagnostics include related ranges.
 - References and transforms resolve explicitly and deterministically.
+- A chunk identity always carries explicit `document`, `chunk`, `minor`, and
+  `type` components; its canonical address preserves null components through
+  omission syntax such as `doc::`, `doc::.type`, and `doc:::minor.type`.
 - Pure computation is cacheable; effects are planned separately and require
   host capabilities.
 - AbortSignal is part of long-running operations for editor use.
@@ -104,8 +107,8 @@ write those deliverables below an explicit output directory.
 
 ## Deferred work
 
-Child/derived pieces, definition-time pipelines, registered transforms,
-capability-gated effects, legacy Markdown compatibility, incremental maps and
+Definition-time pipelines, registered transforms, capability-gated effects,
+legacy Markdown compatibility, incremental maps and
 Rix/LSP integration, parameterized pieces, and typed build profiles all follow
 the vertical slice. Each becomes core syntax only after its source ranges,
 diagnostics, cache key, and host-security behavior are specified.

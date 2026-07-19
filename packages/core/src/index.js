@@ -1,4 +1,4 @@
-const idPattern = /^[a-z][a-z0-9-]*(\.[a-z][a-z0-9-]*)*$/;
+const componentPattern = /^[a-z][a-z0-9-]*$/;
 
 const clone = (value) => JSON.parse(JSON.stringify(value));
 
@@ -31,6 +31,84 @@ const diagnostic = (code, message, source, related = []) => ({
   source,
   related
 });
+
+const validComponent = (value) => value === null || (typeof value === "string" && componentPattern.test(value));
+
+export const formatChunkId = (identity) => {
+  const prefix = identity.document === null ? "" : identity.document + "::";
+  return prefix +
+    (identity.chunk ?? "") +
+    (identity.minor === null ? "" : ":" + identity.minor) +
+    (identity.type === null ? "" : "." + identity.type);
+};
+
+export const parseChunkId = (input, { reference = false } = {}) => {
+  if (typeof input !== "string" || input.length === 0) return null;
+
+  const delimiter = input.indexOf("::");
+  const explicitDocument = delimiter !== -1;
+  let document = null;
+  let remainder = input;
+
+  if (explicitDocument) {
+    document = input.slice(0, delimiter);
+    remainder = input.slice(delimiter + 2);
+    if (!componentPattern.test(document)) return null;
+  }
+
+  let type = null;
+  const typeIndex = remainder.lastIndexOf(".");
+  if (typeIndex !== -1) {
+    type = remainder.slice(typeIndex + 1);
+    remainder = remainder.slice(0, typeIndex);
+    if (!componentPattern.test(type)) return null;
+  }
+
+  let chunk = remainder;
+  let minor = null;
+  const minorIndex = remainder.indexOf(":");
+  if (minorIndex !== -1) {
+    chunk = remainder.slice(0, minorIndex);
+    minor = remainder.slice(minorIndex + 1);
+    if (!componentPattern.test(minor)) return null;
+  }
+
+  if (chunk === "") chunk = null;
+  if (!validComponent(chunk)) return null;
+  if (!validComponent(document) || !validComponent(minor) || !validComponent(type)) return null;
+
+  if (!reference && document === null && chunk === null) return null;
+  if (!reference && document === null && chunk !== null && input.includes("::")) return null;
+  if (!reference && document === null && chunk !== null) return null;
+  if (!reference && document !== null && chunk === null && (minor !== null || type !== null)) {
+    return { document, chunk, minor, type, explicitDocument };
+  }
+  if (!reference && document !== null && chunk === null) {
+    return { document, chunk, minor, type, explicitDocument };
+  }
+  if (reference && !explicitDocument && chunk === null && minor === null && type === null) return null;
+
+  return { document, chunk, minor, type, explicitDocument };
+};
+
+const validateIdentity = (identity) => {
+  if (!identity || typeof identity !== "object") return null;
+  const required = ["document", "chunk", "minor", "type"];
+  if (!required.every((key) => Object.hasOwn(identity, key))) return null;
+  const result = {
+    document: identity.document,
+    chunk: identity.chunk,
+    minor: identity.minor,
+    type: identity.type,
+    explicitDocument: identity.document !== null
+  };
+  if (!validComponent(result.document) || !validComponent(result.chunk) ||
+      !validComponent(result.minor) || !validComponent(result.type)) {
+    return null;
+  }
+  if (result.document === null && result.chunk === null) return null;
+  return result;
+};
 
 const splitTopLevel = (text, separator) => {
   const parts = [];
@@ -98,6 +176,23 @@ const parseValue = (value) => {
   return undefined;
 };
 
+const parseEmitSuffix = (value) => {
+  if (typeof value !== "string" || value.length === 0 || value.includes(":")) return null;
+
+  if (value.startsWith(".")) {
+    const type = value.slice(1);
+    return componentPattern.test(type)
+      ? { minor: null, type, inheritMinor: true }
+      : null;
+  }
+
+  const typeIndex = value.lastIndexOf(".");
+  const minor = typeIndex === -1 ? value : value.slice(0, typeIndex);
+  const type = typeIndex === -1 ? null : value.slice(typeIndex + 1);
+  if (!componentPattern.test(minor) || !validComponent(type)) return null;
+  return { minor, type, inheritMinor: false };
+};
+
 const parsePipeStep = (part, expression, source, expressionOffset, diagnostics) => {
   const match = /^([a-z][a-z0-9-]*)\s*(?:\((.*)\))?$/s.exec(part.value);
   const location = span(source, expression, expressionOffset + part.start, expressionOffset + part.end);
@@ -121,23 +216,25 @@ const parsePipeStep = (part, expression, source, expressionOffset, diagnostics) 
     return { type: "transform", name, arguments: argumentsValue, source: location };
   }
 
-  const id = argumentsValue[0];
+  const rawSuffix = argumentsValue[0];
   const metadata = argumentsValue.length > 1 ? argumentsValue[1] : {};
-  if (typeof id !== "string" || !idPattern.test(id)) {
-    diagnostics.push(diagnostic("RV131", "emit requires a valid static chunk ID.", location));
+  const suffix = parseEmitSuffix(rawSuffix);
+  if (!suffix) {
+    diagnostics.push(diagnostic("RV131", "emit requires a local minor/type suffix such as 'cool', 'cool.js', or '.js'.", location));
     return null;
   }
   if (!metadata || Array.isArray(metadata) || typeof metadata !== "object") {
     diagnostics.push(diagnostic("RV131", "emit metadata must be an object.", location));
     return null;
   }
-  return { type: "emit", id, metadata, source: location };
+  return { type: "emit", suffix, metadata, source: location };
 };
 
 const parseExpression = (expression, source, expressionOffset, diagnostics) => {
   const parts = splitTopLevel(expression, "|");
   const reference = parts.shift();
-  if (!reference || !idPattern.test(reference.value.replace(/^([a-z][a-z0-9-]*)::/, ""))) {
+  const target = parseChunkId(reference?.value, { reference: true });
+  if (!reference || !target) {
     diagnostics.push(diagnostic("RV110", "Malformed chunk reference: " + (reference?.value ?? ""), span(source, expression, expressionOffset, expressionOffset + expression.length)));
     return null;
   }
@@ -149,6 +246,7 @@ const parseExpression = (expression, source, expressionOffset, diagnostics) => {
   return {
     type: "reference",
     reference: reference.value,
+    target,
     pipeline,
     source: span(source, expression, expressionOffset, expressionOffset + expression.length)
   };
@@ -205,6 +303,24 @@ export const parseChunk = (body, source) => {
   return { nodes, diagnostics };
 };
 
+const normalizeChunk = (raw, document, diagnostics) => {
+  const identity = validateIdentity(raw.identity);
+  if (!identity) {
+    diagnostics.push(diagnostic("RV100", "Chunks require explicit document, chunk, minor, and type identity fields.", raw.source));
+    return null;
+  }
+  if (identity.document !== null && identity.document !== document.id) {
+    diagnostics.push(diagnostic("RV100", "Chunk identity document must match its source map document.", raw.source));
+    return null;
+  }
+  const id = formatChunkId(identity);
+  if (raw.id !== id) {
+    diagnostics.push(diagnostic("RV100", "Chunk id must equal its canonical identity form: " + id, raw.source));
+    return null;
+  }
+  return { ...clone(raw), id, identity };
+};
+
 export const combineMaps = (maps) => {
   const diagnostics = [];
   const chunks = [];
@@ -214,12 +330,14 @@ export const combineMaps = (maps) => {
 
   for (const map of maps) {
     documents.push(clone(map.document));
-    for (const chunk of map.chunks ?? []) {
+    for (const raw of map.chunks ?? []) {
+      const chunk = normalizeChunk(raw, map.document, diagnostics);
+      if (!chunk) continue;
       if (ids.has(chunk.id)) {
         diagnostics.push(diagnostic("RV101", "Duplicate chunk ID: " + chunk.id, chunk.source));
       } else {
         ids.add(chunk.id);
-        chunks.push(clone(chunk));
+        chunks.push(chunk);
       }
     }
     for (const directive of map.directives ?? []) directives.push(clone(directive));
@@ -264,9 +382,19 @@ const applyTransform = (value, step, diagnostics) => {
   return value;
 };
 
-const definitionFromEmission = (owner, reference, prefix, emit) => ({
-  id: emit.id,
-  name: typeof emit.metadata.name === "string" ? emit.metadata.name : emit.id,
+const definitionFromEmission = (owner, reference, prefix, emit) => {
+  const identity = {
+    document: owner.identity.document,
+    chunk: owner.identity.chunk,
+    minor: emit.suffix.inheritMinor ? owner.identity.minor : emit.suffix.minor,
+    type: emit.suffix.type,
+    explicitDocument: true
+  };
+  const id = formatChunkId(identity);
+  return {
+  id,
+  identity,
+  name: typeof emit.metadata.name === "string" ? emit.metadata.name : id,
   metadata: {
     language: emit.metadata.language,
     tags: Array.isArray(emit.metadata.tags) ? emit.metadata.tags : [],
@@ -284,10 +412,36 @@ const definitionFromEmission = (owner, reference, prefix, emit) => ({
   ast: [{
     type: "reference",
     reference: reference.reference,
+    target: clone(reference.target),
     pipeline: clone(prefix),
     source: reference.source
   }]
-});
+  };
+};
+
+const resolveTarget = (target, owner, definitions) => {
+  const withOwnerChunk = target.chunk === null && !target.explicitDocument
+    ? owner.identity.chunk
+    : target.chunk;
+  const parts = {
+    chunk: withOwnerChunk,
+    minor: target.minor,
+    type: target.type
+  };
+
+  if (target.explicitDocument) {
+    const id = formatChunkId({ document: target.document, ...parts });
+    return definitions.has(id) ? id : null;
+  }
+
+  if (owner.identity.document !== null) {
+    const local = formatChunkId({ document: owner.identity.document, ...parts });
+    if (definitions.has(local)) return local;
+  }
+
+  const global = formatChunkId({ document: null, ...parts });
+  return definitions.has(global) ? global : null;
+};
 
 export const transformGraph = (pretransform) => {
   const diagnostics = [...(pretransform.diagnostics ?? [])];
@@ -298,6 +452,7 @@ export const transformGraph = (pretransform) => {
     diagnostics.push(...parsed.diagnostics);
     definitions.set(raw.id, {
       id: raw.id,
+      identity: raw.identity,
       name: raw.name ?? raw.id,
       metadata: raw.metadata ?? {},
       source: raw.source,
@@ -314,10 +469,15 @@ export const transformGraph = (pretransform) => {
       const retained = [];
       for (const step of node.pipeline) {
         if (step.type === "emit") {
-          if (definitions.has(step.id)) {
-            diagnostics.push(diagnostic("RV101", "emit creates duplicate chunk ID: " + step.id, step.source));
+          if (definition.identity.document === null) {
+            diagnostics.push(diagnostic("RV131", "emit is unavailable from a document-less global chunk.", step.source));
+            continue;
+          }
+          const emitted = definitionFromEmission(definition, node, prefix, step);
+          if (definitions.has(emitted.id)) {
+            diagnostics.push(diagnostic("RV101", "emit creates duplicate chunk ID: " + emitted.id, step.source));
           } else {
-            definitions.set(step.id, definitionFromEmission(definition, node, prefix, step));
+            definitions.set(emitted.id, emitted);
           }
         } else {
           prefix.push(step);
@@ -333,9 +493,14 @@ export const transformGraph = (pretransform) => {
   const resultChunks = {};
 
   const evaluateReference = (node, owner) => {
-    const dependency = evaluate(node.reference, node.source);
-    owner.dependencies.add(node.reference);
-    owner.references.push({ chunk: node.reference, source: node.source });
+    const resolved = resolveTarget(node.target, owner.definition, definitions);
+    if (!resolved) {
+      diagnostics.push(diagnostic("RV111", "Unknown chunk reference: " + node.reference, node.source));
+      return "";
+    }
+    const dependency = evaluate(resolved, node.source);
+    owner.dependencies.add(resolved);
+    owner.references.push({ chunk: resolved, requested: node.reference, source: node.source });
     let value = dependency.value;
     for (const step of node.pipeline) value = applyTransform(value, step, diagnostics);
     return value;
@@ -357,7 +522,7 @@ export const transformGraph = (pretransform) => {
     }
 
     evaluating.push(id);
-    const owner = { dependencies: new Set(), references: [] };
+    const owner = { definition, dependencies: new Set(), references: [] };
     let value = "";
     for (const node of definition.ast) {
       value += node.type === "literal" ? node.value : evaluateReference(node, owner);
@@ -366,6 +531,7 @@ export const transformGraph = (pretransform) => {
 
     const completed = {
       id,
+      identity: definition.identity,
       name: definition.name,
       value,
       metadata: definition.metadata,
@@ -389,18 +555,22 @@ export const transformGraph = (pretransform) => {
       diagnostics.push(diagnostic("RV130", "out requires a file-like name.", directive.source));
       continue;
     }
-    if (typeof directive.from !== "string") {
-      diagnostics.push(diagnostic("RV130", "out requires a source chunk ID.", directive.source));
+    const target = parseChunkId(directive.from);
+    const id = target && target.explicitDocument
+      ? formatChunkId(target)
+      : null;
+    if (!id || !definitions.has(id)) {
+      diagnostics.push(diagnostic("RV130", "out requires a fully qualified existing source chunk ID.", directive.source));
       continue;
     }
-    const chunk = evaluate(directive.from, directive.source);
+    const chunk = evaluate(id, directive.source);
     if (deliverables[name]) {
       diagnostics.push(diagnostic("RV101", "Duplicate out deliverable: " + name, directive.source));
       continue;
     }
     deliverables[name] = {
       name,
-      from: directive.from,
+      from: id,
       value: chunk.value,
       dependencies: chunk.dependencies,
       provenance: chunk.provenance,
@@ -416,4 +586,3 @@ export const transformGraph = (pretransform) => {
     diagnostics
   };
 };
-

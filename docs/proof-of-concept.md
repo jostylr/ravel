@@ -14,8 +14,9 @@ This vertical slice implements the first executable Ravel path:
 
 An `in` directive loads another map relative to the current input map. Imported
 maps are visited first, so the resulting pretransform graph retains all source
-documents, chunks, directives, and source ranges. Chunk IDs are currently global
-within the joined graph; duplicates are diagnostics.
+documents, chunks, directives, and source ranges. Canonical chunk IDs include
+their document where applicable, so `library::greeting` and
+`project::greeting` can coexist; exact duplicate IDs are diagnostics.
 
     {
       "kind": "in",
@@ -30,14 +31,15 @@ chunk retains its document identity and source provenance.
 
 An expression may name an intermediate result with `emit`:
 
-    _`greeting | dedent() | emit('greeting.browser', {
+    _`library::greeting | dedent() | emit('browser', {
       "name": "Browser greeting",
       "language": "javascript",
       "tags": ["generated"]
     })`
 
-The parser adds immutable `greeting.browser` to the transformed graph. Its
-definition references `greeting` through the pipeline before `emit`; it does not
+Inside `project::greeting`, the parser adds immutable
+`project::greeting:browser` to the transformed graph. Its definition references
+`library::greeting` through the pipeline before `emit`; it does not
 copy a computed string at expansion time. The expression itself continues with
 the same incoming value, making emit a pipeline tee.
 
@@ -56,7 +58,7 @@ An `out` directive turns a completed chunk into a named deliverable:
     {
       "kind": "out",
       "name": "dist/greeting.js",
-      "from": "main",
+      "from": "project::main",
       "source": { "uri": "project.ravel-map.json", "range": "..." }
     }
 
@@ -73,8 +75,8 @@ From the repository root:
       --out-dir .ravel/runs/poc \
       --graph .ravel/runs/poc/program.json
 
-The command loads `library.ravel-map.json`, produces `main`, `greeting`, and
-emitted `greeting.browser` chunks, then writes:
+The command loads `library.ravel-map.json`, produces `project::main`,
+`library::greeting`, and emitted `project::greeting:browser` chunks, then writes:
 
     .ravel/runs/poc/dist/greeting.js
     .ravel/runs/poc/generated/greeting.js

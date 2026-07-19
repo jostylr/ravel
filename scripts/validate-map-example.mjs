@@ -22,9 +22,23 @@ for (const map of maps) {
 
   const ids = new Set();
   for (const chunk of map.chunks ?? []) {
-    if (!/^[a-z][a-z0-9-]*(\.[a-z][a-z0-9-]*)*$/.test(chunk.id ?? "")) {
-      fail("invalid chunk id: " + chunk.id);
+    const identity = chunk.identity;
+    const parts = ["document", "chunk", "minor", "type"];
+    if (!identity || !parts.every((part) => Object.hasOwn(identity, part))) {
+      fail("chunk identity must explicitly include document, chunk, minor, and type");
+      continue;
     }
+    if (parts.some((part) => identity[part] !== null && !/^[a-z][a-z0-9-]*$/.test(identity[part]))) {
+      fail("invalid identity component for chunk: " + chunk.id);
+    }
+    if (identity.document === null && identity.chunk === null) {
+      fail("a chunk must have a document or chunk component: " + chunk.id);
+    }
+    const canonical = (identity.document === null ? "" : identity.document + "::") +
+      (identity.chunk ?? "") +
+      (identity.minor === null ? "" : ":" + identity.minor) +
+      (identity.type === null ? "" : "." + identity.type);
+    if (chunk.id !== canonical) fail("chunk id must match identity: " + chunk.id);
     if (ids.has(chunk.id)) fail("duplicate chunk id: " + chunk.id);
     ids.add(chunk.id);
     if (typeof chunk.body !== "string") fail(chunk.id + ".body must be a string");

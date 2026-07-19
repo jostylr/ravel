@@ -7,7 +7,8 @@
   },
   "chunks": [
     {
-      "id": "greeting",
+      "id": "library::greeting",
+      "identity": { "document": "library", "chunk": "greeting", "minor": null, "type": null },
       "name": "Greeting declaration",
       "body": "const greeting = 'Hello, Ravel!';\n",
       "metadata": { "language": "javascript", "tags": ["library"] },
@@ -22,4 +23,3 @@
   ],
   "directives": []
 }
-

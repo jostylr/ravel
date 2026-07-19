@@ -12,7 +12,7 @@ test("Node host joins in maps and produces out deliverables", async () => {
   const program = transformGraph(pretransform);
 
   assert.deepEqual(program.diagnostics, []);
-  assert.deepEqual(Object.keys(program.chunks).sort(), ["greeting", "greeting.browser", "main"]);
+  assert.deepEqual(Object.keys(program.chunks).sort(), ["library::greeting", "project::greeting", "project::greeting:browser", "project::main"]);
   assert.deepEqual(Object.keys(program.deliverables).sort(), [
     "dist/greeting.js",
     "generated/greeting.js"

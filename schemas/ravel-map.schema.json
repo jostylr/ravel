@@ -20,9 +20,13 @@
     "metadata": { "type": "object", "additionalProperties": true }
   },
   "$defs": {
-    "id": {
+    "component": {
       "type": "string",
-      "pattern": "^[a-z][a-z0-9-]*(\\.[a-z][a-z0-9-]*)*$"
+      "pattern": "^[a-z][a-z0-9-]*$"
+    },
+    "address": {
+      "type": "string",
+      "pattern": "^(?:[a-z][a-z0-9-]*::(?:[a-z][a-z0-9-]*)?(?::[a-z][a-z0-9-]*)?(?:\\.[a-z][a-z0-9-]*)?|[a-z][a-z0-9-]*(?::[a-z][a-z0-9-]*)?(?:\\.[a-z][a-z0-9-]*)?)$"
     },
     "position": {
       "type": "object",
@@ -57,7 +61,7 @@
       "required": ["id", "uri", "format"],
       "additionalProperties": false,
       "properties": {
-        "id": { "$ref": "#/$defs/id" },
+        "id": { "$ref": "#/$defs/component" },
         "uri": { "type": "string", "format": "uri-reference" },
         "format": { "type": "string", "minLength": 1 }
       }
@@ -67,7 +71,7 @@
       "required": ["name"],
       "additionalProperties": false,
       "properties": {
-        "name": { "$ref": "#/$defs/id" },
+        "name": { "$ref": "#/$defs/component" },
         "arguments": { "type": "array", "items": {} }
       }
     },
@@ -82,10 +86,11 @@
     },
     "chunk": {
       "type": "object",
-      "required": ["id", "body", "source"],
+      "required": ["id", "identity", "body", "source"],
       "additionalProperties": false,
       "properties": {
-        "id": { "$ref": "#/$defs/id" },
+        "id": { "$ref": "#/$defs/address" },
+        "identity": { "$ref": "#/$defs/chunkIdentity" },
         "name": { "type": "string", "minLength": 1 },
         "body": { "type": "string" },
         "definitionPipeline": {
@@ -109,6 +114,21 @@
         }
       }
     },
+    "chunkIdentity": {
+      "type": "object",
+      "required": ["document", "chunk", "minor", "type"],
+      "additionalProperties": false,
+      "anyOf": [
+        { "properties": { "document": { "$ref": "#/$defs/component" } } },
+        { "properties": { "chunk": { "$ref": "#/$defs/component" } } }
+      ],
+      "properties": {
+        "document": { "anyOf": [{ "$ref": "#/$defs/component" }, { "type": "null" }] },
+        "chunk": { "anyOf": [{ "$ref": "#/$defs/component" }, { "type": "null" }] },
+        "minor": { "anyOf": [{ "$ref": "#/$defs/component" }, { "type": "null" }] },
+        "type": { "anyOf": [{ "$ref": "#/$defs/component" }, { "type": "null" }] }
+      }
+    },
     "directive": {
       "type": "object",
       "required": ["kind", "source"],
@@ -116,7 +136,7 @@
       "properties": {
         "kind": { "type": "string", "minLength": 1 },
         "name": { "type": "string", "minLength": 1 },
-        "from": { "$ref": "#/$defs/id" },
+        "from": { "$ref": "#/$defs/address" },
         "target": { "type": "string", "minLength": 1 },
         "arguments": { "type": "array", "items": {} },
         "metadata": { "type": "object", "additionalProperties": true },

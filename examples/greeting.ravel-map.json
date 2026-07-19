@@ -7,7 +7,8 @@
   },
   "chunks": [
     {
-      "id": "main",
+      "id": "greeting::main",
+      "identity": { "document": "greeting", "chunk": "main", "minor": null, "type": null },
       "name": "Main program",
       "body": "console.log(_\"format-greeting\");\n",
       "definitionPipeline": [],
@@ -24,7 +25,8 @@
       }
     },
     {
-      "id": "format-greeting",
+      "id": "greeting::format-greeting",
+      "identity": { "document": "greeting", "chunk": "format-greeting", "minor": null, "type": null },
       "name": "Greeting formatter",
       "body": "function formatGreeting(name) { return 'Hello, ' + name + '!'; }\n",
       "metadata": {
@@ -42,7 +44,7 @@
   "directives": [
     {
       "kind": "write",
-      "from": "main",
+      "from": "greeting::main",
       "target": "dist/greeting.js",
       "source": {
         "uri": "examples/greeting.md",

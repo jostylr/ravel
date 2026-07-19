@@ -22,7 +22,13 @@ inside a chunk body; the chunk parser does that.
       },
       "chunks": [
         {
-          "id": "main",
+          "id": "greeting::main",
+          "identity": {
+            "document": "greeting",
+            "chunk": "main",
+            "minor": null,
+            "type": null
+          },
           "name": "Main program",
           "body": "console.log(_\"format-greeting\");\n",
           "definitionPipeline": [],
@@ -53,7 +59,8 @@ becoming the public contract.
 
 | Field | Required | Meaning |
 | --- | --- | --- |
-| id | yes | Stable piece ID, unique within the map. |
+| id | yes | Canonical serialized identity, unique within the joined graph. |
+| identity | yes | Explicit `document`, `chunk`, `minor`, and `type` fields (each identifier or `null`). |
 | name | no | Human-facing display label. |
 | body | yes | Raw chunk text for the Ravel chunk parser. |
 | definitionPipeline | no | Transform calls declared by the adapter/profile. |
@@ -66,13 +73,24 @@ becoming the public contract.
 Body is intentionally raw. The map can be inspected, saved, diffed, or created
 by an editor without implementing composition syntax.
 
+`id` must exactly equal the canonical serialization of `identity`, such as
+`guide::parser:preamble.javascript`. `guide::` denotes a document-root chunk;
+`guide::.javascript` and `guide:::preamble.javascript` are valid root variants.
+For an intentionally global chunk, set `identity.document` to `null` and use a
+non-null `chunk`; for example, the canonical ID `shared` has identity
+`{ "document": null, "chunk": "shared", "minor": null, "type": null }`.
+Adapters must provide all four keys rather than infer them from an ambiguous
+string later.
+
 ## Chunks emitted from pipes
 
 The map is the input to chunk parsing, not the result of it. A body expression
 may use the core `emit` pipe step to declare a derived chunk. The parser records
 that declaration, then the graph-expansion phase adds a generated chunk to the
-Ravel Program. The generated chunk has the normal chunk fields plus provenance
-pointing to the emitting expression.
+Ravel Program. Emission preserves the owner's document and base chunk, and its
+suffix controls only minor and type (for example `emit(".js")`). The
+generated chunk has the normal chunk fields plus provenance pointing to the
+emitting expression.
 
 This is deliberately not an adapter concern and is not written back into the
 source map. A Markdown, AsciiDoc, or Rix adapter only needs to preserve the raw
@@ -86,7 +104,7 @@ than contribute text. The first proof of concept implements these two:
 | Kind | Required fields | Meaning |
 | --- | --- | --- |
 | in | target | Load the named Ravel Map relative to this map and merge its chunks before transformation. |
-| out | name and from | Make the completed named chunk a deliverable under file-like name. |
+| out | name and from | Make the completed fully qualified source chunk a deliverable under file-like name. |
 
 An out directive is a plan, not an automatic write. A Node host writes its
 deliverables under an explicit output directory and rejects absolute or
