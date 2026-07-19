@@ -1,0 +1,19 @@
+{
+  "name": "ravel",
+  "version": "0.0.0",
+  "private": true,
+  "description": "A source-mapped literate programming engine for weaving and unraveling programs.",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "test": "npm run test:node",
+    "test:node": "node --test",
+    "test:bun": "bun test",
+    "validate:schema": "node scripts/validate-map-example.mjs"
+  }
+}

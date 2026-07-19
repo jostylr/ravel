@@ -1,0 +1,127 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ravel.dev/schema/ravel-map-v1.json",
+  "title": "Ravel Map v1",
+  "type": "object",
+  "required": ["version", "document", "chunks"],
+  "additionalProperties": false,
+  "properties": {
+    "version": { "const": 1 },
+    "document": { "$ref": "#/$defs/document" },
+    "chunks": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/chunk" }
+    },
+    "directives": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/directive" },
+      "default": []
+    },
+    "metadata": { "type": "object", "additionalProperties": true }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*(\\.[a-z][a-z0-9-]*)*$"
+    },
+    "position": {
+      "type": "object",
+      "required": ["line", "column", "offset"],
+      "additionalProperties": false,
+      "properties": {
+        "line": { "type": "integer", "minimum": 0 },
+        "column": { "type": "integer", "minimum": 0 },
+        "offset": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "range": {
+      "type": "object",
+      "required": ["start", "end"],
+      "additionalProperties": false,
+      "properties": {
+        "start": { "$ref": "#/$defs/position" },
+        "end": { "$ref": "#/$defs/position" }
+      }
+    },
+    "source": {
+      "type": "object",
+      "required": ["uri", "range"],
+      "additionalProperties": false,
+      "properties": {
+        "uri": { "type": "string", "format": "uri-reference" },
+        "range": { "$ref": "#/$defs/range" }
+      }
+    },
+    "document": {
+      "type": "object",
+      "required": ["id", "uri", "format"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "uri": { "type": "string", "format": "uri-reference" },
+        "format": { "type": "string", "minLength": 1 }
+      }
+    },
+    "transform": {
+      "type": "object",
+      "required": ["name"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "$ref": "#/$defs/id" },
+        "arguments": { "type": "array", "items": {} }
+      }
+    },
+    "fragment": {
+      "type": "object",
+      "required": ["body", "source"],
+      "additionalProperties": false,
+      "properties": {
+        "body": { "type": "string" },
+        "source": { "$ref": "#/$defs/source" }
+      }
+    },
+    "chunk": {
+      "type": "object",
+      "required": ["id", "body", "source"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "name": { "type": "string", "minLength": 1 },
+        "body": { "type": "string" },
+        "definitionPipeline": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/transform" },
+          "default": []
+        },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "language": { "type": "string" },
+            "tags": { "type": "array", "items": { "type": "string" } },
+            "data": { "type": "object", "additionalProperties": true }
+          },
+          "additionalProperties": true
+        },
+        "source": { "$ref": "#/$defs/source" },
+        "fragments": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/fragment" }
+        }
+      }
+    },
+    "directive": {
+      "type": "object",
+      "required": ["kind", "source"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "type": "string", "minLength": 1 },
+        "from": { "$ref": "#/$defs/id" },
+        "target": { "type": "string", "minLength": 1 },
+        "arguments": { "type": "array", "items": {} },
+        "metadata": { "type": "object", "additionalProperties": true },
+        "source": { "$ref": "#/$defs/source" }
+      }
+    }
+  }
+}
+

@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "document": {
+    "id": "greeting",
+    "uri": "examples/greeting.md",
+    "format": "markdown+ravel-v1"
+  },
+  "chunks": [
+    {
+      "id": "main",
+      "name": "Main program",
+      "body": "console.log(_\"format-greeting\");\n",
+      "definitionPipeline": [],
+      "metadata": {
+        "language": "javascript",
+        "tags": ["entrypoint"]
+      },
+      "source": {
+        "uri": "examples/greeting.md",
+        "range": {
+          "start": { "line": 8, "column": 0, "offset": 88 },
+          "end": { "line": 10, "column": 3, "offset": 138 }
+        }
+      }
+    },
+    {
+      "id": "format-greeting",
+      "name": "Greeting formatter",
+      "body": "function formatGreeting(name) { return 'Hello, ' + name + '!'; }\n",
+      "metadata": {
+        "language": "javascript"
+      },
+      "source": {
+        "uri": "examples/greeting.md",
+        "range": {
+          "start": { "line": 14, "column": 0, "offset": 194 },
+          "end": { "line": 16, "column": 3, "offset": 268 }
+        }
+      }
+    }
+  ],
+  "directives": [
+    {
+      "kind": "write",
+      "from": "main",
+      "target": "dist/greeting.js",
+      "source": {
+        "uri": "examples/greeting.md",
+        "range": {
+          "start": { "line": 18, "column": 0, "offset": 270 },
+          "end": { "line": 18, "column": 57, "offset": 327 }
+        }
+      }
+    }
+  ]
+}

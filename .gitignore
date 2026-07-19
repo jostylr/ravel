@@ -1,0 +1,26 @@
+# Operating-system and editor state
+.DS_Store
+Thumbs.db
+.idea/
+
+# Dependencies and package-manager state
+node_modules/
+.pnp.*
+
+# Generated output
+dist/
+build/
+coverage/
+.cache/
+*.tsbuildinfo
+
+# Ravel local run state
+.ravel/cache/
+.ravel/runs/
+
+# Local configuration and logs
+.env
+.env.*
+!.env.example
+*.log
+

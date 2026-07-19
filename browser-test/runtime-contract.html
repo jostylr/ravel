@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ravel browser runtime contract</title>
+  </head>
+  <body>
+    <main>
+      <h1>Ravel browser runtime contract</h1>
+      <p id="result">Running…</p>
+    </main>
+    <script type="module">
+      import { runtimeContractFailures } from "./shared/runtime-contract.mjs";
+
+      const failures = runtimeContractFailures();
+      const result = document.querySelector("#result");
+      document.documentElement.dataset.ravelTest = failures.length ? "failed" : "passed";
+
+      if (failures.length) {
+        result.textContent = "Failed: missing " + failures.join(", ");
+        throw new Error(result.textContent);
+      }
+
+      result.textContent = "Passed";
+    </script>
+  </body>
+</html>

@@ -1,0 +1,8 @@
+{
+  "name": "@ravel/map",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Ravel Map types, schema, and validation."
+}
+
