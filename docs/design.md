@@ -94,7 +94,9 @@ needed. Any exception requires a host adapter.
 The first proof of concept is now implemented: an `in` directive recursively
 loads and joins Ravel Maps, the core parses references and pipelines, `emit`
 expands derived chunks, `out` creates a deliverables map, and the Node CLI can
-write those deliverables below an explicit output directory.
+write those deliverables below an explicit output directory. The first Markdown
+adapter now extracts explicitly named, source-mapped fenced chunks and TOML can
+assemble multiple Markdown documents into one run.
 
 ## Ravel modes
 

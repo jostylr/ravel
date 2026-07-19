@@ -10,3 +10,14 @@ static HTTP server, then open the page below in a modern browser:
 A passing page sets the root HTML element's `data-ravel-test` attribute to
 `passed`; a failure sets it to `failed` and throws. Browser automation can use
 that contract without changing the fixture or assertion modules.
+
+## Markdown adapter
+
+Build the browser-only bundle, then serve this directory and open
+`markdown-adapter.html`:
+
+    npm run build:browser-test
+
+The generated bundle stays under `browser-test/generated/`, so a server rooted
+at this folder needs no file outside its hierarchy. The page reports success in
+its `data-ravel-markdown-test` attribute.

@@ -3,6 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "Node host capabilities for Ravel."
+  "description": "Node host capabilities for Ravel.",
+  "dependencies": {
+    "smol-toml": "^1.7.0"
+  }
 }
-

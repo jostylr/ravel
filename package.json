@@ -14,6 +14,10 @@
     "test": "npm run test:node",
     "test:node": "node --test",
     "test:bun": "bun test",
-    "validate:schema": "node scripts/validate-map-example.mjs"
+    "validate:schema": "node scripts/validate-map-example.mjs",
+    "build:browser-test": "esbuild browser-test/source/markdown-adapter-entry.mjs --bundle --format=esm --platform=browser --outfile=browser-test/generated/markdown-adapter.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.1"
   }
 }

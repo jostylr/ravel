@@ -29,6 +29,7 @@ the same core model.
 - [History](docs/history.md)
 - [Ravel Map schema guide](docs/ravel-map-schema.md)
 - [Embedded chunk syntax guide](docs/chunk-syntax.md)
+- [Markdown fenced-block profile](docs/markdown-fences.md)
 - [Executable proof of concept](docs/proof-of-concept.md)
 - [Machine-readable Ravel Map schema](schemas/ravel-map.schema.json)
 
@@ -72,3 +73,9 @@ and generated outputs.
 
 See [runtime support](docs/runtime-support.md) for the portability and test
 policy.
+
+Markdown fences and single-run TOML configurations now work as well. See the
+[Markdown fenced-block profile](docs/markdown-fences.md), then try:
+
+    node packages/cli/src/index.js inspect fixtures/markdown/guide.md --mode primary
+    node packages/cli/src/index.js build --config fixtures/markdown/ravel-web.toml
