@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "document": {
+    "id": "project",
+    "uri": "examples/poc/project.ravel-map.json",
+    "format": "ravel-map-v1"
+  },
+  "chunks": [
+    {
+      "id": "main",
+      "name": "Main program",
+      "body": "_`greeting | emit('greeting.browser', {\"name\": \"Browser greeting\", \"language\": \"javascript\", \"tags\": [\"generated\"]})`console.log(greeting);\n",
+      "metadata": { "language": "javascript", "tags": ["entrypoint"] },
+      "source": {
+        "uri": "examples/poc/project.ravel-map.json",
+        "range": {
+          "start": { "line": 10, "column": 0, "offset": 190 },
+          "end": { "line": 10, "column": 150, "offset": 340 }
+        }
+      }
+    }
+  ],
+  "directives": [
+    {
+      "kind": "in",
+      "target": "library.ravel-map.json",
+      "source": {
+        "uri": "examples/poc/project.ravel-map.json",
+        "range": {
+          "start": { "line": 20, "column": 0, "offset": 400 },
+          "end": { "line": 20, "column": 30, "offset": 430 }
+        }
+      }
+    },
+    {
+      "kind": "out",
+      "name": "dist/greeting.js",
+      "from": "main",
+      "source": {
+        "uri": "examples/poc/project.ravel-map.json",
+        "range": {
+          "start": { "line": 27, "column": 0, "offset": 500 },
+          "end": { "line": 27, "column": 30, "offset": 530 }
+        }
+      }
+    },
+    {
+      "kind": "out",
+      "name": "generated/greeting.js",
+      "from": "greeting.browser",
+      "source": {
+        "uri": "examples/poc/project.ravel-map.json",
+        "range": {
+          "start": { "line": 34, "column": 0, "offset": 600 },
+          "end": { "line": 34, "column": 40, "offset": 640 }
+        }
+      }
+    }
+  ]
+}

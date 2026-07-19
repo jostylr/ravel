@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "document": {
+    "id": "library",
+    "uri": "examples/poc/library.ravel-map.json",
+    "format": "ravel-map-v1"
+  },
+  "chunks": [
+    {
+      "id": "greeting",
+      "name": "Greeting declaration",
+      "body": "const greeting = 'Hello, Ravel!';\n",
+      "metadata": { "language": "javascript", "tags": ["library"] },
+      "source": {
+        "uri": "examples/poc/library.ravel-map.json",
+        "range": {
+          "start": { "line": 10, "column": 0, "offset": 180 },
+          "end": { "line": 10, "column": 35, "offset": 215 }
+        }
+      }
+    }
+  ],
+  "directives": []
+}
+

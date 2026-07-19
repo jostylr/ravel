@@ -29,6 +29,7 @@ the same core model.
 - [History](docs/history.md)
 - [Ravel Map schema guide](docs/ravel-map-schema.md)
 - [Embedded chunk syntax guide](docs/chunk-syntax.md)
+- [Executable proof of concept](docs/proof-of-concept.md)
 - [Machine-readable Ravel Map schema](schemas/ravel-map.schema.json)
 
 ## Layout
@@ -56,6 +57,18 @@ workspaces are the initial package-management path. Once tests are added:
 
 The schema example currently uses a dependency-free structural validator. A full
 JSON Schema validator can be added with the first implementation package.
+
+## Proof of concept
+
+The initial graph evaluator and Node CLI are working. Build the joined-map,
+emission, and deliverables example with:
+
+    node packages/cli/src/index.js build examples/poc/project.ravel-map.json \
+      --out-dir .ravel/runs/poc \
+      --graph .ravel/runs/poc/program.json
+
+See [the proof-of-concept guide](docs/proof-of-concept.md) for its graph model
+and generated outputs.
 
 See [runtime support](docs/runtime-support.md) for the portability and test
 policy.

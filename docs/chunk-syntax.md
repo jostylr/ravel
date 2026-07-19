@@ -78,15 +78,16 @@ later build stage. Ravel also supports the distinct and important idea of
 a derived chunk declaration during graph expansion; it is not a filesystem or
 runtime side effect.
 
-    _"widget | dedent() | emit('widget.clean', {
-      name: 'Clean widget',
-      language: 'typescript',
-      tags: ['generated', 'browser'],
-      data: { target: 'modern' }
-    })"
+    _`widget | dedent() | emit('widget.clean', {
+      "name": "Clean widget",
+      "language": "typescript",
+      "tags": ["generated", "browser"],
+      "data": { "target": "modern" }
+    })`
 
 This declaration means that `widget.clean` has the definition `widget |
-dedent()`. The emitted chunk receives the supplied display name, language,
+dedent()`. Use a backtick-quoted reference when JSON metadata contains double
+quotes. The emitted chunk receives the supplied display name, language,
 tags, and JSON data. Its provenance includes the emit call and every source
 range in the captured prefix pipeline.
 

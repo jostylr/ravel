@@ -88,6 +88,11 @@ needed. Any exception requires a host adapter.
 6. Run the same conformance fixtures through Node, Bun, and a browser harness
    before declaring an API portable.
 
+The first proof of concept is now implemented: an `in` directive recursively
+loads and joins Ravel Maps, the core parses references and pipelines, `emit`
+expands derived chunks, `out` creates a deliverables map, and the Node CLI can
+write those deliverables below an explicit output directory.
+
 ## Ravel modes
 
 | Mode | Purpose |
