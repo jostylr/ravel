@@ -209,68 +209,107 @@ const parsePipeStep = (part, expression, source, expressionOffset, diagnostics) 
     : splitTopLevel(match[2], ",");
   const argumentsValue = rawArguments.map((argument) => parseValue(argument.value));
 
-  if (argumentsValue.some((argument) => typeof argument === "undefined")) {
-    diagnostics.push(diagnostic("RV120", "Pipeline arguments must be JSON-like literals.", location));
-    return null;
+  if (name === "emit") {
+    if (argumentsValue.some((argument) => typeof argument === "undefined")) {
+      diagnostics.push(diagnostic("RV120", "emit arguments must be JSON-like literals.", location));
+      return null;
+    }
+
+    const rawSuffix = argumentsValue[0];
+    const metadata = argumentsValue.length > 1 ? argumentsValue[1] : {};
+    const suffix = parseEmitSuffix(rawSuffix);
+    if (!suffix) {
+      diagnostics.push(diagnostic("RV131", "emit requires a local minor/type suffix such as 'cool', 'cool.js', or '.js'.", location));
+      return null;
+    }
+    if (!metadata || Array.isArray(metadata) || typeof metadata !== "object") {
+      diagnostics.push(diagnostic("RV131", "emit metadata must be an object.", location));
+      return null;
+    }
+    return { type: "emit", suffix, metadata, source: location };
   }
 
-  if (name !== "emit") {
-    return { type: "transform", name, arguments: argumentsValue, source: location };
+  const textArgument = () => {
+    if (argumentsValue.length > 1 || argumentsValue.some((argument) => typeof argument !== "string")) {
+      diagnostics.push(diagnostic("RV121", "text accepts zero or one string argument.", location));
+      return null;
+    }
+    return { type: "text", value: argumentsValue[0] ?? "", source: location };
+  };
+  if (name === "text") return textArgument();
+
+  if (name === "ch") {
+    if (argumentsValue.length !== 1 || typeof argumentsValue[0] !== "string") {
+      diagnostics.push(diagnostic("RV121", "ch requires one quoted chunk expression.", location));
+      return null;
+    }
+    const parsed = parseExpression(argumentsValue[0], source, expressionOffset + part.start, diagnostics, { allowDelay: false });
+    if (!parsed) return null;
+    return { type: "chunk", expression: argumentsValue[0], value: parsed, source: location };
   }
 
-  const rawSuffix = argumentsValue[0];
-  const metadata = argumentsValue.length > 1 ? argumentsValue[1] : {};
-  const suffix = parseEmitSuffix(rawSuffix);
-  if (!suffix) {
-    diagnostics.push(diagnostic("RV131", "emit requires a local minor/type suffix such as 'cool', 'cool.js', or '.js'.", location));
+  const argumentsParsed = rawArguments.map((argument) => {
+    const value = parseValue(argument.value);
+    if (typeof value !== "undefined") return value;
+    const nested = parsePipeStep({ value: argument.value, start: part.start + argument.start, end: part.start + argument.end }, expression, source, expressionOffset, diagnostics);
+    return nested?.type === "text" || nested?.type === "chunk"
+      ? { kind: "ravel-command-argument", command: nested }
+      : undefined;
+  });
+  if (argumentsParsed.some((argument) => typeof argument === "undefined")) {
+    diagnostics.push(diagnostic("RV120", "Pipeline arguments must be JSON-like literals, text(...), or ch(...).", location));
     return null;
   }
-  if (!metadata || Array.isArray(metadata) || typeof metadata !== "object") {
-    diagnostics.push(diagnostic("RV131", "emit metadata must be an object.", location));
-    return null;
-  }
-  return { type: "emit", suffix, metadata, source: location };
+  return { type: name === "delay" ? "delay" : "transform", name, arguments: argumentsParsed, source: location };
 };
 
-const parseExpression = (expression, source, expressionOffset, diagnostics) => {
+const parseExpression = (expression, source, expressionOffset, diagnostics, { allowDelay = true } = {}) => {
   const parts = splitTopLevel(expression, "|");
   const reference = parts.shift();
   const target = parseChunkId(reference?.value, { reference: true });
+  const pipeline = parts
+    .map((part) => parsePipeStep(part, expression, source, expressionOffset, diagnostics))
+    .filter(Boolean);
   if (!reference || !target) {
-    const pipeline = parts
-      .map((part) => parsePipeStep(part, expression, source, expressionOffset, diagnostics))
-      .filter(Boolean);
-    const delay = pipeline.length === 1 && pipeline[0].type === "transform" && pipeline[0].name === "delay"
-      ? pipeline[0]
-      : null;
-    if (reference?.value === "" && delay) {
-      const [payloadText, phase = 1, safeSymbol] = delay.arguments;
-      if (typeof payloadText !== "string" || !Number.isInteger(phase) || phase < 1 ||
+    const delay = pipeline.length === 1 && pipeline[0].type === "delay" ? pipeline[0] : null;
+    if (reference?.value === "" && delay && allowDelay) {
+      const [value, phase = 1, safeSymbol] = delay.arguments;
+      const command = value?.kind === "ravel-command-argument" ? value.command : null;
+      if ((typeof value !== "string" && command?.type !== "text" && command?.type !== "chunk") ||
+          !Number.isInteger(phase) || phase < 1 ||
           (safeSymbol !== undefined && (typeof safeSymbol !== "string" || !/^[A-Za-z0-9]+$/.test(safeSymbol)))) {
-        diagnostics.push(diagnostic("RV121", "delay requires an expression string, an optional positive phase, and an optional alphanumeric safe symbol.", delay.source));
-        return null;
-      }
-      const payload = parseExpression(payloadText, source, expressionOffset, diagnostics);
-      if (!payload || payload.type !== "reference") {
-        diagnostics.push(diagnostic("RV121", "delay's expression must be a chunk reference and optional pipeline.", delay.source));
+        diagnostics.push(diagnostic("RV121", "delay requires text(...), ch(...), or a string, then an optional positive phase and safe symbol.", delay.source));
         return null;
       }
       return {
         type: "delay",
-        expression: payloadText,
-        payload,
+        value,
+        expression: typeof value === "string" ? value : command.expression ?? command.value,
         phase,
         safeSymbol,
         source: span(source, expression, expressionOffset, expressionOffset + expression.length)
       };
     }
+    if (reference?.value === "" && pipeline.length && pipeline[0].type !== "delay" &&
+        (pipeline[0].type === "text" || pipeline[0].type === "chunk")) {
+      if (pipeline.some((step) => step.type === "delay")) {
+        diagnostics.push(diagnostic("RV121", "delay may only appear as the sole command in _\"|delay(...)\".", pipeline.find((step) => step.type === "delay").source));
+        return null;
+      }
+      return { type: "pipeline", pipeline, source: span(source, expression, expressionOffset, expressionOffset + expression.length) };
+    }
+    if (pipeline.some((step) => step.type === "delay")) {
+      diagnostics.push(diagnostic("RV121", "delay may only appear as the sole command in _\"|delay(...)\".", pipeline.find((step) => step.type === "delay").source));
+      return null;
+    }
     diagnostics.push(diagnostic("RV110", "Malformed chunk reference: " + (reference?.value ?? ""), span(source, expression, expressionOffset, expressionOffset + expression.length)));
     return null;
   }
 
-  const pipeline = parts
-    .map((part) => parsePipeStep(part, expression, source, expressionOffset, diagnostics))
-    .filter(Boolean);
+  if (pipeline.some((step) => step.type === "delay")) {
+    diagnostics.push(diagnostic("RV121", "delay may only appear as the sole command in _\"|delay(...)\".", pipeline.find((step) => step.type === "delay").source));
+    return null;
+  }
 
   return {
     type: "reference",
@@ -723,8 +762,7 @@ export const transformGraph = (pretransform, options = {}) => {
     owner.dependencies.add(resolved);
     owner.references.push({ chunk: resolved, requested: node.reference, source: node.source });
     let value = dependency.value;
-    for (const step of node.pipeline) value = applyTransform(value, step, diagnostics, options.transforms, { chunk: owner.definition });
-    return value;
+    return evaluatePipeline(value, node.pipeline, owner);
   };
 
   const delayToken = (safeSymbol) => {
@@ -748,10 +786,38 @@ export const transformGraph = (pretransform, options = {}) => {
     return token;
   };
 
+  const evaluateArgument = (argument, owner) => {
+    const command = argument?.kind === "ravel-command-argument" ? argument.command : null;
+    if (command?.type === "text") return command.value;
+    if (command?.type === "chunk") return evaluateExpression(command.value, owner);
+    return argument;
+  };
+
+  const evaluatePipeline = (initial, pipeline, owner) => {
+    let value = initial;
+    for (const step of pipeline) {
+      if (step.type === "text") {
+        value = step.value;
+      } else if (step.type === "chunk") {
+        value = evaluateExpression(step.value, owner);
+      } else if (step.type === "transform") {
+        const argumentsValue = step.arguments.map((argument) => evaluateArgument(argument, owner));
+        value = applyTransform(value, { ...step, arguments: argumentsValue }, diagnostics, options.transforms, { chunk: owner.definition });
+      }
+    }
+    return value;
+  };
+
+  const evaluateExpression = (node, owner) => node.type === "pipeline"
+    ? evaluatePipeline("", node.pipeline, owner)
+    : evaluateReference(node, owner);
+
+  const evaluateDelayValue = (value, owner) => evaluateArgument(value, owner);
+
   const evaluateNode = (node, owner) => {
     if (node.type === "literal") return node.value;
     if (node.type === "delay") return evaluateDelay(node, owner);
-    return evaluateReference(node, owner);
+    return evaluateExpression(node, owner);
   };
 
   const evaluateCompose = (definition, owner, capture = null) => {
@@ -836,7 +902,7 @@ export const transformGraph = (pretransform, options = {}) => {
           if (occurrences !== 1) {
             diagnostics.push(diagnostic("RV123", "Delay safe symbol was " + (occurrences ? "duplicated" : "removed") + " by a transform: " + delay.token, delay.source));
           }
-          const replacement = evaluateReference(delay.payload, owner);
+          const replacement = evaluateDelayValue(delay.value, owner);
           value = value.split(delay.token).join(replacement);
         }
         owner.trace.push({

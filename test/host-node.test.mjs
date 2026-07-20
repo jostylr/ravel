@@ -54,7 +54,7 @@ test("Node host follows in directives from Markdown into another Markdown map", 
 });
 
 test("external language transforms run before delayed content is fulfilled", () => {
-  const text = "```markdown {.ravel #content pipe=\"markdown()\"}\n# Hello\n```\n\n```pug {.ravel #page pipe=\"pug()\"}\nhtml\n  body\n    | _\"|delay('content.markdown', 1, 'RAVELSAFE')\"\n```\n";
+  const text = "```markdown {.ravel #content pipe=\"markdown()\"}\n# Hello\n```\n\n```pug {.ravel #page pipe=\"pug()\"}\nhtml\n  body\n    | _\"|delay(ch('content.markdown'), 1, 'RAVELSAFE')\"\n```\n";
   const { map, diagnostics } = markdownToMap(text, { uri: "page.md", document: "page", mode: "primary" });
   assert.deepEqual(diagnostics, []);
   const program = transformGraph(combineMaps([map]), {

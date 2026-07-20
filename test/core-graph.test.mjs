@@ -191,7 +191,7 @@ test("definition pipelines execute around delayed substitutions and retain phase
       {
         id: "guide::page",
         identity: identity("guide", "page"),
-        body: "before _\"|delay('content | wrap()', 1, 'SAFESLOT')\"",
+        body: "before _\"|delay(ch('content | wrap()'), 1, 'SAFESLOT')\"",
         definitionPipeline: [{ type: "transform", name: "outer", arguments: [], source: source("guide", 1) }],
         source: source("guide", 1)
       }
@@ -223,7 +223,7 @@ test("delay reports a transform that does not preserve its safe symbol", () => {
       {
         id: "guide::page",
         identity: identity("guide", "page"),
-        body: "_\"|delay('content', 1, 'SAFESLOT')\"",
+        body: "_\"|delay(ch('content'), 1, 'SAFESLOT')\"",
         definitionPipeline: [{ type: "transform", name: "erase", arguments: [], source: source("guide", 1) }],
         source: source("guide", 1)
       }
@@ -232,6 +232,52 @@ test("delay reports a transform that does not preserve its safe symbol", () => {
   }]);
   const program = transformGraph(graph, { transforms: { erase: () => "" } });
   assert.equal(program.diagnostics[0].code, "RV123");
+});
+
+test("text and ch reset a pipeline and ch can contain an empty-segment pipeline", () => {
+  const graph = combineMaps([{
+    document: { id: "guide", uri: "guide.ravel-map.json", format: "ravel-map-v1" },
+    chunks: [
+      { id: "guide::source", identity: identity("guide", "source"), body: "ignored", source: source("guide", 0) },
+      {
+        id: "guide::main",
+        identity: identity("guide", "main"),
+        body: "_\"source | text('cool') | capitalize()\" _`|ch('|text(\"cool\")|capitalize()')` _\"source | surround(text('['), ch('source'))\"",
+        source: source("guide", 1)
+      },
+      {
+        id: "guide::empty",
+        identity: identity("guide", "empty"),
+        body: "_\"source | text()\"",
+        source: source("guide", 2)
+      }
+    ],
+    directives: []
+  }]);
+  const program = transformGraph(graph, {
+    transforms: {
+      capitalize: (value) => value[0].toUpperCase() + value.slice(1),
+      surround: (value, context) => context.arguments[0] + value + context.arguments[1]
+    }
+  });
+  assert.deepEqual(program.diagnostics, []);
+  assert.equal(program.chunks["guide::main"].value, "Cool Cool [ignoredignored");
+  assert.equal(program.chunks["guide::empty"].value, "");
+});
+
+test("delay is permitted only as an isolated top-level empty-segment command", () => {
+  const graph = combineMaps([{
+    document: { id: "guide", uri: "guide.ravel-map.json", format: "ravel-map-v1" },
+    chunks: [{
+      id: "guide::main",
+      identity: identity("guide", "main"),
+      body: "_\"|delay(ch('source'))|capitalize()\"",
+      source: source("guide", 0)
+    }],
+    directives: []
+  }]);
+  const program = transformGraph(graph);
+  assert.equal(program.diagnostics[0].code, "RV121");
 });
 
 test("reports unknown references with a source-linked diagnostic", () => {

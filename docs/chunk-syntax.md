@@ -21,7 +21,9 @@ Everything in a chunk body is literal text except a recognized substitution.
     Quote        = double-quote | single-quote | backtick
     Expression   = Reference { Space? "|" Space? PipeStep }
     Reference    = [ DocumentID "::" ] [ ChunkID ] [ ":" MinorID ] [ "." TypeID ]
-    PipeStep     = Transform | Emit
+    PipeStep     = Transform | Emit | Text | Chunk
+    Text         = "text" "(" [ String ] ")"
+    Chunk        = "ch" "(" String ")"
     Transform    = Identifier [ "(" Arguments ")" ]
     Emit         = "emit" "(" String [ "," MetadataObject ] ")"
     Arguments    = Value { "," Space? Value }
@@ -175,14 +177,17 @@ point to both output and Ravel source.
 Use `delay` when an enclosing definition transform must finish before a
 reference is resolved:
 
-    _"|delay('content.markdown | markdown()', 1)"
+    _"|delay(ch('content.markdown | markdown()'), 1)"
 
-The expression is a quoted ordinary Ravel reference/pipeline, so its leading
-underscore is not parsed while the enclosing chunk is being read. The optional
-positive phase defaults to `1`; a delay becomes real immediately after that
-definition-transform phase. The optional third argument is an alphanumeric
-safe symbol. Otherwise Ravel creates a short random safe symbol and verifies
-that the transform preserved it exactly once.
+`ch(...)` explicitly evaluates a quoted ordinary Ravel reference/pipeline;
+`text(...)` produces literal text and `text()` produces an empty string. Both
+reset the current pipeline value, so `_"|text('cool')|capitalize()"` produces
+`Cool` and `ch('|text("cool")|capitalize()')` is valid. A plain string passed
+to `delay` is delayed literal text, while `delay(ch("content"))` delays a
+chunk evaluation. The optional positive phase defaults to `1`; a delay becomes
+real immediately after that definition-transform phase. The optional third
+argument is an alphanumeric safe symbol. Otherwise Ravel creates a short random
+safe symbol and verifies that the transform preserved it exactly once.
 
 For example, a Pug definition may hold a delay as literal Pug text, run Pug,
 then insert rendered Markdown into its HTML output. A delay requesting a phase
