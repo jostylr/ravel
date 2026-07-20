@@ -1,5 +1,7 @@
 const componentPattern = /^[a-z][a-z0-9-]*$/;
 
+export { directiveKinds, compose, append, newline, pipe, pass, createDirective, aliasDirective } from "./directives.js";
+
 const clone = (value) => JSON.parse(JSON.stringify(value));
 
 const advance = (start, text, index) => {
@@ -460,6 +462,70 @@ export const transformGraph = (pretransform) => {
       origin: { kind: "source", source: raw.source },
       ast: parsed.nodes
     });
+  }
+
+  const directiveIdentity = (directive) => {
+    const document = directive.document;
+    if (typeof document !== "string" || typeof directive.name !== "string" || directive.name.includes("::")) return null;
+    const parsed = parseChunkId(document + "::" + directive.name, { reference: true });
+    return parsed?.chunk === null ? null : parsed;
+  };
+
+  const composeBody = (steps, source) => {
+    if (!Array.isArray(steps)) return null;
+    let body = "";
+    let pendingNewlines = 1;
+    let hasAppend = false;
+    for (const step of steps) {
+      if (step?.kind === "newline") {
+        if (!Number.isInteger(step.count) || step.count < 0) {
+          diagnostics.push(diagnostic("RV130", "newline requires a non-negative integer.", step.source ?? source));
+          return null;
+        }
+        pendingNewlines = step.count;
+      } else if (step?.kind === "append" && typeof step.reference === "string") {
+        if (hasAppend) body += "\n".repeat(pendingNewlines);
+        body += "_\"" + step.reference.replace(/\\/g, "\\\\").replace(/\"/g, "\\\"") + "\"";
+        hasAppend = true;
+        pendingNewlines = 1;
+      } else {
+        diagnostics.push(diagnostic("RV130", "create compose currently requires append references and newline steps.", step?.source ?? source));
+        return null;
+      }
+    }
+    return body;
+  };
+
+  for (const directive of pretransform.directives ?? []) {
+    if (directive.kind !== "create" && directive.kind !== "alias") continue;
+    const identity = directiveIdentity(directive);
+    if (!identity) {
+      diagnostics.push(diagnostic("RV130", directive.kind + " requires a current document and local chunk:minor.type name.", directive.source));
+      continue;
+    }
+    const id = formatChunkId(identity);
+    if (definitions.has(id)) {
+      diagnostics.push(diagnostic("RV101", "Duplicate directive chunk ID: " + id, directive.source));
+      continue;
+    }
+    const source = directive.source;
+    if (directive.kind === "create") {
+      const body = directive.compose ? composeBody(directive.compose, source) : directive.body;
+      if (body === null) continue;
+      const parsed = parseChunk(typeof body === "string" ? body : "", source);
+      diagnostics.push(...parsed.diagnostics);
+      definitions.set(id, {
+        id, identity, name: directive.name, metadata: directive.metadata ?? {}, source,
+        generated: true, origin: { kind: "create", source }, ast: parsed.nodes
+      });
+    } else {
+      const reference = parseExpression(directive.reference, source, 0, diagnostics);
+      if (!reference) continue;
+      definitions.set(id, {
+        id, identity, name: directive.name, metadata: directive.metadata ?? {}, source,
+        generated: true, origin: { kind: "alias", source, target: directive.reference }, ast: [reference]
+      });
+    }
   }
 
   for (const definition of [...definitions.values()]) {

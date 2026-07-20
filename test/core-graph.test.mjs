@@ -108,6 +108,30 @@ test("emit rejects attempts to redefine a document or base chunk", () => {
   assert.equal(program.chunks["other::target"], undefined);
 });
 
+test("create imposes its document and alias retains target provenance", () => {
+  const graph = combineMaps([{
+    document: { id: "guide", uri: "guide.ravel-map.json", format: "ravel-map-v1" },
+    chunks: [{ id: "guide::source.js", identity: identity("guide", "source", null, "js"), body: "const source = true;\n", source: source("guide", 0) }],
+    directives: [
+      {
+        kind: "create", document: "guide", name: "program:cool.js",
+        compose: [
+          { kind: "append", reference: "source.js", source: source("guide", 1) },
+          { kind: "newline", count: 0, source: source("guide", 1) },
+          { kind: "append", reference: "source.js", source: source("guide", 1) }
+        ],
+        source: source("guide", 1)
+      },
+      { kind: "alias", document: "guide", name: "public.js", reference: "program:cool.js", source: source("guide", 2) }
+    ]
+  }]);
+  const program = transformGraph(graph);
+  assert.deepEqual(program.diagnostics, []);
+  assert.equal(program.chunks["guide::program:cool.js"].value, "const source = true;\nconst source = true;\n");
+  assert.equal(program.chunks["guide::public.js"].value, "const source = true;\nconst source = true;\n");
+  assert.equal(program.chunks["guide::public.js"].provenance[0].kind, "alias");
+});
+
 test("reports unknown references with a source-linked diagnostic", () => {
   const graph = combineMaps([{
     document: { id: "test", uri: "test.ravel-map.json", format: "ravel-map-v1" },
