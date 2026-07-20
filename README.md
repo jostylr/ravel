@@ -29,6 +29,7 @@ the same core model.
 - [History](docs/history.md)
 - [Ravel Map schema guide](docs/ravel-map-schema.md)
 - [Embedded chunk syntax guide](docs/chunk-syntax.md)
+- [Pipes and directives reference](docs/pipes-and-directives.md)
 - [Markdown fenced-block profile](docs/markdown-fences.md)
 - [Executable proof of concept](docs/proof-of-concept.md)
 - [Machine-readable Ravel Map schema](schemas/ravel-map.schema.json)
