@@ -40,6 +40,38 @@ surrounding target code. Opening and closing quotes must match.
 The pipeline is inside the quotes, so target-language operators remain
 irrelevant to the Ravel parser.
 
+### Continuation indentation
+
+An embedded substitution automatically gives each later nonblank inserted line
+the leading whitespace of the line containing the substitution. Its first line
+is not changed, because the literal text before the substitution has already
+placed it. This preserves the referenced chunk's relative indentation without
+aligning its continuation lines under the substitution's column.
+
+```javascript
+  handler = _"function-def"
+```
+
+If `function-def` is:
+
+```javascript
+function () {
+  return 1;
+}
+```
+
+the result is:
+
+```javascript
+  handler = function () {
+    return 1;
+  }
+```
+
+Blank lines remain blank, and tabs or spaces in the containing line's leading
+whitespace are preserved exactly. This is use-site behavior, distinct from
+`indent(n)`, which explicitly prefixes every nonempty line of its input.
+
 ## Escaping and errors
 
 A backslash immediately before an underscore-quote start makes it literal:

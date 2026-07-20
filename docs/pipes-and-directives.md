@@ -49,6 +49,12 @@ Core provides these transforms. A host can register more, such as the
 | `replace(search, replacement)` | Replaces all literal occurrences. |
 | `quote-reference()` | Changes `_(quote)` starts into escaped literal text. |
 
+`indent(n)` changes the value before it is placed into its caller, so it
+prefixes every nonempty line, including the first. Embedded substitutions also
+apply automatic use-site continuation indentation: later nonblank lines inherit
+the containing source line's leading whitespace. See the chunk syntax guide for
+an example.
+
 For example, if `source` is `"  value  \n"`:
 
 ```text

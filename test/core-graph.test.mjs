@@ -70,6 +70,54 @@ test("transforms references, expands emit chunks, and plans out deliverables", (
   assert.equal(program.deliverables["derived.txt"].from, "test::main:indented");
 });
 
+test("embedded substitutions indent nonblank continuation lines to their use site", () => {
+  const graph = combineMaps([{
+    document: { id: "guide", uri: "guide.ravel-map.json", format: "ravel-map-v1" },
+    chunks: [
+      {
+        id: "guide::function-def",
+        identity: identity("guide", "function-def"),
+        body: "function () {\n  return 1;\n}\n\n",
+        source: source("guide", 0)
+      },
+      {
+        id: "guide::main",
+        identity: identity("guide", "main"),
+        body: "  handler = _\"function-def\"",
+        source: source("guide", 10)
+      }
+    ],
+    directives: []
+  }]);
+
+  const program = transformGraph(graph);
+
+  assert.deepEqual(program.diagnostics, []);
+  assert.equal(program.chunks["guide::main"].value, "  handler = function () {\n    return 1;\n  }\n\n");
+});
+
+test("emitted chunks do not inherit their emit call's continuation indentation", () => {
+  const graph = combineMaps([{
+    document: { id: "guide", uri: "guide.ravel-map.json", format: "ravel-map-v1" },
+    chunks: [
+      { id: "guide::source", identity: identity("guide", "source"), body: "one\n  two", source: source("guide", 0) },
+      {
+        id: "guide::main",
+        identity: identity("guide", "main"),
+        body: "  _\"source | emit('plain')\"",
+        source: source("guide", 10)
+      }
+    ],
+    directives: []
+  }]);
+
+  const program = transformGraph(graph);
+
+  assert.deepEqual(program.diagnostics, []);
+  assert.equal(program.chunks["guide::main"].value, "  one\n    two");
+  assert.equal(program.chunks["guide::main:plain"].value, "one\n  two");
+});
+
 test("emit stays in the owner chunk and can change only its type", () => {
   const graph = combineMaps([{
     document: { id: "test", uri: "test.ravel-map.json", format: "ravel-map-v1" },

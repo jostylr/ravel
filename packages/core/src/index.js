@@ -320,6 +320,21 @@ const parseExpression = (expression, source, expressionOffset, diagnostics, { al
   };
 };
 
+// An embedded reference inherits the indentation of its containing source line
+// on continuation lines. The first line is already positioned by the literal
+// text before the reference, so it deliberately remains untouched.
+const continuationIndentAt = (body, index) => {
+  const lineStart = Math.max(body.lastIndexOf("\n", index - 1), body.lastIndexOf("\r", index - 1)) + 1;
+  return /^[\t ]*/.exec(body.slice(lineStart, index))[0];
+};
+
+const applyContinuationIndent = (value, indentation) => {
+  if (!indentation || !/[\r\n]/.test(value)) return value;
+  return value.replace(/(\r\n|\n|\r)([^\r\n]*)/g, (match, eol, line) =>
+    /\S/.test(line) ? eol + indentation + line : eol + line
+  );
+};
+
 export const parseChunk = (body, source) => {
   const nodes = [];
   const diagnostics = [];
@@ -360,7 +375,7 @@ export const parseChunk = (body, source) => {
     }
     const expression = body.slice(index + 2, end);
     const parsed = parseExpression(expression, source, index + 2, diagnostics);
-    if (parsed) nodes.push(parsed);
+    if (parsed) nodes.push({ ...parsed, continuationIndent: continuationIndentAt(body, index) });
     index = end + 1;
     literalStart = index;
   }
@@ -497,6 +512,7 @@ const definitionFromEmission = (owner, reference, prefix, emit) => {
     reference: reference.reference,
     target: clone(reference.target),
     pipeline: clone(prefix),
+    continuationIndent: "",
     source: reference.source
   }]
   };
@@ -817,7 +833,7 @@ export const transformGraph = (pretransform, options = {}) => {
   const evaluateNode = (node, owner) => {
     if (node.type === "literal") return node.value;
     if (node.type === "delay") return evaluateDelay(node, owner);
-    return evaluateExpression(node, owner);
+    return applyContinuationIndent(evaluateExpression(node, owner), node.continuationIndent);
   };
 
   const evaluateCompose = (definition, owner, capture = null) => {

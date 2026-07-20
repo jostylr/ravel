@@ -1,0 +1,13 @@
+version = 1
+
+[build]
+name = "legacy-fizzbuzz-migration"
+out_dir = ".ravel/runs/legacy-fizzbuzz-migration"
+
+[[files]]
+path = "fizzbuzz.md"
+mode = "primary"
+
+[[outputs]]
+name = "dist/fizzbuzz-via-config.js"
+from = "fizzbuzz::public.js"
