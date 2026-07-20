@@ -132,6 +132,52 @@ test("create imposes its document and alias retains target provenance", () => {
   assert.equal(program.chunks["guide::public.js"].provenance[0].kind, "alias");
 });
 
+test("compose pipe transforms its accumulator while pass tees an emitted value", () => {
+  const graph = combineMaps([{
+    document: { id: "guide", uri: "guide.ravel-map.json", format: "ravel-map-v1" },
+    chunks: [{
+      id: "guide::source",
+      identity: identity("guide", "source"),
+      body: "  value  \n",
+      source: source("guide", 0)
+    }],
+    directives: [{
+      kind: "create",
+      document: "guide",
+      name: "program:stage.js",
+      compose: [
+        { kind: "append", reference: "source", source: source("guide", 1) },
+        {
+          kind: "pass",
+          source: source("guide", 2),
+          steps: [
+            { type: "transform", name: "trim", arguments: [], source: source("guide", 2) },
+            { type: "emit", suffix: { minor: "observed", type: "js", inheritMinor: false }, metadata: {}, source: source("guide", 2) }
+          ]
+        },
+        {
+          kind: "pipe",
+          source: source("guide", 3),
+          steps: [
+            { type: "transform", name: "trim", arguments: [], source: source("guide", 3) },
+            { type: "emit", suffix: { minor: "min", type: "js", inheritMinor: false }, metadata: {}, source: source("guide", 3) },
+            { type: "transform", name: "indent", arguments: [2], source: source("guide", 3) }
+          ]
+        }
+      ],
+      source: source("guide", 1)
+    }]
+  }]);
+
+  const program = transformGraph(graph);
+  assert.deepEqual(program.diagnostics, []);
+  assert.equal(program.chunks["guide::program:stage.js"].value, "  value");
+  assert.equal(program.chunks["guide::program:observed.js"].value, "value");
+  assert.equal(program.chunks["guide::program:min.js"].value, "value");
+  assert.equal(program.chunks["guide::program:observed.js"].provenance[0].compose.stepKind, "pass");
+  assert.equal(program.chunks["guide::program:min.js"].provenance[0].compose.stepKind, "pipe");
+});
+
 test("reports unknown references with a source-linked diagnostic", () => {
   const graph = combineMaps([{
     document: { id: "test", uri: "test.ravel-map.json", format: "ravel-map-v1" },
@@ -142,6 +188,30 @@ test("reports unknown references with a source-linked diagnostic", () => {
   const program = transformGraph(graph);
   assert.equal(program.diagnostics[0].code, "RV111");
   assert.equal(program.chunks["test::main"].value, "");
+});
+
+test("settles forward references before reporting deterministic cycles", () => {
+  const forward = combineMaps([{
+    document: { id: "test", uri: "test.ravel-map.json", format: "ravel-map-v1" },
+    chunks: [
+      { id: "test::main", identity: identity("test", "main"), body: "_\"later\"", source: source("test", 0) },
+      { id: "test::later", identity: identity("test", "later"), body: "ready\n", source: source("test", 1) }
+    ],
+    directives: []
+  }]);
+  assert.deepEqual(transformGraph(forward).diagnostics, []);
+
+  const cyclic = combineMaps([{
+    document: { id: "test", uri: "test.ravel-map.json", format: "ravel-map-v1" },
+    chunks: [
+      { id: "test::first", identity: identity("test", "first"), body: "_\"second\"", source: source("test", 0) },
+      { id: "test::second", identity: identity("test", "second"), body: "_\"first\"", source: source("test", 1) }
+    ],
+    directives: []
+  }]);
+  const program = transformGraph(cyclic);
+  assert.equal(program.diagnostics[0].code, "RV112");
+  assert.match(program.diagnostics[0].message, /test::first → test::second → test::first/);
 });
 
 test("resolves local, global, root, minor, and typed chunk identities", () => {

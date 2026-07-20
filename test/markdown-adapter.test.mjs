@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { readFile } from "node:fs/promises";
 import { markdownToMap } from "../packages/markdown/src/index.js";
+import { combineMaps, transformGraph } from "../packages/core/src/index.js";
 
 const fixture = async (name) => readFile(new URL("../fixtures/markdown/" + name, import.meta.url), "utf8");
 
@@ -32,4 +33,23 @@ test("primary Markdown mode requires explicit Ravel classification", () => {
     mode: "primary"
   });
   assert.equal(diagnostics[0].code, "RM103");
+});
+
+test("ravel fences translate directives into portable staged composition IR", () => {
+  const text = "```text {.ravel #source}\n  value  \n```\n\n```ravel\ncreate(\"program:stage.js\", compose(\n  _\"source.text\",\n  pass(trim(), emit(\"observed.js\")),\n  pipe(trim(), emit(\"min.js\"), indent(2))\n))\nalias(\"public.js\", _\"program:stage.js\")\nout(\"dist/stage.js\", _\"program:stage.js\")\n```\n";
+  const { map, diagnostics } = markdownToMap(text, { uri: "guide.md", document: "guide", mode: "primary" });
+
+  assert.deepEqual(diagnostics, []);
+  assert.deepEqual(map.directives.map((directive) => directive.kind), ["create", "alias", "out"]);
+  assert.equal(map.directives[0].compose[1].kind, "pass");
+  assert.equal(map.directives[0].compose[2].steps[1].suffix, "min.js");
+  assert.equal(map.directives[2].from, "guide::program:stage.js");
+
+  const program = transformGraph(combineMaps([map]));
+  assert.deepEqual(program.diagnostics, []);
+  assert.equal(program.chunks["guide::program:stage.js"].value, "  value");
+  assert.equal(program.chunks["guide::program:observed.js"].value, "value");
+  assert.equal(program.chunks["guide::program:min.js"].value, "value");
+  assert.equal(program.chunks["guide::public.js"].value, "  value");
+  assert.equal(program.deliverables["dist/stage.js"].value, "  value");
 });

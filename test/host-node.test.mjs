@@ -38,3 +38,15 @@ test("Node host loads one TOML build run containing multiple Markdown files", as
   assert.equal(program.deliverables["dist/main.js"].from, "handbook::main.javascript");
   assert.match(program.deliverables["dist/main.js"].value, /export const finish/);
 });
+
+test("Node host follows in directives from Markdown into another Markdown map", async () => {
+  const entry = fileURLToPath(
+    new URL("../fixtures/markdown/importing-entry.md", import.meta.url),
+  );
+  const loaded = await loadBuildInput(entry);
+  const program = transformGraph(loaded.pretransform);
+
+  assert.deepEqual(program.diagnostics, []);
+  assert.deepEqual(Object.keys(program.chunks).sort(), ["entry::main.js", "library::helper.js"]);
+  assert.equal(program.deliverables["dist/main.js"].value, "export const helper = true;\n");
+});

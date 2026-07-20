@@ -6,16 +6,32 @@ import { markdownToMap } from "../../markdown/src/index.js";
 
 const readMap = async (path) => JSON.parse(await readFile(path, "utf8"));
 
-export const loadPretransformGraph = async (entryPath) => {
+const loadMarkdownFile = async (path, options = {}) => markdownToMap(
+  await readFile(path, "utf8"),
+  { uri: path, document: options.document, mode: options.mode }
+);
+
+const collectPretransformMaps = async (entryPath, entryOptions = {}) => {
   const visited = new Set();
   const maps = [];
+  const diagnostics = [];
 
-  const visit = async (path) => {
+  const visit = async (path, options = {}) => {
     const absolutePath = resolve(path);
     if (visited.has(absolutePath)) return;
     visited.add(absolutePath);
 
-    const map = await readMap(absolutePath);
+    const extension = extname(absolutePath).toLowerCase();
+    let map;
+    if (extension === ".json") {
+      map = await readMap(absolutePath);
+    } else if (extension === ".md" || extension === ".markdown" || extension === ".mdown") {
+      const result = await loadMarkdownFile(absolutePath, options);
+      map = result.map;
+      diagnostics.push(...result.diagnostics);
+    } else {
+      throw new Error("Ravel in directive must target a .json map or Markdown file: " + absolutePath);
+    }
     for (const directive of map.directives ?? []) {
       if (directive.kind !== "in") continue;
       const target = directive.target ?? directive.name;
@@ -27,8 +43,15 @@ export const loadPretransformGraph = async (entryPath) => {
     maps.push(map);
   };
 
-  await visit(entryPath);
-  return combineMaps(maps);
+  await visit(entryPath, entryOptions);
+  return { maps, diagnostics };
+};
+
+export const loadPretransformGraph = async (entryPath, options = {}) => {
+  const collected = await collectPretransformMaps(entryPath, options);
+  const graph = combineMaps(collected.maps);
+  graph.diagnostics.push(...collected.diagnostics);
+  return graph;
 };
 
 const configSource = (uri) => ({
@@ -38,17 +61,6 @@ const configSource = (uri) => ({
     end: { line: 0, column: 0, offset: 0 }
   }
 });
-
-const joinMarkdownMaps = (results) => {
-  const graph = combineMaps(results.map((result) => result.map));
-  graph.diagnostics.push(...results.flatMap((result) => result.diagnostics));
-  return graph;
-};
-
-const loadMarkdownFile = async (path, options = {}) => markdownToMap(
-  await readFile(path, "utf8"),
-  { uri: path, document: options.document, mode: options.mode }
-);
 
 const requireString = (value, description) => {
   if (typeof value !== "string" || value.length === 0) {
@@ -74,9 +86,10 @@ export const loadTomlBuild = async (configPath) => {
     const path = requireString(file.path, "files[" + index + "].path");
     if (file.document !== undefined) requireString(file.document, "files[" + index + "].document");
     const mode = file.mode ?? "opt-in";
-    return loadMarkdownFile(resolve(baseDirectory, path), { document: file.document, mode });
+    return collectPretransformMaps(resolve(baseDirectory, path), { document: file.document, mode });
   }));
-  const pretransform = joinMarkdownMaps(results);
+  const pretransform = combineMaps(results.flatMap((result) => result.maps));
+  pretransform.diagnostics.push(...results.flatMap((result) => result.diagnostics));
   for (const output of config.outputs ?? []) {
     if (!output || typeof output !== "object") throw new Error("Each [[outputs]] entry must be a table.");
     pretransform.directives.push({
@@ -95,7 +108,7 @@ export const loadBuildInput = async (inputPath, options = {}) => {
   if (extension === ".toml") return loadTomlBuild(inputPath);
   if (extension === ".md" || extension === ".markdown" || extension === ".mdown") {
     return {
-      pretransform: joinMarkdownMaps([await loadMarkdownFile(resolve(inputPath), options)]),
+      pretransform: await loadPretransformGraph(resolve(inputPath), options),
       outputDirectory: undefined
     };
   }

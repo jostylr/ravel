@@ -421,6 +421,36 @@ const definitionFromEmission = (owner, reference, prefix, emit) => {
   };
 };
 
+const definitionFromComposeEmission = (owner, capture, emit) => {
+  const identity = {
+    document: owner.identity.document,
+    chunk: owner.identity.chunk,
+    minor: emit.suffix.inheritMinor ? owner.identity.minor : emit.suffix.minor,
+    type: emit.suffix.type,
+    explicitDocument: true
+  };
+  const id = formatChunkId(identity);
+  return {
+    id,
+    identity,
+    name: typeof emit.metadata.name === "string" ? emit.metadata.name : id,
+    metadata: {
+      language: emit.metadata.language,
+      tags: Array.isArray(emit.metadata.tags) ? emit.metadata.tags : [],
+      data: emit.metadata.data && typeof emit.metadata.data === "object" ? emit.metadata.data : {}
+    },
+    source: emit.source,
+    generated: true,
+    origin: {
+      kind: "emit",
+      owner: owner.id,
+      source: emit.source,
+      compose: clone(capture)
+    },
+    composeCapture: { owner: owner.id, ...clone(capture) }
+  };
+};
+
 const resolveTarget = (target, owner, definitions) => {
   const withOwnerChunk = target.chunk === null && !target.explicitDocument
     ? owner.identity.chunk
@@ -471,29 +501,55 @@ export const transformGraph = (pretransform) => {
     return parsed?.chunk === null ? null : parsed;
   };
 
-  const composeBody = (steps, source) => {
+  const normalizeComposePipeline = (steps, source) => {
     if (!Array.isArray(steps)) return null;
-    let body = "";
-    let pendingNewlines = 1;
-    let hasAppend = false;
+    const normalized = [];
+    for (const step of steps) {
+      if (step?.type === "transform" && typeof step.name === "string" && Array.isArray(step.arguments)) {
+        normalized.push({ type: "transform", name: step.name, arguments: clone(step.arguments), source: step.source ?? source });
+      } else if (step?.type === "emit" && typeof step.metadata === "object" && step.metadata !== null) {
+        const suffix = typeof step.suffix === "string" ? parseEmitSuffix(step.suffix) : step.suffix;
+        if (!suffix || !validComponent(suffix.minor) || !validComponent(suffix.type) ||
+            typeof suffix.inheritMinor !== "boolean") {
+          diagnostics.push(diagnostic("RV131", "emit requires a local minor/type suffix such as 'cool', 'cool.js', or '.js'.", step.source ?? source));
+          return null;
+        }
+        normalized.push({ type: "emit", suffix: clone(suffix), metadata: clone(step.metadata), source: step.source ?? source });
+      } else {
+        diagnostics.push(diagnostic("RV130", "pipe and pass require transform or emit pipeline steps.", step?.source ?? source));
+        return null;
+      }
+    }
+    return normalized;
+  };
+
+  const parseCompose = (steps, source) => {
+    if (!Array.isArray(steps)) {
+      diagnostics.push(diagnostic("RV130", "create compose requires an ordered step list.", source));
+      return null;
+    }
+    const parsed = [];
     for (const step of steps) {
       if (step?.kind === "newline") {
         if (!Number.isInteger(step.count) || step.count < 0) {
           diagnostics.push(diagnostic("RV130", "newline requires a non-negative integer.", step.source ?? source));
           return null;
         }
-        pendingNewlines = step.count;
+        parsed.push({ kind: "newline", count: step.count, source: step.source ?? source });
       } else if (step?.kind === "append" && typeof step.reference === "string") {
-        if (hasAppend) body += "\n".repeat(pendingNewlines);
-        body += "_\"" + step.reference.replace(/\\/g, "\\\\").replace(/\"/g, "\\\"") + "\"";
-        hasAppend = true;
-        pendingNewlines = 1;
+        const reference = parseExpression(step.reference, step.source ?? source, 0, diagnostics);
+        if (!reference) return null;
+        parsed.push({ kind: "append", reference, source: step.source ?? source });
+      } else if (step?.kind === "pipe" || step?.kind === "pass") {
+        const pipeline = normalizeComposePipeline(step.steps, step.source ?? source);
+        if (!pipeline) return null;
+        parsed.push({ kind: step.kind, pipeline, source: step.source ?? source });
       } else {
-        diagnostics.push(diagnostic("RV130", "create compose currently requires append references and newline steps.", step?.source ?? source));
+        diagnostics.push(diagnostic("RV130", "compose accepts append, newline, pipe, and pass steps.", step?.source ?? source));
         return null;
       }
     }
-    return body;
+    return parsed;
   };
 
   for (const directive of pretransform.directives ?? []) {
@@ -510,13 +566,13 @@ export const transformGraph = (pretransform) => {
     }
     const source = directive.source;
     if (directive.kind === "create") {
-      const body = directive.compose ? composeBody(directive.compose, source) : directive.body;
-      if (body === null) continue;
-      const parsed = parseChunk(typeof body === "string" ? body : "", source);
+      const compose = directive.compose ? parseCompose(directive.compose, source) : null;
+      if (directive.compose && !compose) continue;
+      const parsed = compose ? { nodes: [], diagnostics: [] } : parseChunk(typeof directive.body === "string" ? directive.body : "", source);
       diagnostics.push(...parsed.diagnostics);
       definitions.set(id, {
         id, identity, name: directive.name, metadata: directive.metadata ?? {}, source,
-        generated: true, origin: { kind: "create", source }, ast: parsed.nodes
+        generated: true, origin: { kind: "create", source }, ast: parsed.nodes, compose
       });
     } else {
       const reference = parseExpression(directive.reference, source, 0, diagnostics);
@@ -527,6 +583,14 @@ export const transformGraph = (pretransform) => {
       });
     }
   }
+
+  const addEmission = (emitted, source) => {
+    if (definitions.has(emitted.id)) {
+      diagnostics.push(diagnostic("RV101", "emit creates duplicate chunk ID: " + emitted.id, source));
+    } else {
+      definitions.set(emitted.id, emitted);
+    }
+  };
 
   for (const definition of [...definitions.values()]) {
     for (const node of definition.ast) {
@@ -540,17 +604,45 @@ export const transformGraph = (pretransform) => {
             continue;
           }
           const emitted = definitionFromEmission(definition, node, prefix, step);
-          if (definitions.has(emitted.id)) {
-            diagnostics.push(diagnostic("RV101", "emit creates duplicate chunk ID: " + emitted.id, step.source));
-          } else {
-            definitions.set(emitted.id, emitted);
-          }
+          addEmission(emitted, step.source);
         } else {
           prefix.push(step);
           retained.push(step);
         }
       }
       node.pipeline = retained;
+    }
+    for (const [stepIndex, step] of (definition.compose ?? []).entries()) {
+      if (step.kind === "append") {
+        const prefix = [];
+        const retained = [];
+        for (const pipelineStep of step.reference.pipeline) {
+          if (pipelineStep.type === "emit") {
+            if (definition.identity.document === null) {
+              diagnostics.push(diagnostic("RV131", "emit is unavailable from a document-less global chunk.", pipelineStep.source));
+            } else {
+              addEmission(definitionFromEmission(definition, step.reference, prefix, pipelineStep), pipelineStep.source);
+            }
+          } else {
+            prefix.push(pipelineStep);
+            retained.push(pipelineStep);
+          }
+        }
+        step.reference.pipeline = retained;
+      }
+      if (step.kind !== "pipe" && step.kind !== "pass") continue;
+      for (const [pipelineIndex, pipelineStep] of step.pipeline.entries()) {
+        if (pipelineStep.type !== "emit") continue;
+        if (definition.identity.document === null) {
+          diagnostics.push(diagnostic("RV131", "emit is unavailable from a document-less global chunk.", pipelineStep.source));
+          continue;
+        }
+        addEmission(definitionFromComposeEmission(definition, {
+          stepIndex,
+          pipelineIndex,
+          stepKind: step.kind
+        }, pipelineStep), pipelineStep.source);
+      }
     }
   }
 
@@ -572,6 +664,40 @@ export const transformGraph = (pretransform) => {
     return value;
   };
 
+  const evaluateCompose = (definition, owner, capture = null) => {
+    let value = "";
+    let pendingNewlines = 1;
+    let hasAppend = false;
+    const composeOwner = { ...owner, definition };
+
+    for (const [stepIndex, step] of definition.compose.entries()) {
+      if (step.kind === "newline") {
+        pendingNewlines = step.count;
+        continue;
+      }
+      if (step.kind === "append") {
+        if (hasAppend) value += "\n".repeat(pendingNewlines);
+        value += evaluateReference(step.reference, composeOwner);
+        hasAppend = true;
+        pendingNewlines = 1;
+        continue;
+      }
+
+      const input = value;
+      let transformed = value;
+      for (const [pipelineIndex, pipelineStep] of step.pipeline.entries()) {
+        if (pipelineStep.type === "transform") {
+          transformed = applyTransform(transformed, pipelineStep, diagnostics);
+        }
+        if (capture && capture.stepIndex === stepIndex && capture.pipelineIndex === pipelineIndex) {
+          return transformed;
+        }
+      }
+      value = step.kind === "pipe" ? transformed : input;
+    }
+    return value;
+  };
+
   const evaluate = (id, requestedFrom) => {
     if (values.has(id)) return values.get(id);
     const definition = definitions.get(id);
@@ -590,8 +716,19 @@ export const transformGraph = (pretransform) => {
     evaluating.push(id);
     const owner = { definition, dependencies: new Set(), references: [] };
     let value = "";
-    for (const node of definition.ast) {
-      value += node.type === "literal" ? node.value : evaluateReference(node, owner);
+    if (definition.composeCapture) {
+      const sourceDefinition = definitions.get(definition.composeCapture.owner);
+      if (!sourceDefinition?.compose) {
+        diagnostics.push(diagnostic("RV130", "emit capture has no compose source.", definition.source));
+      } else {
+        value = evaluateCompose(sourceDefinition, owner, definition.composeCapture);
+      }
+    } else if (definition.compose) {
+      value = evaluateCompose(definition, owner);
+    } else {
+      for (const node of definition.ast) {
+        value += node.type === "literal" ? node.value : evaluateReference(node, owner);
+      }
     }
     evaluating.pop();
 

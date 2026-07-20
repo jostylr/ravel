@@ -114,8 +114,8 @@ sets both. `emit(".type")` retains the owner's minor while changing only its
 type. For example, inside `doc::chunk:what.ts`, `emit("cool")` creates
 `doc::chunk:cool`, while `emit(".js")` creates `doc::chunk:what.js`. This local-only rule makes an emitted chunk's
 heritage obvious and prevents an arbitrary pipe from claiming another document
-or base chunk. A future explicit `alias` directive can provide intentional
-cross-scope names without weakening that rule.
+or base chunk. The explicit `alias` directive provides intentional cross-scope
+names without weakening that rule; its provenance retains the original target.
 
 The Ravel Map remains the adapter output. Chunk parsing produces emission
 declarations, and graph expansion adds generated chunks to the Ravel Program.

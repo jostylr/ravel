@@ -62,9 +62,59 @@ filename stem. The adapter has two modes:
 The profile accepts `pipe="..."` and retains the text at
 `metadata.data.ravel.definitionPipe` in its Ravel Map output. Definition-time
 pipeline evaluation—including definition-time `emit`—is deliberately not yet
-enabled in core. It needs a staged evaluator so a generated sibling can refer to
-the source chunk’s value without creating a self-cycle. The retained field makes
-the authoring syntax stable while that core feature is implemented.
+enabled for ordinary fenced chunks. The retained field makes the authoring
+syntax stable while that separate feature is specified. Use a `ravel` directive
+fence for the staged composition operations available today.
+
+## Directive fences
+
+Reserve the fenced language `ravel` for graph directives. A directive fence is
+not a source chunk, regardless of Markdown mode. Its commands may be separated
+by newlines or semicolons; calls can span lines and nest normally.
+
+````markdown
+```ravel
+in("shared.md")
+
+create("program:browser.js", compose(
+  _"shared::preamble.javascript",
+  newline(2),
+  _"main.javascript",
+  pass(trim(), emit("observed.js")),
+  pipe(trim(), emit("min.js"), indent(2))
+))
+
+alias("public.js", _"program:browser.js")
+out("dist/program.js", _"public.js")
+```
+````
+
+The directive expression grammar is deliberately small:
+
+    Command     = Identifier "(" [ Expression { "," Expression } ] ")"
+    Expression  = String | Number | QuotedReference | Command
+    QuotedReference = "_" String
+
+`create(name, compose(...))` requires a document-local `name`, such as
+`program:browser.js`; the adapter supplies the document component. A reference
+inside `compose` appends its completed chunk value. `newline(n)` changes only
+the separator before the next appended reference (the default is one newline).
+`pipe(...)` replaces the composition accumulator with its transformed value.
+`pass(...)` runs the same transform/emit sequence but forwards the original
+accumulator, which makes it a useful tee.
+
+Transform calls currently accept string and number arguments. `emit("minor")`,
+`emit("minor.type")`, and `emit(".type")` follow the normal local emit rules:
+they retain the create node’s document and base chunk. `alias` is the deliberate
+way to introduce another graph name; its program provenance points back to the
+original target. `out` receives a file-like name and a quoted chunk reference;
+local references are qualified with the enclosing document by the adapter.
+
+All Markdown documents and `in(...)` imports are mapped before directive
+evaluation. Thus forward references work regardless of source order. After the
+graph settles, missing references and cycles produce ordinary source-linked
+diagnostics. The Node host accepts both `.md`/`.markdown` and JSON Ravel Maps
+as `in` targets; paths resolve relative to the directive’s source document.
 
 ## One TOML build run
 

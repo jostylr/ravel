@@ -20,4 +20,6 @@ Build the browser-only bundle, then serve this directory and open
 
 The generated bundle stays under `browser-test/generated/`, so a server rooted
 at this folder needs no file outside its hierarchy. The page reports success in
-its `data-ravel-markdown-test` attribute.
+its `data-ravel-markdown-test` attribute. It covers fenced chunk extraction plus
+`ravel` directive `create`, `pipe`, `pass`, and local emitted chunks through the
+portable core.

@@ -99,20 +99,29 @@ body and its range; it does not need to recognize `emit`.
 ## Directives
 
 Directives are separate because they often declare a graph edge or effect rather
-than contribute text. The first proof of concept implements these two:
+than contribute text. The initial directive set is:
 
 | Kind | Required fields | Meaning |
 | --- | --- | --- |
-| in | target | Load the named Ravel Map relative to this map and merge its chunks before transformation. |
+| in | target | Load the named Markdown or JSON Ravel Map relative to this map and merge its chunks before transformation. |
 | out | name and from | Make the completed fully qualified source chunk a deliverable under file-like name. |
+| create | document, name, compose | Create a document-local generated definition from staged composition IR. |
+| alias | document, name, reference | Create an alternate document-local graph name whose provenance retains its target. |
+
+`compose` is an ordered array of `append`, `newline`, `pipe`, and `pass` nodes.
+Adapters preserve their source ranges and produce this portable IR; core owns
+resolution, staged accumulator evaluation, local `emit` expansion, and cycle
+diagnostics. A Markdown `ravel` fence is the first source-language spelling of
+these declarations. It is an adapter feature, not a special Markdown rule in
+core.
 
 An out directive is a plan, not an automatic write. A Node host writes its
 deliverables under an explicit output directory and rejects absolute or
 directory-escaping names. A directive records its kind, source range, optional
 name/from/target, arguments, and metadata.
 
-An adapter may emit a directive core does not recognize; core reports an
-actionable diagnostic rather than executing or silently ignoring it.
+Unsupported directive forms are adapter diagnostics; hosts execute only the
+explicitly supported `in` and `out` effects.
 
 ## Positions and errors
 
