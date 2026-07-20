@@ -23,6 +23,9 @@ test("Markdown fences create source-mapped chunks with greedy continuations", as
   assert.equal(compiler.fragments.length, 3);
   assert.deepEqual(compiler.metadata.tags, ["browser"]);
   assert.equal(compiler.metadata.data.ravel.definitionPipe, "dedent() | emit('.js')");
+  assert.deepEqual(compiler.definitionPipeline.map(({ name, arguments: args }) => ({ name, arguments: args })), [
+    { name: "dedent", arguments: [] }
+  ]);
   assert.equal(compiler.source.range.start.line, 8);
 });
 

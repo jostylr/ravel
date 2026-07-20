@@ -15,8 +15,9 @@ chunk using underscore-quote notation.
 
 Everything in a chunk body is literal text except a recognized substitution.
 
-    Chunk        = { Literal | Substitution }
+    Chunk        = { Literal | Substitution | DelayedSubstitution }
     Substitution = "_" Quote Expression Quote
+    DelayedSubstitution = "_" Quote "|" Delay Quote
     Quote        = double-quote | single-quote | backtick
     Expression   = Reference { Space? "|" Space? PipeStep }
     Reference    = [ DocumentID "::" ] [ ChunkID ] [ ":" MinorID ] [ "." TypeID ]
@@ -171,10 +172,26 @@ point to both output and Ravel source.
 
 ## Deferred composition
 
-Ravel does not use counted backslashes or automatic repeated compilation. To
-emit a reference literally for a later explicit Ravel pass:
+Use `delay` when an enclosing definition transform must finish before a
+reference is resolved:
 
-    _"template-reference | quote-reference()"
+    _"|delay('content.markdown | markdown()', 1)"
+
+The expression is a quoted ordinary Ravel reference/pipeline, so its leading
+underscore is not parsed while the enclosing chunk is being read. The optional
+positive phase defaults to `1`; a delay becomes real immediately after that
+definition-transform phase. The optional third argument is an alphanumeric
+safe symbol. Otherwise Ravel creates a short random safe symbol and verifies
+that the transform preserved it exactly once.
+
+For example, a Pug definition may hold a delay as literal Pug text, run Pug,
+then insert rendered Markdown into its HTML output. A delay requesting a phase
+that the definition pipeline does not have is an error.
+
+Every transformed chunk records `protected-input`, `transform-output`, and
+`fulfilled-output` snapshots in `program.trace.chunks[chunkId]`. Each delayed
+snapshot includes its expression, safe symbol, and source range, so hosts can
+show the intermediate text when reporting a transform error.
 
 ## Not in the first parser
 

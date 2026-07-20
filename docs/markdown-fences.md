@@ -59,12 +59,15 @@ filename stem. The adapter has two modes:
 
 ## Definition pipes
 
-The profile accepts `pipe="..."` and retains the text at
-`metadata.data.ravel.definitionPipe` in its Ravel Map output. Definition-time
-pipeline evaluation—including definition-time `emit`—is deliberately not yet
-enabled for ordinary fenced chunks. The retained field makes the authoring
-syntax stable while that separate feature is specified. Use a `ravel` directive
-fence for the staged composition operations available today.
+The profile parses `pipe="..."` into the chunk's `definitionPipeline` and also
+retains the authored text at `metadata.data.ravel.definitionPipe`. The core runs
+the pipeline after ordinary substitutions have been protected. Built-in core
+transforms work directly; language transforms are supplied by a host or a
+separate transform package through `transformGraph(map, { transforms })`.
+
+For example, a Node Pug package may register a `pug` transform without making
+the portable core depend on Pug. `emit(...)` remains retained metadata here;
+definition-time graph emission is not part of this phase runner.
 
 ## Directive fences
 

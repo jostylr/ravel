@@ -390,7 +390,75 @@ const formatId = (identity) => identity.document + "::" + identity.chunk +
   (identity.minor === null ? "" : ":" + identity.minor) +
   (identity.type === null ? "" : "." + identity.type);
 
-const newChunk = (identity, body, attributes, language) => {
+const splitDefinitionPipeline = (text, separator = "|") => {
+  const parts = [];
+  let start = 0;
+  let quote = "";
+  let escaped = false;
+  let depth = 0;
+  for (let index = 0; index < text.length; index += 1) {
+    const character = text[index];
+    if (quote) {
+      if (escaped) escaped = false;
+      else if (character === "\\") escaped = true;
+      else if (character === quote) quote = "";
+    } else if (character === "\"" || character === "'") {
+      quote = character;
+    } else if (character === "(" || character === "[" || character === "{") {
+      depth += 1;
+    } else if (character === ")" || character === "]" || character === "}") {
+      depth -= 1;
+    } else if (character === separator && depth === 0) {
+      parts.push(text.slice(start, index).trim());
+      start = index + 1;
+    }
+  }
+  parts.push(text.slice(start).trim());
+  return parts;
+};
+
+const definitionValue = (text) => {
+  const value = text.trim();
+  const string = stringValue(value);
+  if (value.startsWith("\"") || value.startsWith("'")) return typeof string === "string" ? string : undefined;
+  if (value === "true") return true;
+  if (value === "false") return false;
+  if (value === "null") return null;
+  if (/^-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?$/.test(value)) return Number(value);
+  if (value.startsWith("{") || value.startsWith("[")) {
+    try {
+      return JSON.parse(value);
+    } catch {
+      return undefined;
+    }
+  }
+  return undefined;
+};
+
+const definitionPipeline = (text, source, diagnostics) => {
+  if (!text?.trim()) return [];
+  const steps = [];
+  for (const part of splitDefinitionPipeline(text)) {
+    const match = /^([a-z][a-z0-9-]*)\s*(?:\((.*)\))?$/s.exec(part);
+    if (!match) {
+      diagnostics.push(diagnostic("RM101", "Definition pipes accept transform calls only: " + part, source));
+      return [];
+    }
+    // Definition-time emit remains a graph-expansion feature for a later
+    // phase. Keep the authored pipe metadata, but do not execute it here.
+    if (match[1] === "emit") continue;
+    const argumentsValue = match[2]?.trim() ? splitDefinitionPipeline(match[2], ",") : [];
+    const argumentsParsed = argumentsValue.map(definitionValue);
+    if (argumentsParsed.some((argument) => typeof argument === "undefined")) {
+      diagnostics.push(diagnostic("RM101", "Definition transform arguments must be JSON-like literals.", source));
+      return [];
+    }
+    steps.push({ name: match[1], arguments: argumentsParsed });
+  }
+  return steps;
+};
+
+const newChunk = (identity, body, attributes, language, diagnostics) => {
   const tags = attributes.classes.filter((entry) => !controlClasses.has(entry));
   const metadata = {
     language: language ?? undefined,
@@ -403,7 +471,7 @@ const newChunk = (identity, body, attributes, language) => {
     identity,
     name: identity.chunk,
     body: body.body,
-    definitionPipeline: [],
+    definitionPipeline: definitionPipeline(attributes.values.pipe, body.fenceSource ?? body.source, diagnostics),
     metadata,
     source: body.source,
     fragments: undefined,
@@ -497,7 +565,7 @@ export const markdownToMap = (text, options = {}) => {
 
     const identity = identityFor(documentId, attributes, node.lang, block.fenceSource, diagnostics);
     if (!identity) continue;
-    const chunk = newChunk(identity, block, attributes, node.lang);
+    const chunk = newChunk(identity, block, attributes, node.lang, diagnostics);
     chunks.push(chunk);
     if (classes.has("greedy")) activeGreedy = { chunk, language: node.lang };
   }

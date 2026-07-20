@@ -237,6 +237,33 @@ const parseExpression = (expression, source, expressionOffset, diagnostics) => {
   const reference = parts.shift();
   const target = parseChunkId(reference?.value, { reference: true });
   if (!reference || !target) {
+    const pipeline = parts
+      .map((part) => parsePipeStep(part, expression, source, expressionOffset, diagnostics))
+      .filter(Boolean);
+    const delay = pipeline.length === 1 && pipeline[0].type === "transform" && pipeline[0].name === "delay"
+      ? pipeline[0]
+      : null;
+    if (reference?.value === "" && delay) {
+      const [payloadText, phase = 1, safeSymbol] = delay.arguments;
+      if (typeof payloadText !== "string" || !Number.isInteger(phase) || phase < 1 ||
+          (safeSymbol !== undefined && (typeof safeSymbol !== "string" || !/^[A-Za-z0-9]+$/.test(safeSymbol)))) {
+        diagnostics.push(diagnostic("RV121", "delay requires an expression string, an optional positive phase, and an optional alphanumeric safe symbol.", delay.source));
+        return null;
+      }
+      const payload = parseExpression(payloadText, source, expressionOffset, diagnostics);
+      if (!payload || payload.type !== "reference") {
+        diagnostics.push(diagnostic("RV121", "delay's expression must be a chunk reference and optional pipeline.", delay.source));
+        return null;
+      }
+      return {
+        type: "delay",
+        expression: payloadText,
+        payload,
+        phase,
+        safeSymbol,
+        source: span(source, expression, expressionOffset, expressionOffset + expression.length)
+      };
+    }
     diagnostics.push(diagnostic("RV110", "Malformed chunk reference: " + (reference?.value ?? ""), span(source, expression, expressionOffset, expressionOffset + expression.length)));
     return null;
   }
@@ -348,7 +375,9 @@ export const combineMaps = (maps) => {
   return { version: 1, documents, chunks, directives, diagnostics };
 };
 
-const applyTransform = (value, step, diagnostics) => {
+const customTransform = (transforms, name) => transforms instanceof Map ? transforms.get(name) : transforms?.[name];
+
+const applyTransform = (value, step, diagnostics, transforms, context = {}) => {
   if (step.name === "concat") return value;
   if (step.name === "trim") return value.trim();
   if (step.name === "normalize-eol") return value.replace(/\r\n?/g, "\n");
@@ -380,6 +409,18 @@ const applyTransform = (value, step, diagnostics) => {
     return value.replace(/_(["'\x60])/g, "\\_$1");
   }
 
+  const transform = customTransform(transforms, step.name);
+  if (typeof transform === "function") {
+    try {
+      const result = transform(value, { ...context, arguments: clone(step.arguments), transform: step.name });
+      if (typeof result === "string") return result;
+      diagnostics.push(diagnostic("RV121", "Transform " + step.name + " must return a string.", step.source));
+    } catch (error) {
+      diagnostics.push(diagnostic("RV121", "Transform " + step.name + " failed: " + (error?.message ?? String(error)), step.source));
+    }
+    return value;
+  }
+
   diagnostics.push(diagnostic("RV120", "Unknown transform: " + step.name, step.source));
   return value;
 };
@@ -403,6 +444,7 @@ const definitionFromEmission = (owner, reference, prefix, emit) => {
     data: emit.metadata.data && typeof emit.metadata.data === "object" ? emit.metadata.data : {}
   },
   source: emit.source,
+  definitionPipeline: [],
   generated: true,
   origin: {
     kind: "emit",
@@ -440,6 +482,7 @@ const definitionFromComposeEmission = (owner, capture, emit) => {
       data: emit.metadata.data && typeof emit.metadata.data === "object" ? emit.metadata.data : {}
     },
     source: emit.source,
+    definitionPipeline: [],
     generated: true,
     origin: {
       kind: "emit",
@@ -475,9 +518,26 @@ const resolveTarget = (target, owner, definitions) => {
   return definitions.has(global) ? global : null;
 };
 
-export const transformGraph = (pretransform) => {
+export const transformGraph = (pretransform, options = {}) => {
   const diagnostics = [...(pretransform.diagnostics ?? [])];
   const definitions = new Map();
+
+  const normalizeDefinitionPipeline = (steps, source) => {
+    if (steps === undefined) return [];
+    if (!Array.isArray(steps)) {
+      diagnostics.push(diagnostic("RV121", "definitionPipeline must be an ordered array of transform calls.", source));
+      return [];
+    }
+    const normalized = [];
+    for (const step of steps) {
+      if (step?.type !== undefined && step.type !== "transform" || typeof step?.name !== "string" || !Array.isArray(step?.arguments ?? [])) {
+        diagnostics.push(diagnostic("RV121", "definitionPipeline accepts transform calls only.", step?.source ?? source));
+        continue;
+      }
+      normalized.push({ type: "transform", name: step.name, arguments: clone(step.arguments ?? []), source: step.source ?? source });
+    }
+    return normalized;
+  };
 
   for (const raw of pretransform.chunks ?? []) {
     const parsed = parseChunk(raw.body, raw.source);
@@ -488,6 +548,7 @@ export const transformGraph = (pretransform) => {
       name: raw.name ?? raw.id,
       metadata: raw.metadata ?? {},
       source: raw.source,
+      definitionPipeline: normalizeDefinitionPipeline(raw.definitionPipeline, raw.source),
       generated: false,
       origin: { kind: "source", source: raw.source },
       ast: parsed.nodes
@@ -572,14 +633,14 @@ export const transformGraph = (pretransform) => {
       diagnostics.push(...parsed.diagnostics);
       definitions.set(id, {
         id, identity, name: directive.name, metadata: directive.metadata ?? {}, source,
-        generated: true, origin: { kind: "create", source }, ast: parsed.nodes, compose
+        definitionPipeline: [], generated: true, origin: { kind: "create", source }, ast: parsed.nodes, compose
       });
     } else {
       const reference = parseExpression(directive.reference, source, 0, diagnostics);
       if (!reference) continue;
       definitions.set(id, {
         id, identity, name: directive.name, metadata: directive.metadata ?? {}, source,
-        generated: true, origin: { kind: "alias", source, target: directive.reference }, ast: [reference]
+        definitionPipeline: [], generated: true, origin: { kind: "alias", source, target: directive.reference }, ast: [reference]
       });
     }
   }
@@ -649,6 +710,8 @@ export const transformGraph = (pretransform) => {
   const values = new Map();
   const evaluating = [];
   const resultChunks = {};
+  const traceChunks = {};
+  let delayCounter = 0;
 
   const evaluateReference = (node, owner) => {
     const resolved = resolveTarget(node.target, owner.definition, definitions);
@@ -660,8 +723,35 @@ export const transformGraph = (pretransform) => {
     owner.dependencies.add(resolved);
     owner.references.push({ chunk: resolved, requested: node.reference, source: node.source });
     let value = dependency.value;
-    for (const step of node.pipeline) value = applyTransform(value, step, diagnostics);
+    for (const step of node.pipeline) value = applyTransform(value, step, diagnostics, options.transforms, { chunk: owner.definition });
     return value;
+  };
+
+  const delayToken = (safeSymbol) => {
+    if (safeSymbol) return safeSymbol;
+    delayCounter += 1;
+    const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const random = new Uint32Array(8);
+    if (globalThis.crypto?.getRandomValues) globalThis.crypto.getRandomValues(random);
+    return "RAVELDELAY" + [...random].map((value, index) =>
+      letters[(value || delayCounter + index) % letters.length]
+    ).join("");
+  };
+
+  const evaluateDelay = (node, owner) => {
+    const token = delayToken(node.safeSymbol);
+    if (owner.delays.some((delay) => delay.token === token)) {
+      diagnostics.push(diagnostic("RV121", "Each delay safe symbol must be unique within a chunk.", node.source));
+      return "";
+    }
+    owner.delays.push({ ...node, token });
+    return token;
+  };
+
+  const evaluateNode = (node, owner) => {
+    if (node.type === "literal") return node.value;
+    if (node.type === "delay") return evaluateDelay(node, owner);
+    return evaluateReference(node, owner);
   };
 
   const evaluateCompose = (definition, owner, capture = null) => {
@@ -677,7 +767,7 @@ export const transformGraph = (pretransform) => {
       }
       if (step.kind === "append") {
         if (hasAppend) value += "\n".repeat(pendingNewlines);
-        value += evaluateReference(step.reference, composeOwner);
+        value += evaluateNode(step.reference, composeOwner);
         hasAppend = true;
         pendingNewlines = 1;
         continue;
@@ -687,7 +777,7 @@ export const transformGraph = (pretransform) => {
       let transformed = value;
       for (const [pipelineIndex, pipelineStep] of step.pipeline.entries()) {
         if (pipelineStep.type === "transform") {
-          transformed = applyTransform(transformed, pipelineStep, diagnostics);
+          transformed = applyTransform(transformed, pipelineStep, diagnostics, options.transforms, { chunk: definition });
         }
         if (capture && capture.stepIndex === stepIndex && capture.pipelineIndex === pipelineIndex) {
           return transformed;
@@ -714,7 +804,7 @@ export const transformGraph = (pretransform) => {
     }
 
     evaluating.push(id);
-    const owner = { definition, dependencies: new Set(), references: [] };
+    const owner = { definition, dependencies: new Set(), references: [], delays: [], trace: [] };
     let value = "";
     if (definition.composeCapture) {
       const sourceDefinition = definitions.get(definition.composeCapture.owner);
@@ -727,8 +817,39 @@ export const transformGraph = (pretransform) => {
       value = evaluateCompose(definition, owner);
     } else {
       for (const node of definition.ast) {
-        value += node.type === "literal" ? node.value : evaluateReference(node, owner);
+        value += evaluateNode(node, owner);
       }
+    }
+
+    const phaseCount = Math.max(1, definition.definitionPipeline.length);
+    for (let phase = 1; phase <= phaseCount; phase += 1) {
+      owner.trace.push({ phase, stage: "protected-input", value });
+      const step = definition.definitionPipeline[phase - 1];
+      if (step) {
+        value = applyTransform(value, step, diagnostics, options.transforms, { chunk: definition, phase });
+        owner.trace.push({ phase, stage: "transform-output", transform: { name: step.name, arguments: clone(step.arguments) }, value });
+      }
+      const due = owner.delays.filter((delay) => delay.phase === phase);
+      if (due.length) {
+        for (const delay of due) {
+          const occurrences = value.split(delay.token).length - 1;
+          if (occurrences !== 1) {
+            diagnostics.push(diagnostic("RV123", "Delay safe symbol was " + (occurrences ? "duplicated" : "removed") + " by a transform: " + delay.token, delay.source));
+          }
+          const replacement = evaluateReference(delay.payload, owner);
+          value = value.split(delay.token).join(replacement);
+        }
+        owner.trace.push({
+          phase,
+          stage: "fulfilled-output",
+          delays: due.map((delay) => ({ expression: delay.expression, safeSymbol: delay.token, source: delay.source })),
+          value
+        });
+      }
+    }
+    for (const delay of owner.delays.filter((entry) => entry.phase > phaseCount)) {
+      diagnostics.push(diagnostic("RV122", "delay requests phase " + delay.phase + ", but this chunk has only " + definition.definitionPipeline.length + " definition transform phases.", delay.source));
+      value = value.split(delay.token).join("");
     }
     evaluating.pop();
 
@@ -740,11 +861,13 @@ export const transformGraph = (pretransform) => {
       metadata: definition.metadata,
       dependencies: [...owner.dependencies].sort(),
       references: owner.references,
+      trace: owner.trace,
       provenance: [definition.origin],
       generated: definition.generated
     };
     values.set(id, completed);
     resultChunks[id] = completed;
+    if (owner.trace.length) traceChunks[id] = owner.trace;
     return completed;
   };
 
@@ -785,6 +908,7 @@ export const transformGraph = (pretransform) => {
     version: 1,
     documents: pretransform.documents,
     chunks: resultChunks,
+    trace: { chunks: traceChunks },
     deliverables,
     diagnostics
   };

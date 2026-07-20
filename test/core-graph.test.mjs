@@ -178,6 +178,62 @@ test("compose pipe transforms its accumulator while pass tees an emitted value",
   assert.equal(program.chunks["guide::program:min.js"].provenance[0].compose.stepKind, "pipe");
 });
 
+test("definition pipelines execute around delayed substitutions and retain phase snapshots", () => {
+  const graph = combineMaps([{
+    document: { id: "guide", uri: "guide.ravel-map.json", format: "ravel-map-v1" },
+    chunks: [
+      {
+        id: "guide::content",
+        identity: identity("guide", "content"),
+        body: "markdown",
+        source: source("guide", 0)
+      },
+      {
+        id: "guide::page",
+        identity: identity("guide", "page"),
+        body: "before _\"|delay('content | wrap()', 1, 'SAFESLOT')\"",
+        definitionPipeline: [{ type: "transform", name: "outer", arguments: [], source: source("guide", 1) }],
+        source: source("guide", 1)
+      }
+    ],
+    directives: []
+  }]);
+
+  const program = transformGraph(graph, {
+    transforms: {
+      outer: (value) => value + "<after-outer>",
+      wrap: (value) => "<p>" + value + "</p>"
+    }
+  });
+
+  assert.deepEqual(program.diagnostics, []);
+  assert.equal(program.chunks["guide::page"].value, "before <p>markdown</p><after-outer>");
+  assert.deepEqual(program.trace.chunks["guide::page"].map((entry) => entry.stage), [
+    "protected-input", "transform-output", "fulfilled-output"
+  ]);
+  assert.match(program.trace.chunks["guide::page"][0].value, /SAFESLOT/);
+  assert.equal(program.trace.chunks["guide::page"][2].value, "before <p>markdown</p><after-outer>");
+});
+
+test("delay reports a transform that does not preserve its safe symbol", () => {
+  const graph = combineMaps([{
+    document: { id: "guide", uri: "guide.ravel-map.json", format: "ravel-map-v1" },
+    chunks: [
+      { id: "guide::content", identity: identity("guide", "content"), body: "ready", source: source("guide", 0) },
+      {
+        id: "guide::page",
+        identity: identity("guide", "page"),
+        body: "_\"|delay('content', 1, 'SAFESLOT')\"",
+        definitionPipeline: [{ type: "transform", name: "erase", arguments: [], source: source("guide", 1) }],
+        source: source("guide", 1)
+      }
+    ],
+    directives: []
+  }]);
+  const program = transformGraph(graph, { transforms: { erase: () => "" } });
+  assert.equal(program.diagnostics[0].code, "RV123");
+});
+
 test("reports unknown references with a source-linked diagnostic", () => {
   const graph = combineMaps([{
     document: { id: "test", uri: "test.ravel-map.json", format: "ravel-map-v1" },

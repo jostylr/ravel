@@ -109,8 +109,9 @@ assemble multiple Markdown documents into one run.
 
 ## Deferred work
 
-Definition-time pipelines, registered transforms, capability-gated effects,
-legacy Markdown compatibility, incremental maps and
+Definition-time pipeline staging and host-supplied transforms now have an
+initial implementation. Definition-time graph emission, capability-gated
+effects, legacy Markdown compatibility, incremental maps and
 Rix/LSP integration, parameterized pieces, and typed build profiles all follow
 the vertical slice. Each becomes core syntax only after its source ranges,
 diagnostics, cache key, and host-security behavior are specified.
