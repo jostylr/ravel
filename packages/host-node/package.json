@@ -11,6 +11,7 @@
   "dependencies": {
     "@pieceful/ravel-core": "0.0.0",
     "@pieceful/ravel-markdown": "0.0.0",
+    "@pieceful/ravel-map": "0.0.0",
     "smol-toml": "^1.7.0"
   }
 }

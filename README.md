@@ -85,6 +85,12 @@ publishing.
 
 ## Try the current CLI
 
+Validate a project without writing outputs:
+
+```sh
+npm run ravel -- check examples/poc/project.ravel-map.json
+```
+
 Inspect a primary-Ravel Markdown document without writing files:
 
 ```sh
@@ -165,7 +171,7 @@ packages/
   markdown/   portable Markdown fenced-block adapter
   host-node/  scoped filesystem input, TOML builds, and artifact writing
   cli/        development command-line entry point
-  map/        Ravel Map public metadata; validation is planned for 0.1
+  map/        Ravel Map public metadata and structural validation
 schemas/      Ravel Map JSON Schema
 examples/     proof-of-concept and migration builds
 fixtures/     Markdown, map, and configuration cases

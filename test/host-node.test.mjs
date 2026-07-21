@@ -26,6 +26,25 @@ test("Node host joins in maps and produces out deliverables", async () => {
   assert.equal(program.deliverables["generated/greeting.js"].value, "const greeting = 'Hello, Ravel!';\n");
 });
 
+test("Node host validates JSON maps before following imports", async () => {
+  const sandbox = await mkdtemp(join(tmpdir(), "ravel-map-validation-"));
+  const input = join(sandbox, "invalid.ravel-map.json");
+  try {
+    await writeFile(input, JSON.stringify({
+      version: 2,
+      document: { id: "Bad ID", uri: "invalid.ravel-map.json", format: "ravel-map-v1" },
+      chunks: []
+    }));
+    await assert.rejects(
+      loadPretransformGraph(input),
+      (error) => error.name === "RavelMapValidationError" &&
+        error.diagnostics.some((diagnostic) => diagnostic.message.includes("version must be 1"))
+    );
+  } finally {
+    await rm(sandbox, { recursive: true, force: true });
+  }
+});
+
 test("Node host loads one TOML build run containing multiple Markdown files", async () => {
   const config = fileURLToPath(
     new URL("../fixtures/markdown/ravel-web.toml", import.meta.url),

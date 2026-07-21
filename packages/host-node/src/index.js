@@ -3,6 +3,7 @@ import { basename, dirname, extname, isAbsolute, join, relative, resolve, sep } 
 import { parse as parseToml } from "smol-toml";
 import { combineMaps } from "@pieceful/ravel-core";
 import { markdownToMap } from "@pieceful/ravel-markdown";
+import { assertRavelMap } from "@pieceful/ravel-map";
 
 const missing = (error) => error?.code === "ENOENT";
 
@@ -100,7 +101,7 @@ const createOutputScope = async (outputDirectory, rootDirectory) => {
   return { root: output, path: (path, description) => scopedPath(output, path, description) };
 };
 
-const readMap = async (path) => JSON.parse(await readFile(path, "utf8"));
+const readMap = async (path) => assertRavelMap(JSON.parse(await readFile(path, "utf8")), { uri: path });
 
 const loadMarkdownFile = async (path, options = {}) => markdownToMap(
   await readFile(path, "utf8"),
@@ -126,6 +127,7 @@ const collectPretransformMaps = async (entryPath, entryOptions = {}, scope) => {
       const result = await loadMarkdownFile(absolutePath, options);
       map = result.map;
       diagnostics.push(...result.diagnostics);
+      assertRavelMap(map, { uri: absolutePath });
     } else {
       throw new Error("Ravel in directive must target a .json map or Markdown file: " + absolutePath);
     }
@@ -145,7 +147,7 @@ const collectPretransformMaps = async (entryPath, entryOptions = {}, scope) => {
 };
 
 export const loadPretransformGraph = async (entryPath, options = {}) => {
-  const collected = await collectPretransformMaps(entryPath, options);
+  const collected = await collectPretransformMaps(resolve(entryPath), options);
   const graph = combineMaps(collected.maps);
   graph.diagnostics.push(...collected.diagnostics);
   return graph;

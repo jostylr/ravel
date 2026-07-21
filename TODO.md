@@ -69,7 +69,7 @@ Exit criteria:
 
 Make every advertised package real and consumable before adding new behavior.
 
-- [ ] Implement `packages/map/src/index.js` as the public home of Ravel Map
+- [x] Implement `packages/map/src/index.js` as the public home of Ravel Map
       version constants, validation entry points, and shared diagnostic helpers.
 - [x] Add `exports` to every public package and stop relying on imports such as
       `../../core/src/index.js` across package boundaries.
@@ -107,25 +107,26 @@ without importing a `src/` path.
 
 No malformed or unsupported map should reach graph evaluation as trusted data.
 
-- [ ] Select and add a maintained JSON Schema 2020-12 validator, or implement a
-      complete equivalent validator with explicit tests. The current example-only
-      structural checker is not the runtime validation boundary.
+- [x] Implement the initial dependency-free structural Ravel Map validator with
+      explicit tests. The current example-only checker is no longer the runtime
+      validation boundary; a complete JSON Schema 2020-12 validator remains for
+      a later pass.
 - [ ] Compile and expose the checked-in Ravel Map schema through
       `@pieceful/ravel-map`.
-- [ ] Validate every JSON Ravel Map at the Node host boundary before following
+- [x] Validate every JSON Ravel Map at the Node host boundary before following
       its directives or combining its chunks.
-- [ ] Validate adapter-produced maps in development/test paths so adapter bugs
+- [x] Validate adapter-produced Markdown maps in the Node host path so adapter bugs
       fail at the same contract boundary.
-- [ ] Reject unsupported map versions instead of normalizing them to version 1.
-- [ ] Validate canonical IDs against their explicit identity components,
+- [x] Reject unsupported map versions instead of normalizing them to version 1.
+- [x] Validate canonical IDs against their explicit identity components,
       document identity, directives, source ranges, metadata, and unknown fields.
 - [ ] Convert JSON parse, schema, TOML, configuration, and unsupported-input
       failures into the shared diagnostic model rather than exposing raw exceptions
       to CLI users.
 - [ ] Give configuration diagnostics precise TOML locations where the parser
       makes them available; otherwise report the configuration file and field path.
-- [ ] Add invalid fixtures for missing required fields, unknown versions,
-      invalid IDs, inconsistent identities, malformed ranges, bad directives,
+- [ ] Expand invalid fixtures beyond the current version, ID, identity, body,
+      and host-boundary cases to cover malformed ranges, bad directives,
       duplicate documents, and unsupported configuration keys.
 - [ ] Keep validation usable in browsers and Bun; Node path and file checks stay
       in `host-node`.
@@ -142,7 +143,7 @@ Exit criteria:
 
 Turn the current development entry point into a small, predictable interface.
 
-- [ ] Add `ravel check <input>` to parse, validate, resolve, and report errors
+- [x] Add `ravel check <input>` to parse, validate, resolve, and report errors
       without writing deliverables.
 - [ ] Retain `ravel build` for authorized writes and make its destination and
       planned outputs visible before or during the build summary.
@@ -151,15 +152,15 @@ Turn the current development entry point into a small, predictable interface.
       one large program dump for ordinary questions.
 - [ ] Add `--dry-run` to show the output/effect plan without writing.
 - [ ] Add `--json` for stable machine-readable diagnostics and command results.
-- [ ] Render default diagnostics as
+- [x] Render default diagnostics as
       `path:line:column severity[code]: message`, followed by related source ranges
       and dependency/cycle context where useful.
-- [ ] Implement conventional `--help` and `--version` success behavior.
+- [x] Implement conventional `--help` and `--version` success behavior.
 - [ ] Reject unknown flags, missing flag values, conflicting input forms, and
       extra positional arguments with concise usage diagnostics.
 - [ ] Define exit codes for success, source/configuration errors, and unexpected
       internal failures.
-- [ ] Ensure expected user errors never print JavaScript stack traces unless a
+- [x] Ensure expected user errors never print JavaScript stack traces unless a
       debug flag is explicitly requested.
 - [ ] Add CLI integration tests covering direct Markdown, direct JSON maps,
       TOML projects, clean checks, failed checks, dry runs, graph output, and writes.
