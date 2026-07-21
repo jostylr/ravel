@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-import { loadBuildInput, writeDeliverables, writeGraph } from "../../host-node/src/index.js";
-import { transformGraph } from "../../core/src/index.js";
+import { loadBuildInput, writeDeliverables, writeGraph } from "@pieceful/ravel-host-node";
+import { transformGraph } from "@pieceful/ravel-core";
 
 const usage = () => {
   console.error("Usage: ravel build <map.json|document.md> --out-dir <directory> [--document <name>] [--mode <opt-in|primary>] [--graph <program.json>]");
@@ -11,7 +11,13 @@ const usage = () => {
 
 const argumentsValue = process.argv.slice(2);
 const command = argumentsValue[0];
-if ((command !== "build" && command !== "inspect") || argumentsValue.length < 2) {
+if (command === "--help" || command === "-h" || argumentsValue.includes("--help")) {
+  usage();
+  process.exitCode = 0;
+} else if (command === "--version" || command === "-v") {
+  console.log("0.0.0");
+  process.exitCode = 0;
+} else if ((command !== "build" && command !== "inspect") || argumentsValue.length < 2) {
   usage();
   process.exitCode = 1;
 } else {

@@ -1,8 +1,18 @@
 {
-  "name": "@ravel/cli",
+  "name": "@pieceful/ravel",
   "version": "0.0.0",
-  "private": true,
   "type": "module",
-  "description": "Ravel command-line interface."
+  "description": "Ravel command-line interface.",
+  "publishConfig": { "access": "public" },
+  "bin": {
+    "ravel": "./src/index.js"
+  },
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "files": ["src"],
+  "dependencies": {
+    "@pieceful/ravel-core": "0.0.0",
+    "@pieceful/ravel-host-node": "0.0.0"
+  }
 }
-

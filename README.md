@@ -2,8 +2,9 @@
 
 Ravel is a working, pre-0.1 literate-programming engine for assembling named
 code pieces into artifacts while retaining a source-linked dependency graph.
-It is currently a small static-weaving tool and an experimental library, not a
-published or installable end-user release.
+It is currently a small static-weaving tool and an experimental library. The
+packages are wired for local npm-workspace development, but have not yet been
+published as a 0.1 release.
 
 Ravel separates source-format policy from program composition:
 
@@ -49,10 +50,9 @@ extraction, multiple documents, imports, greedy fragments, transforms,
 composition directives, aliases, derived chunks, output planning, filesystem
 writing, and execution of the generated JavaScript.
 
-Ravel is not yet 0.1 because its package entry points and CLI are still
-development-only, runtime Ravel Map validation is incomplete, CLI diagnostics
-are mostly raw JSON or stack traces, generated artifacts do not yet carry
-segment-level source maps, and browser conformance is not automated. See
+Ravel is not yet 0.1 because runtime Ravel Map validation is incomplete, CLI
+diagnostics are mostly raw JSON or stack traces, generated artifacts do not yet
+carry segment-level source maps, and browser conformance is not automated. See
 [the Ravel 0.1 plan](TODO.md) for the release gate.
 
 ## Requirements and setup
@@ -69,22 +69,32 @@ npm test
 npm run validate:schema
 ```
 
-The packages are private and do not yet expose stable package entry points or
-an installed `ravel` executable. Until 0.1 packaging is complete, invoke the
-CLI through its source entry point.
+The workspace packages expose local entry points and an installed `ravel`
+executable after `npm install`. Until 0.1 packaging is complete, invoke the
+CLI through the local workspace script:
+
+```sh
+npm run ravel -- --help
+node -e 'import("@pieceful/ravel-core").then(() => console.log("local workspace import works"))'
+```
+
+`npm install` links the `@pieceful/ravel-*` packages from `packages/` into the
+local workspace. It does not download these Ravel packages from npm. The
+package metadata, exports, and CLI `bin` entry are already shaped for later
+publishing.
 
 ## Try the current CLI
 
 Inspect a primary-Ravel Markdown document without writing files:
 
 ```sh
-node packages/cli/src/index.js inspect fixtures/markdown/guide.md --mode primary
+npm run ravel -- inspect fixtures/markdown/guide.md --mode primary
 ```
 
 Build the JSON-map proof of concept and save its completed graph:
 
 ```sh
-node packages/cli/src/index.js build examples/poc/project.ravel-map.json \
+npm run ravel -- build examples/poc/project.ravel-map.json \
   --out-dir .ravel/runs/poc \
   --graph .ravel/runs/poc/program.json
 ```
@@ -92,13 +102,13 @@ node packages/cli/src/index.js build examples/poc/project.ravel-map.json \
 Build a multi-document Markdown project described by TOML:
 
 ```sh
-node packages/cli/src/index.js build --config fixtures/markdown/ravel-web.toml
+npm run ravel -- build --config fixtures/markdown/ravel-web.toml
 ```
 
 Build and run the larger migration example:
 
 ```sh
-node packages/cli/src/index.js build --config examples/migration/ravel-fizzbuzz.toml
+npm run ravel -- build --config examples/migration/ravel-fizzbuzz.toml
 node examples/migration/.ravel/runs/legacy-fizzbuzz-migration/dist/fizzbuzz.js
 ```
 
@@ -134,7 +144,7 @@ out("dist/greeting.js", _"main.javascript")
 Save the document as `greeting.md`, then build it with:
 
 ```sh
-node packages/cli/src/index.js build greeting.md --out-dir .ravel/runs/greeting
+npm run ravel -- build greeting.md --out-dir .ravel/runs/greeting
 ```
 
 The Markdown adapter has two modes:
@@ -155,7 +165,7 @@ packages/
   markdown/   portable Markdown fenced-block adapter
   host-node/  scoped filesystem input, TOML builds, and artifact writing
   cli/        development command-line entry point
-  map/        reserved 0.1 home for Ravel Map validation and public types
+  map/        Ravel Map public metadata; validation is planned for 0.1
 schemas/      Ravel Map JSON Schema
 examples/     proof-of-concept and migration builds
 fixtures/     Markdown, map, and configuration cases

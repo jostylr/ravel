@@ -1,8 +1,11 @@
 {
-  "name": "@ravel/map",
+  "name": "@pieceful/ravel-map",
   "version": "0.0.0",
-  "private": true,
   "type": "module",
-  "description": "Ravel Map types, schema, and validation."
+  "description": "Ravel Map public metadata and validation contract.",
+  "publishConfig": { "access": "public" },
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "files": ["src"]
 }
-

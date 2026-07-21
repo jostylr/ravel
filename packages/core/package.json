@@ -1,8 +1,12 @@
 {
-  "name": "@ravel/core",
+  "name": "@pieceful/ravel-core",
   "version": "0.0.0",
-  "private": true,
   "type": "module",
-  "description": "Ravel chunk syntax, resolution, graph evaluation, and diagnostics."
+  "description": "Ravel chunk syntax, resolution, graph evaluation, and diagnostics.",
+  "publishConfig": { "access": "public" },
+  "exports": {
+    ".": "./src/index.js",
+    "./directives": "./src/directives.js"
+  },
+  "files": ["src"]
 }
-

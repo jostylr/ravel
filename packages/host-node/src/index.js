@@ -1,8 +1,8 @@
 import { lstat, readFile, mkdir, writeFile } from "node:fs/promises";
 import { basename, dirname, extname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { parse as parseToml } from "smol-toml";
-import { combineMaps } from "../../core/src/index.js";
-import { markdownToMap } from "../../markdown/src/index.js";
+import { combineMaps } from "@pieceful/ravel-core";
+import { markdownToMap } from "@pieceful/ravel-markdown";
 
 const missing = (error) => error?.code === "ENOENT";
 

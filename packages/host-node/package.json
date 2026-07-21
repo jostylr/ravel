@@ -1,10 +1,16 @@
 {
-  "name": "@ravel/host-node",
+  "name": "@pieceful/ravel-host-node",
   "version": "0.0.0",
-  "private": true,
   "type": "module",
   "description": "Node host capabilities for Ravel.",
+  "publishConfig": { "access": "public" },
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "files": ["src"],
   "dependencies": {
+    "@pieceful/ravel-core": "0.0.0",
+    "@pieceful/ravel-markdown": "0.0.0",
     "smol-toml": "^1.7.0"
   }
 }

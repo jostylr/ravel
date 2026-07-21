@@ -1,9 +1,13 @@
 {
-  "name": "@ravel/markdown",
+  "name": "@pieceful/ravel-markdown",
   "version": "0.0.0",
-  "private": true,
   "type": "module",
   "description": "Markdown profile adapters for Ravel.",
+  "publishConfig": { "access": "public" },
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "files": ["src"],
   "dependencies": {
     "mdast-util-from-markdown": "^2.0.3",
     "yaml": "^2.9.0"

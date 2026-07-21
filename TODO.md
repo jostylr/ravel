@@ -17,40 +17,46 @@ The following vertical slice is implemented and should remain passing while the
 0.1 work proceeds:
 
 - [x] Markdown fenced-chunk extraction with source ranges, front matter,
-  opt-in/primary modes, tags, explicit identities, and greedy fragments.
+      opt-in/primary modes, tags, explicit identities, and greedy fragments.
 - [x] Canonical document/chunk/minor/type identities and local, global, and
-  cross-document resolution.
+      cross-document resolution.
 - [x] Literal/reference parsing, built-in transforms, definition pipelines,
-  delayed substitutions, and generated chunks through `emit`.
+      delayed substitutions, and generated chunks through `emit`.
 - [x] Portable directive IR and Markdown directive parsing for `in`, `out`,
-  `create`, `alias`, `compose`, `append`, `newline`, `pipe`, and `pass`.
+      `create`, `alias`, `compose`, `append`, `newline`, `pipe`, and `pass`.
 - [x] Forward-reference settling, deterministic cycle detection, and
-  source-linked core diagnostics.
+      source-linked core diagnostics.
 - [x] JSON-map and Markdown imports, multi-file TOML runs, deliverable planning,
-  and Node filesystem writes.
+      and Node filesystem writes.
 - [x] Filesystem-root containment, traversal rejection, and symlink rejection.
 - [x] Runnable legacy FizzBuzz migration covering the full static build path.
 - [x] Twenty-six passing tests under Node and Bun, plus browser harnesses that
-  can be bundled manually.
+      can be bundled manually.
 
 ## 0.1 scope decisions
 
 These decisions should be recorded before public APIs are frozen:
 
-- [ ] Confirm the supported runtime floor. The current proposal is Node 22+,
-  current Bun for portable-package conformance, and current evergreen browsers.
-- [ ] Decide which packages are public in 0.1. The recommended set is
-  `@ravel/map`, `@ravel/core`, `@ravel/markdown`, `@ravel/host-node`, and the
-  `ravel` CLI, even if they ship from one repository and share a version.
-- [ ] Define compatibility policy: Ravel Map version 1 and the documented
-  Markdown fenced profile are the 0.1 contracts; undocumented internal object
-  shapes are not.
-- [ ] Decide whether 0.1 is published to a registry or distributed from the
-  repository. In either case, installation and package imports must behave like
-  a release rather than requiring internal source paths.
-- [ ] State that plugins, extra adapters, notebooks, editor integration,
-  execution, parameters, conditional profiles, and incremental builds are
-  post-0.1 work.
+- [x] Confirm the supported runtime floor. The current proposal is Node 22+,
+      current Bun for portable-package conformance, and current evergreen browsers.
+      : Yes, node 22, bun, and current browsers
+- [x] Decide which packages are public in 0.1. The recommended set is
+      `@pieceful/ravel-map`, `@pieceful/ravel-core`, `@pieceful/ravel-markdown`,
+      `@pieceful/ravel-host-node`, and the `@pieceful/ravel` CLI, even if they
+      ship from one repository and share a version.
+      : Fine split; the public names are @pieceful/ravel-..., with the CLI as
+      @pieceful/ravel.
+- [x] Define compatibility policy: Ravel Map version 1 and the documented
+      Markdown fenced profile are the 0.1 contracts; undocumented internal object
+      shapes are not.
+      : Sounds good
+- [x] Decide whether 0.1 is published to a registry or distributed from the
+      repository. In either case, installation and package imports must behave like
+      a release rather than requiring internal source paths.
+      : They will be published on npm. They need to be set up to do so.
+- [x] State that plugins, extra adapters, notebooks, editor integration,
+      execution, parameters, conditional profiles, and incremental builds are
+      post-0.1 work.
 
 Exit criteria:
 
@@ -64,32 +70,32 @@ Exit criteria:
 Make every advertised package real and consumable before adding new behavior.
 
 - [ ] Implement `packages/map/src/index.js` as the public home of Ravel Map
-  version constants, validation entry points, and shared diagnostic helpers.
-- [ ] Add `exports` to every public package and stop relying on imports such as
-  `../../core/src/index.js` across package boundaries.
-- [ ] Add an installed `ravel` executable through a package `bin` entry.
-- [ ] Add root development scripts that invoke the same public entry points a
-  consumer will use.
+      version constants, validation entry points, and shared diagnostic helpers.
+- [x] Add `exports` to every public package and stop relying on imports such as
+      `../../core/src/index.js` across package boundaries.
+- [x] Add an installed `ravel` executable through a package `bin` entry.
+- [x] Add root development scripts that invoke the same public entry points a
+      consumer will use.
 - [ ] Publish JavaScript API documentation and either generated `.d.ts` files,
-  checked JavaScript declarations, or a deliberate TypeScript source/build
-  setup. Public map, program, source-range, diagnostic, transform, and host
-  types must be representable without reading implementation code.
-- [ ] Remove `private` only from packages intended for distribution; retain it
-  for repository-only packages.
+      checked JavaScript declarations, or a deliberate TypeScript source/build
+      setup. Public map, program, source-range, diagnostic, transform, and host
+      types must be representable without reading implementation code.
+- [x] Remove `private` only from packages intended for distribution; retain it
+      for repository-only packages.
 - [ ] Replace placeholder `0.0.0` metadata with the chosen pre-release/version
-  policy and add license, repository, engines, files, and keywords metadata.
+      policy and add license, repository, engines, files, and keywords metadata.
 - [ ] Add package smoke tests that import each public package by name and run
-  `ravel --help`, `ravel --version`, and a minimal build through the installed
-  binary.
+      `ravel --help`, `ravel --version`, and a minimal build through the installed
+      binary.
 - [ ] Verify the packed artifact contents so examples, schemas, entry points,
-  declarations, and licenses are present while tests and local run outputs are
-  excluded as intended.
+      declarations, and licenses are present while tests and local run outputs are
+      excluded as intended.
 
 Exit criteria:
 
 ```sh
 npm ci
-node -e 'import("@ravel/core").then(console.log)'
+node -e 'import("@pieceful/ravel-core").then(console.log)'
 npx ravel --help
 npm test
 ```
@@ -102,26 +108,27 @@ without importing a `src/` path.
 No malformed or unsupported map should reach graph evaluation as trusted data.
 
 - [ ] Select and add a maintained JSON Schema 2020-12 validator, or implement a
-  complete equivalent validator with explicit tests. The current example-only
-  structural checker is not the runtime validation boundary.
-- [ ] Compile and expose the checked-in Ravel Map schema through `@ravel/map`.
+      complete equivalent validator with explicit tests. The current example-only
+      structural checker is not the runtime validation boundary.
+- [ ] Compile and expose the checked-in Ravel Map schema through
+      `@pieceful/ravel-map`.
 - [ ] Validate every JSON Ravel Map at the Node host boundary before following
-  its directives or combining its chunks.
+      its directives or combining its chunks.
 - [ ] Validate adapter-produced maps in development/test paths so adapter bugs
-  fail at the same contract boundary.
+      fail at the same contract boundary.
 - [ ] Reject unsupported map versions instead of normalizing them to version 1.
 - [ ] Validate canonical IDs against their explicit identity components,
-  document identity, directives, source ranges, metadata, and unknown fields.
+      document identity, directives, source ranges, metadata, and unknown fields.
 - [ ] Convert JSON parse, schema, TOML, configuration, and unsupported-input
-  failures into the shared diagnostic model rather than exposing raw exceptions
-  to CLI users.
+      failures into the shared diagnostic model rather than exposing raw exceptions
+      to CLI users.
 - [ ] Give configuration diagnostics precise TOML locations where the parser
-  makes them available; otherwise report the configuration file and field path.
+      makes them available; otherwise report the configuration file and field path.
 - [ ] Add invalid fixtures for missing required fields, unknown versions,
-  invalid IDs, inconsistent identities, malformed ranges, bad directives,
-  duplicate documents, and unsupported configuration keys.
+      invalid IDs, inconsistent identities, malformed ranges, bad directives,
+      duplicate documents, and unsupported configuration keys.
 - [ ] Keep validation usable in browsers and Bun; Node path and file checks stay
-  in `host-node`.
+      in `host-node`.
 
 Exit criteria:
 
@@ -136,26 +143,26 @@ Exit criteria:
 Turn the current development entry point into a small, predictable interface.
 
 - [ ] Add `ravel check <input>` to parse, validate, resolve, and report errors
-  without writing deliverables.
+      without writing deliverables.
 - [ ] Retain `ravel build` for authorized writes and make its destination and
-  planned outputs visible before or during the build summary.
+      planned outputs visible before or during the build summary.
 - [ ] Refine `ravel inspect` into focused views such as `--chunks`, `--graph`,
-  `--trace`, or an equivalent coherent interface; avoid requiring users to read
-  one large program dump for ordinary questions.
+      `--trace`, or an equivalent coherent interface; avoid requiring users to read
+      one large program dump for ordinary questions.
 - [ ] Add `--dry-run` to show the output/effect plan without writing.
 - [ ] Add `--json` for stable machine-readable diagnostics and command results.
 - [ ] Render default diagnostics as
-  `path:line:column severity[code]: message`, followed by related source ranges
-  and dependency/cycle context where useful.
+      `path:line:column severity[code]: message`, followed by related source ranges
+      and dependency/cycle context where useful.
 - [ ] Implement conventional `--help` and `--version` success behavior.
 - [ ] Reject unknown flags, missing flag values, conflicting input forms, and
-  extra positional arguments with concise usage diagnostics.
+      extra positional arguments with concise usage diagnostics.
 - [ ] Define exit codes for success, source/configuration errors, and unexpected
-  internal failures.
+      internal failures.
 - [ ] Ensure expected user errors never print JavaScript stack traces unless a
-  debug flag is explicitly requested.
+      debug flag is explicitly requested.
 - [ ] Add CLI integration tests covering direct Markdown, direct JSON maps,
-  TOML projects, clean checks, failed checks, dry runs, graph output, and writes.
+      TOML projects, clean checks, failed checks, dry runs, graph output, and writes.
 
 Exit criteria:
 
@@ -170,25 +177,25 @@ Complete Ravel's central promise that an artifact can be explained in terms of
 its literate source.
 
 - [ ] Specify a Ravel generated-source-map version 1 format. At minimum it must
-  map generated UTF-16 ranges to source URI/ranges and identify the contributing
-  chunk, reference, transform/compose step, and derivation chain.
+      map generated UTF-16 ranges to source URI/ranges and identify the contributing
+      chunk, reference, transform/compose step, and derivation chain.
 - [ ] Preserve fragment-level provenance while joining greedy chunks.
 - [ ] Propagate output spans through literals, substitutions, continuation
-  indentation, composition newlines, aliases, definition transforms, use-site
-  transforms, `pipe`, `pass`, delayed substitution, and `emit`.
+      indentation, composition newlines, aliases, definition transforms, use-site
+      transforms, `pipe`, `pass`, delayed substitution, and `emit`.
 - [ ] Define honest mapping behavior for transforms that cannot provide precise
-  character correspondence. Such transforms should retain coarse input/output
-  provenance rather than inventing exact mappings.
+      character correspondence. Such transforms should retain coarse input/output
+      provenance rather than inventing exact mappings.
 - [ ] Make deliverable provenance transitive instead of containing only the
-  final chunk's origin and a flat dependency list.
+      final chunk's origin and a flat dependency list.
 - [ ] Add an optional sidecar output for each deliverable or a build-level map
-  referenced from the output manifest.
+      referenced from the output manifest.
 - [ ] Expose provenance queries in the public API: generated position to source,
-  source range to generated ranges, definition, references, and dependency
-  path.
+      source range to generated ranges, definition, references, and dependency
+      path.
 - [ ] Add golden tests for direct literals, nested references, indentation,
-  greedy fragments, aliases, derived chunks, compose operations, and transformed
-  content.
+      greedy fragments, aliases, derived chunks, compose operations, and transformed
+      content.
 
 Exit criteria:
 
@@ -203,25 +210,25 @@ Make repeated builds predictable and prevent successful builds from leaving
 ambiguous output state.
 
 - [ ] Define a stable ordering for documents, chunks, diagnostics, references,
-  deliverables, trace entries, and serialized graph keys.
+      deliverables, trace entries, and serialized graph keys.
 - [ ] Store project-relative or root-relative source URIs in persisted build
-  artifacts where possible; do not make graphs differ solely because a checkout
-  moved to another absolute directory.
+      artifacts where possible; do not make graphs differ solely because a checkout
+      moved to another absolute directory.
 - [ ] Replace random automatic delay placeholders with deterministic,
-  collision-checked tokens derived from stable chunk/expression identity.
+      collision-checked tokens derived from stable chunk/expression identity.
 - [ ] Add a build manifest containing Ravel version, input identities, output
-  paths, content hashes, provenance-map paths, and build result.
+      paths, content hashes, provenance-map paths, and build result.
 - [ ] Write files atomically through a temporary sibling followed by rename,
-  while retaining the existing containment and symlink protections.
+      while retaining the existing containment and symlink protections.
 - [ ] Detect conflicting deliverables before writing any output.
 - [ ] Decide and document stale-output behavior. Recommended: report stale files
-  from the preceding manifest and remove them only with an explicit managed
-  output policy or flag.
+      from the preceding manifest and remove them only with an explicit managed
+      output policy or flag.
 - [ ] Do not partially commit a build when validation or graph evaluation has
-  errors. Define recovery behavior for filesystem failures during commit.
+      errors. Define recovery behavior for filesystem failures during commit.
 - [ ] Add repeatability tests that build the same project in different temporary
-  roots and compare normalized program graphs, manifests, diagnostics, and
-  deliverable bytes.
+      roots and compare normalized program graphs, manifests, diagnostics, and
+      deliverable bytes.
 
 Exit criteria:
 
@@ -237,23 +244,23 @@ Make the support matrix a continuously checked property rather than a design
 statement.
 
 - [ ] Create shared data-driven conformance fixtures for map validation, syntax,
-  graph evaluation, diagnostics, provenance, and deterministic serialization.
+      graph evaluation, diagnostics, provenance, and deterministic serialization.
 - [ ] Run the full portable fixture set under Node and Bun.
 - [ ] Automate the existing browser runtime and Markdown-adapter harnesses in a
-  real Chromium-class browser.
+      real Chromium-class browser.
 - [ ] Add at least a periodic Firefox and WebKit-class run, or narrow the 0.1
-  browser claim explicitly if those environments are not maintained.
+      browser claim explicitly if those environments are not maintained.
 - [ ] Add CI jobs for clean `npm ci`, Node tests, Bun tests, schema validation,
-  browser conformance, package smoke tests, and packed-artifact inspection.
+      browser conformance, package smoke tests, and packed-artifact inspection.
 - [ ] Add regression tests for every new validation and CLI diagnostic.
 - [ ] Add one second nontrivial static example, distinct from FizzBuzz, that
-  exercises multi-file composition and multiple deliverables without relying on
-  external transforms.
+      exercises multi-file composition and multiple deliverables without relying on
+      external transforms.
 - [ ] Establish a small performance baseline for parsing and building a
-  representative project. A strict optimizer or cache is not required for 0.1,
-  but obvious accidental quadratic behavior should be caught.
+      representative project. A strict optimizer or cache is not required for 0.1,
+      but obvious accidental quadratic behavior should be caught.
 - [ ] Test supported Windows path behavior in CI or explicitly scope 0.1 to the
-  operating systems actually verified.
+      operating systems actually verified.
 
 Exit criteria:
 
@@ -265,21 +272,21 @@ Exit criteria:
 ## Phase 7: documentation and 0.1 release
 
 - [ ] Write a five-minute getting-started guide using the installed `ravel`
-  command rather than source paths.
+      command rather than source paths.
 - [ ] Update all reference documents so they distinguish implemented 0.1
-  behavior from future design.
+      behavior from future design.
 - [ ] Document map, syntax, CLI, configuration, diagnostics, provenance-map, and
-  manifest versioning.
+      manifest versioning.
 - [ ] Add a cookbook for single-document builds, multi-document TOML projects,
-  reusable libraries, derived chunks, generated variants, and CI checks.
+      reusable libraries, derived chunks, generated variants, and CI checks.
 - [ ] Document filesystem trust boundaries, symlink policy, output authorization,
-  and why code/shell evaluation is absent from the static core.
+      and why code/shell evaluation is absent from the static core.
 - [ ] Write a migration note for the supported FizzBuzz-era concepts and list
-  legacy constructs that intentionally have no 0.1 equivalent.
+      legacy constructs that intentionally have no 0.1 equivalent.
 - [ ] Add `CHANGELOG.md`, contribution instructions, a code of conduct if public
-  contribution is expected, and a release checklist.
+      contribution is expected, and a release checklist.
 - [ ] Confirm license files and attribution for every published package and
-  migrated fixture.
+      migrated fixture.
 - [ ] Run the complete release suite against the exact packed artifacts.
 - [ ] Tag 0.1 only after every preceding phase's exit criteria pass.
 
@@ -289,16 +296,16 @@ Exit criteria:
 - [ ] Public package imports and the installed CLI work without `src/` paths.
 - [ ] All map/config inputs are validated before evaluation.
 - [ ] `check`, `inspect`, `build`, dry-run, human diagnostics, and JSON output
-  have end-to-end tests.
+      have end-to-end tests.
 - [ ] Generated artifacts have inspectable transitive provenance/source maps.
 - [ ] Builds are deterministic across directories and do not partially write on
-  source errors.
+      source errors.
 - [ ] Output manifests and stale-output policy are documented and tested.
 - [ ] Node, Bun, browser, schema, package, and example suites pass in CI.
 - [ ] README, reference docs, examples, package metadata, and changelog describe
-  the released behavior accurately.
+      the released behavior accurately.
 - [ ] The FizzBuzz migration and the second representative example build and run
-  from the packed release.
+      from the packed release.
 
 ## Explicitly deferred until after 0.1
 

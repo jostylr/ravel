@@ -13,7 +13,7 @@ not mean every package runs everywhere. The boundary is intentional:
 | Node filesystem/process host | no | only if separately implemented | yes |
 | CLI | no | future optional wrapper | yes |
 
-`@ravel/core` is the portability contract. If a feature needs a filesystem,
+`@pieceful/ravel-core` is the portability contract. If a feature needs a filesystem,
 shell, network policy, cache directory, or console display, it belongs in a
 host package rather than core.
 
