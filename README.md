@@ -97,6 +97,15 @@ Inspect a primary-Ravel Markdown document without writing files:
 npm run ravel -- inspect fixtures/markdown/guide.md --mode primary
 ```
 
+For ordinary graph questions, use a focused view instead of the full program
+dump:
+
+```sh
+npm run ravel -- inspect examples/poc/project.ravel-map.json --chunks
+npm run ravel -- inspect examples/poc/project.ravel-map.json --graph
+npm run ravel -- inspect examples/poc/project.ravel-map.json --trace --json
+```
+
 Build the JSON-map proof of concept and save its completed graph:
 
 ```sh

@@ -5,14 +5,14 @@ import { transformGraph } from "@pieceful/ravel-core";
 const EXIT_SOURCE = 1;
 const EXIT_USAGE = 2;
 const EXIT_INTERNAL = 3;
-const valueOptions = new Set(["--config", "--out-dir", "--graph", "--document", "--mode"]);
-const booleanOptions = new Set(["--json", "--dry-run", "--debug"]);
+const valueOptions = new Set(["--config", "--out-dir", "--document", "--mode"]);
+const booleanOptions = new Set(["--json", "--dry-run", "--debug", "--chunks", "--trace"]);
 
 const usage = () => {
   console.error("Usage: ravel check <map.json|document.md> [--config <run.toml>] [--document <name>] [--mode <opt-in|primary>] [--json]");
   console.error("       ravel build <map.json|document.md> --out-dir <directory> [--document <name>] [--mode <opt-in|primary>] [--graph <program.json>] [--dry-run] [--json]");
   console.error("       ravel build --config <run.toml> [--out-dir <directory>] [--graph <program.json>] [--dry-run] [--json]");
-  console.error("       ravel inspect <map.json|document.md> [--config <run.toml>] [--document <name>] [--mode <opt-in|primary>] [--json]");
+  console.error("       ravel inspect <map.json|document.md> [--config <run.toml>] [--document <name>] [--mode <opt-in|primary>] [--chunks|--graph|--trace] [--json]");
 };
 
 const formatDiagnostic = (entry) => {
@@ -39,12 +39,14 @@ const parseArguments = (argumentsValue) => {
       positional.push(argument);
       continue;
     }
-    if (booleanOptions.has(argument)) {
+    if (booleanOptions.has(argument) || (argument === "--graph" && command === "inspect")) {
       if (options[argument]) return { error: "Option may be specified only once: " + argument };
       options[argument] = true;
       continue;
     }
-    if (!valueOptions.has(argument)) return { error: "Unknown option: " + argument };
+    if (!valueOptions.has(argument) && !(argument === "--graph" && command === "build")) {
+      return { error: "Unknown option: " + argument };
+    }
     const value = argumentsValue[index + 1];
     if (!value || value.startsWith("--")) return { error: "Option requires a value: " + argument };
     if (Object.hasOwn(options, argument)) return { error: "Option may be specified only once: " + argument };
@@ -54,6 +56,70 @@ const parseArguments = (argumentsValue) => {
   if (positional.length > 1) return { error: "Expected at most one input path." };
   if (options["--config"] && positional.length) return { error: "Use either an input path or --config, not both." };
   return { command, options, input: options["--config"] ?? positional[0] };
+};
+
+const sortedEntries = (value) => Object.entries(value ?? []).sort(([left], [right]) => left.localeCompare(right));
+
+const inspectProgram = (program, options) => {
+  if (options["--chunks"]) {
+    return {
+      version: program.version,
+      view: "chunks",
+      chunks: sortedEntries(program.chunks).map(([id, chunk]) => ({
+        id,
+        name: chunk.name,
+        identity: chunk.identity,
+        metadata: chunk.metadata,
+        generated: chunk.generated,
+        dependencies: chunk.dependencies,
+        references: chunk.references
+      }))
+    };
+  }
+  if (options["--graph"]) {
+    return {
+      version: program.version,
+      view: "graph",
+      chunks: sortedEntries(program.chunks).map(([id, chunk]) => ({ id, dependencies: chunk.dependencies })),
+      deliverables: Object.values(program.deliverables).sort((left, right) => left.name.localeCompare(right.name)).map((deliverable) => ({
+        name: deliverable.name,
+        from: deliverable.from,
+        dependencies: deliverable.dependencies
+      }))
+    };
+  }
+  if (options["--trace"]) {
+    return { version: program.version, view: "trace", chunks: Object.fromEntries(sortedEntries(program.trace?.chunks)) };
+  }
+  return program;
+};
+
+const printInspectResult = (result, json) => {
+  if (json || !result.view) {
+    console.log(JSON.stringify(result, null, 2));
+    return;
+  }
+  if (result.view === "chunks") {
+    console.log("Ravel chunks:");
+    for (const chunk of result.chunks) {
+      const suffix = chunk.generated ? " (generated)" : "";
+      console.log("  " + chunk.id + suffix + (chunk.dependencies.length ? " → " + chunk.dependencies.join(", ") : ""));
+    }
+    return;
+  }
+  if (result.view === "graph") {
+    console.log("Ravel dependency graph:");
+    for (const chunk of result.chunks) console.log("  " + chunk.id + " → " + (chunk.dependencies.length ? chunk.dependencies.join(", ") : "(none)"));
+    if (result.deliverables.length) {
+      console.log("Deliverables:");
+      for (const deliverable of result.deliverables) console.log("  " + deliverable.name + " ← " + deliverable.from);
+    }
+    return;
+  }
+  console.log("Ravel evaluation trace:");
+  for (const [id, entries] of Object.entries(result.chunks)) {
+    console.log("  " + id + ": " + entries.map((entry) => entry.stage).join(" → "));
+  }
 };
 
 const printBuildResult = (result, json) => {
@@ -92,8 +158,14 @@ if (command === "--help" || command === "-h" || argumentsValue.includes("--help"
   } else if (parsed.options["--dry-run"] && parsed.command !== "build") {
     console.error("ravel usage error: --dry-run is available only with build.");
     process.exitCode = EXIT_USAGE;
-  } else if ((parsed.options["--out-dir"] || parsed.options["--graph"]) && parsed.command !== "build") {
-    console.error("ravel usage error: --out-dir and --graph are available only with build.");
+  } else if (parsed.options["--out-dir"] && parsed.command !== "build") {
+    console.error("ravel usage error: --out-dir is available only with build.");
+    process.exitCode = EXIT_USAGE;
+  } else if ((parsed.options["--chunks"] || parsed.options["--trace"]) && parsed.command !== "inspect") {
+    console.error("ravel usage error: --chunks and --trace are available only with inspect.");
+    process.exitCode = EXIT_USAGE;
+  } else if (parsed.command === "inspect" && ["--chunks", "--graph", "--trace"].filter((option) => parsed.options[option]).length > 1) {
+    console.error("ravel usage error: choose only one inspect view.");
     process.exitCode = EXIT_USAGE;
   } else {
     try {
@@ -110,7 +182,7 @@ if (command === "--help" || command === "-h" || argumentsValue.includes("--help"
         if (json) console.log(JSON.stringify({ ok: true, command: "check", diagnostics: program.diagnostics }, null, 2));
         else console.log("Ravel check passed.");
       } else if (parsed.command === "inspect") {
-        console.log(JSON.stringify(program, null, 2));
+        printInspectResult(inspectProgram(program, parsed.options), json);
       } else {
         const outputDirectory = parsed.options["--out-dir"] ?? loaded.outputDirectory;
         if (!outputDirectory) throw new Error("build requires --out-dir or build.out_dir in the TOML config.");

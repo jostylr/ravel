@@ -147,9 +147,9 @@ Turn the current development entry point into a small, predictable interface.
       without writing deliverables.
 - [x] Retain `ravel build` for authorized writes and make its destination and
       planned outputs visible before or during the build summary.
-- [ ] Refine `ravel inspect` into focused views such as `--chunks`, `--graph`,
-      `--trace`, or an equivalent coherent interface; avoid requiring users to read
-      one large program dump for ordinary questions.
+- [x] Refine `ravel inspect` into focused `--chunks`, `--graph`, and `--trace`
+      views; keep the complete program dump as the default for machine-oriented
+      inspection.
 - [x] Add `--dry-run` to show the output/effect plan without writing.
 - [x] Add `--json` for stable machine-readable diagnostics and command results.
 - [x] Render default diagnostics as
@@ -162,7 +162,7 @@ Turn the current development entry point into a small, predictable interface.
       internal failures.
 - [x] Ensure expected user errors never print JavaScript stack traces unless a
       debug flag is explicitly requested.
-- [ ] Add CLI integration tests covering direct Markdown, direct JSON maps,
+- [x] Add CLI integration tests covering direct Markdown, direct JSON maps,
       TOML projects, clean checks, failed checks, dry runs, graph output, and writes.
 
 Exit criteria:
