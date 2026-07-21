@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
+import { mkdir, mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import { loadBuildInput, loadPretransformGraph } from "../packages/host-node/src/index.js";
+import { loadBuildInput, loadPretransformGraph, writeDeliverables } from "../packages/host-node/src/index.js";
 import { markdownToMap } from "../packages/markdown/src/index.js";
 import { combineMaps, transformGraph } from "../packages/core/src/index.js";
 import { markdownLike, pugLike } from "../test-support/phase-transforms.mjs";
@@ -51,6 +54,54 @@ test("Node host follows in directives from Markdown into another Markdown map", 
   assert.deepEqual(program.diagnostics, []);
   assert.deepEqual(Object.keys(program.chunks).sort(), ["entry::main.js", "library::helper.js"]);
   assert.equal(program.deliverables["dist/main.js"].value, "export const helper = true;\n");
+});
+
+test("Node host confines TOML inputs, imports, and configured outputs to its root", async () => {
+  const sandbox = await mkdtemp(join(tmpdir(), "ravel-scope-"));
+  const root = join(sandbox, "project");
+  const markdown = "```javascript {.ravel #main}\nexport const value = true;\n```\n";
+  const config = (file) => "version = 1\n\n[build]\nout_dir = \"build\"\n\n[[files]]\npath = \"" + file + "\"\n";
+
+  try {
+    await mkdir(root);
+    await writeFile(join(sandbox, "outside.md"), markdown);
+    await writeFile(join(root, "entry.md"), "```ravel\nin(\"../outside.md\")\n```\n" + markdown);
+    await writeFile(join(root, "ravel.toml"), config("entry.md"));
+    await assert.rejects(loadBuildInput(join(root, "ravel.toml")), /escapes the Ravel root/);
+
+    await writeFile(join(root, "main.md"), markdown);
+    await writeFile(join(root, "escape-output.toml"), config("main.md").replace('out_dir = "build"', 'out_dir = "../build"'));
+    await assert.rejects(loadBuildInput(join(root, "escape-output.toml")), /build\.out_dir escapes the Ravel root/);
+
+    await symlink(join(sandbox, "outside.md"), join(root, "linked.md"));
+    await writeFile(join(root, "symlink.toml"), config("linked.md"));
+    await assert.rejects(loadBuildInput(join(root, "symlink.toml")), /must not traverse a symbolic link/);
+  } finally {
+    await rm(sandbox, { recursive: true, force: true });
+  }
+});
+
+test("Node host refuses symlinked deliverable paths", async () => {
+  const sandbox = await mkdtemp(join(tmpdir(), "ravel-output-scope-"));
+  const root = join(sandbox, "project");
+  const outside = join(sandbox, "outside");
+
+  try {
+    await mkdir(join(root, "build"), { recursive: true });
+    await mkdir(outside);
+    await symlink(outside, join(root, "build", "dist"));
+    const program = {
+      deliverables: {
+        "dist/main.js": { name: "dist/main.js", value: "export {};\n" }
+      }
+    };
+    await assert.rejects(
+      writeDeliverables(program, join(root, "build"), { rootDirectory: root }),
+      /must not traverse a symbolic link/
+    );
+  } finally {
+    await rm(sandbox, { recursive: true, force: true });
+  }
 });
 
 test("external language transforms run before delayed content is fulfilled", () => {

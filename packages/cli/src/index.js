@@ -45,8 +45,12 @@ if ((command !== "build" && command !== "inspect") || argumentsValue.length < 2)
       } else {
         const destination = outputDirectory ?? loaded.outputDirectory;
         if (!destination) throw new Error("build requires --out-dir or build.out_dir in the TOML config.");
-        const written = await writeDeliverables(program, destination);
-        if (graphPath) await writeGraph(program, graphPath);
+        const written = await writeDeliverables(program, destination, {
+          // An explicit CLI destination establishes a new output root. TOML
+          // destinations remain contained by the source/TOML root.
+          rootDirectory: outputDirectory ?? loaded.rootDirectory
+        });
+        if (graphPath) await writeGraph(program, graphPath, { rootDirectory: loaded.rootDirectory });
         console.log(JSON.stringify({ written, chunks: Object.keys(program.chunks).sort() }, null, 2));
       }
     } catch (error) {

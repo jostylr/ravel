@@ -119,6 +119,20 @@ graph settles, missing references and cycles produce ordinary source-linked
 diagnostics. The Node host accepts both `.md`/`.markdown` and JSON Ravel Maps
 as `in` targets; paths resolve relative to the directive’s source document.
 
+## Filesystem boundary
+
+Every build has a filesystem root. For a TOML run it is the directory
+containing the TOML file; for a direct Markdown or JSON run it is the
+directory containing the initial file. `[[files]]` paths and Markdown
+`in(...)` imports must stay under that root. Absolute paths and `..` traversal
+that escape it, and any symbolic link at or below that root, are rejected.
+
+`build.out_dir`, directive/TOML deliverable names, and `--graph` writes are
+also confined to that root. Deliverable names remain relative to
+`build.out_dir`. The explicit CLI `--out-dir` flag is the exception: it may
+select a new output root anywhere, but output below that chosen root still
+cannot escape it or traverse a symbolic link.
+
 ## One TOML build run
 
 A TOML file represents one build run and can list multiple Markdown files:
@@ -145,8 +159,8 @@ from = "guide::main.javascript"
 ```
 
 Run `ravel build --config ravel-web.toml`. Paths, including `build.out_dir`, are
-resolved relative to the TOML file. Use a separate TOML for a different build
-pathway; configs are not merged.
+resolved relative to the TOML file and must remain below its directory. Use a
+separate TOML for a different build pathway; configs are not merged.
 
 For one document, use `ravel build guide.md --out-dir dist` or inspect without
 writing with `ravel inspect guide.md --mode primary`.
