@@ -1,82 +1,205 @@
 # Ravel
 
-Ravel is a literate-programming system for weaving named code pieces into
-artifacts and unraveling artifacts into an explainable, source-linked
-dependency graph.
+Ravel is a working, pre-0.1 literate-programming engine for assembling named
+code pieces into artifacts while retaining a source-linked dependency graph.
+It is currently a small static-weaving tool and an experimental library, not a
+published or installable end-user release.
 
-It works with Markdown, other text formats, and live notebook/editor
-environments. Format adapters produce a common Ravel Map. The core parses
-syntax inside chunks, resolves the graph, reports diagnostics, and plans
-authorized effects.
+Ravel separates source-format policy from program composition:
 
-    source format or Rix blocks
-              ↓
-          Ravel Map
-              ↓
-    chunk parser and graph resolver
-              ↓
-        Ravel Program
-              ↓
-    artifacts, notebook state, trace graph
+```text
+Markdown, JSON Ravel Maps, or editor-produced maps
+                         ↓
+                     Ravel Map
+                         ↓
+          chunk parser and graph evaluator
+                         ↓
+                    Ravel Program
+                         ↓
+        deliverables, diagnostics, provenance, trace
+```
 
-Ravel is at the design-and-scaffolding stage. The initial scope is a small,
-safe static-weaving vertical slice; notebook execution and more adapters share
-the same core model.
+The implemented vertical slice is intentionally safe and deterministic in
+spirit: parsing and graph evaluation do not evaluate document JavaScript or
+shell commands, and the Node host confines declared inputs and outputs to an
+explicit filesystem root.
 
-## Repository guide
+## Project status
 
+Ravel can currently:
+
+- extract explicitly named, source-ranged chunks from Markdown fences;
+- preserve ordinary prose and non-Ravel examples as normal Markdown;
+- join contiguous fenced fragments with an explicit greedy mode;
+- resolve local, global, cross-document, minor, and typed chunk addresses;
+- compose chunks with underscore-quoted references;
+- apply built-in definition-time and use-site transforms;
+- create derived chunks with `emit`;
+- load Markdown or JSON Ravel Maps with `in`;
+- define graph structure with `create`, `compose`, `alias`, `pipe`, and `pass`;
+- plan named outputs with `out` or TOML `[[outputs]]` entries;
+- inspect a completed graph or write deliverables through the Node CLI;
+- report source-linked parsing, resolution, transform, and cycle diagnostics;
+- reject input/output path escapes and symbolic-link traversal;
+- run the current 26-test suite under both Node and Bun; and
+- bundle the portable core and Markdown adapter for the browser harness.
+
+The legacy FizzBuzz migration exercises the whole static path: Markdown
+extraction, multiple documents, imports, greedy fragments, transforms,
+composition directives, aliases, derived chunks, output planning, filesystem
+writing, and execution of the generated JavaScript.
+
+Ravel is not yet 0.1 because its package entry points and CLI are still
+development-only, runtime Ravel Map validation is incomplete, CLI diagnostics
+are mostly raw JSON or stack traces, generated artifacts do not yet carry
+segment-level source maps, and browser conformance is not automated. See
+[the Ravel 0.1 plan](TODO.md) for the release gate.
+
+## Requirements and setup
+
+- Node.js 22 or newer
+- npm
+- Bun is optional and used only for the portability test command
+
+From this directory:
+
+```sh
+npm install
+npm test
+npm run validate:schema
+```
+
+The packages are private and do not yet expose stable package entry points or
+an installed `ravel` executable. Until 0.1 packaging is complete, invoke the
+CLI through its source entry point.
+
+## Try the current CLI
+
+Inspect a primary-Ravel Markdown document without writing files:
+
+```sh
+node packages/cli/src/index.js inspect fixtures/markdown/guide.md --mode primary
+```
+
+Build the JSON-map proof of concept and save its completed graph:
+
+```sh
+node packages/cli/src/index.js build examples/poc/project.ravel-map.json \
+  --out-dir .ravel/runs/poc \
+  --graph .ravel/runs/poc/program.json
+```
+
+Build a multi-document Markdown project described by TOML:
+
+```sh
+node packages/cli/src/index.js build --config fixtures/markdown/ravel-web.toml
+```
+
+Build and run the larger migration example:
+
+```sh
+node packages/cli/src/index.js build --config examples/migration/ravel-fizzbuzz.toml
+node examples/migration/.ravel/runs/legacy-fizzbuzz-migration/dist/fizzbuzz.js
+```
+
+Generated local runs live below `.ravel/runs/` and are ignored by Git.
+
+## Minimal Markdown example
+
+````markdown
+---
+ravel:
+  document: greeting
+---
+
+# Greeting
+
+The implementation is described in narrative order, independently of its
+assembly order.
+
+```javascript {.ravel #message}
+const message = "Hello from Ravel";
+```
+
+```javascript {.ravel #main}
+_"message.javascript"
+console.log(message);
+```
+
+```ravel
+out("dist/greeting.js", _"main.javascript")
+```
+````
+
+Save the document as `greeting.md`, then build it with:
+
+```sh
+node packages/cli/src/index.js build greeting.md --out-dir .ravel/runs/greeting
+```
+
+The Markdown adapter has two modes:
+
+- `opt-in` is the default; unnamed fences remain ordinary examples.
+- `primary` requires every non-excluded fence to be a named Ravel chunk, a
+  valid greedy continuation, or explicitly marked `.no-ravel`.
+
+See the [Markdown profile](docs/markdown-fences.md) and
+[pipes and directives reference](docs/pipes-and-directives.md) for the full
+implemented syntax.
+
+## Architecture
+
+```text
+packages/
+  core/       portable chunk syntax, graph evaluation, diagnostics, provenance
+  markdown/   portable Markdown fenced-block adapter
+  host-node/  scoped filesystem input, TOML builds, and artifact writing
+  cli/        development command-line entry point
+  map/        reserved 0.1 home for Ravel Map validation and public types
+schemas/      Ravel Map JSON Schema
+examples/     proof-of-concept and migration builds
+fixtures/     Markdown, map, and configuration cases
+test/         Node/Bun test suite
+browser-test/ browser portability harnesses
+docs/         design and language documentation
+```
+
+Portable packages use native ESM and Web Platform APIs. Filesystem and process
+behavior belongs in `host-node`; the core and Markdown adapter do not import
+Node-only APIs.
+
+## Development commands
+
+```sh
+npm test                    # complete Node test suite
+npm run test:bun            # same test files under Bun
+npm run validate:schema     # structural validation of checked-in map examples
+npm run build:browser-test  # bundle the Markdown browser harness
+```
+
+The browser command currently builds the harness but does not launch a browser.
+Automated browser execution is part of the 0.1 plan.
+
+## Current scope and intentional limits
+
+Ravel 0.1 is scoped to dependable static composition. It does not need plugins,
+additional source formats, notebook execution, an LSP, parameterized chunks,
+conditional build profiles, shell/network effects, or incremental compilation
+to meet that milestone.
+
+Those are possible later extensions of the same Ravel Map and graph model. The
+immediate work is to make the existing static path validated, installable,
+explainable, reproducible, and pleasant to use.
+
+## Documentation
+
+- [Ravel 0.1 implementation plan](TODO.md)
 - [Design plan](docs/design.md)
-- [History](docs/history.md)
+- [History and predecessor projects](docs/history.md)
 - [Ravel Map schema guide](docs/ravel-map-schema.md)
-- [Embedded chunk syntax guide](docs/chunk-syntax.md)
-- [Pipes and directives reference](docs/pipes-and-directives.md)
-- [Markdown fenced-block profile](docs/markdown-fences.md)
-- [Executable proof of concept](docs/proof-of-concept.md)
 - [Machine-readable Ravel Map schema](schemas/ravel-map.schema.json)
-
-## Layout
-
-    packages/
-      map/          Ravel Map types and schema helpers
-      core/         chunk parser, resolver, graph evaluator, diagnostics
-      markdown/     Markdown profile adapters
-      host-node/    Node filesystem and cache capabilities
-      cli/          command-line interface
-    schemas/        published interchange schemas
-    examples/       small examples
-    fixtures/       map, syntax, and compatibility cases
-    docs/           design and language documentation
-
-## Development
-
-Ravel intentionally has no dependencies yet. Its Node host targets Node 22+;
-the portable packages are designed for modern browsers and Bun as well. npm
-workspaces are the initial package-management path. Once tests are added:
-
-    npm test
-    npm run test:bun
-    npm run validate:schema
-
-The schema example currently uses a dependency-free structural validator. A full
-JSON Schema validator can be added with the first implementation package.
-
-## Proof of concept
-
-The initial graph evaluator and Node CLI are working. Build the joined-map,
-emission, and deliverables example with:
-
-    node packages/cli/src/index.js build examples/poc/project.ravel-map.json \
-      --out-dir .ravel/runs/poc \
-      --graph .ravel/runs/poc/program.json
-
-See [the proof-of-concept guide](docs/proof-of-concept.md) for its graph model
-and generated outputs.
-
-See [runtime support](docs/runtime-support.md) for the portability and test
-policy.
-
-Markdown fences and single-run TOML configurations now work as well. See the
-[Markdown fenced-block profile](docs/markdown-fences.md), then try:
-
-    node packages/cli/src/index.js inspect fixtures/markdown/guide.md --mode primary
-    node packages/cli/src/index.js build --config fixtures/markdown/ravel-web.toml
+- [Embedded chunk syntax](docs/chunk-syntax.md)
+- [Pipes and directives](docs/pipes-and-directives.md)
+- [Markdown fenced-block profile](docs/markdown-fences.md)
+- [Proof of concept](docs/proof-of-concept.md)
+- [Runtime support and testing policy](docs/runtime-support.md)
