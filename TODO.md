@@ -145,20 +145,20 @@ Turn the current development entry point into a small, predictable interface.
 
 - [x] Add `ravel check <input>` to parse, validate, resolve, and report errors
       without writing deliverables.
-- [ ] Retain `ravel build` for authorized writes and make its destination and
+- [x] Retain `ravel build` for authorized writes and make its destination and
       planned outputs visible before or during the build summary.
 - [ ] Refine `ravel inspect` into focused views such as `--chunks`, `--graph`,
       `--trace`, or an equivalent coherent interface; avoid requiring users to read
       one large program dump for ordinary questions.
-- [ ] Add `--dry-run` to show the output/effect plan without writing.
-- [ ] Add `--json` for stable machine-readable diagnostics and command results.
+- [x] Add `--dry-run` to show the output/effect plan without writing.
+- [x] Add `--json` for stable machine-readable diagnostics and command results.
 - [x] Render default diagnostics as
       `path:line:column severity[code]: message`, followed by related source ranges
       and dependency/cycle context where useful.
 - [x] Implement conventional `--help` and `--version` success behavior.
-- [ ] Reject unknown flags, missing flag values, conflicting input forms, and
+- [x] Reject unknown flags, missing flag values, conflicting input forms, and
       extra positional arguments with concise usage diagnostics.
-- [ ] Define exit codes for success, source/configuration errors, and unexpected
+- [x] Define exit codes for success, source/configuration errors, and unexpected
       internal failures.
 - [x] Ensure expected user errors never print JavaScript stack traces unless a
       debug flag is explicitly requested.
@@ -217,11 +217,12 @@ ambiguous output state.
       moved to another absolute directory.
 - [ ] Replace random automatic delay placeholders with deterministic,
       collision-checked tokens derived from stable chunk/expression identity.
-- [ ] Add a build manifest containing Ravel version, input identities, output
-      paths, content hashes, provenance-map paths, and build result.
-- [ ] Write files atomically through a temporary sibling followed by rename,
+- [x] Add an initial build manifest with Ravel version, output paths, source
+      chunks, content hashes, and build result. Input identities and
+      provenance-map paths remain to be added with the provenance work.
+- [x] Write files atomically through a temporary sibling followed by rename,
       while retaining the existing containment and symlink protections.
-- [ ] Detect conflicting deliverables before writing any output.
+- [x] Detect conflicting deliverables before writing any output.
 - [ ] Decide and document stale-output behavior. Recommended: report stale files
       from the preceding manifest and remove them only with an explicit managed
       output policy or flag.

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { lstat, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -9,6 +9,7 @@ import test from "node:test";
 
 const run = promisify(execFile);
 const cli = fileURLToPath(new URL("../packages/cli/src/index.js", import.meta.url));
+const proofOfConcept = fileURLToPath(new URL("../examples/poc/project.ravel-map.json", import.meta.url));
 
 // Bun's current node:test compatibility layer inherits its test-runner state
 // into child Bun processes. Keep subprocess CLI assertions in the Node suite;
@@ -56,5 +57,28 @@ test("CLI check can emit machine-readable diagnostics", async () => {
   } finally {
     await rm(sandbox, { recursive: true, force: true });
   }
+});
+
+test("CLI build dry-run emits a stable plan without creating its output directory", async () => {
+  const sandbox = await mkdtemp(join(tmpdir(), "ravel-cli-dry-run-"));
+  const output = join(sandbox, "output");
+  try {
+    const result = await run(process.execPath, [cli, "build", proofOfConcept, "--out-dir", output, "--dry-run", "--json"]);
+    const plan = JSON.parse(result.stdout);
+    assert.equal(plan.ok, true);
+    assert.equal(plan.command, "build");
+    assert.equal(plan.dryRun, true);
+    assert.deepEqual(plan.deliverables.map((entry) => entry.name), ["dist/greeting.js", "generated/greeting.js"]);
+    await assert.rejects(lstat(output), { code: "ENOENT" });
+  } finally {
+    await rm(sandbox, { recursive: true, force: true });
+  }
+});
+
+test("CLI rejects unknown flags with a usage exit code", async () => {
+  await assert.rejects(
+    run(process.execPath, [cli, "check", proofOfConcept, "--not-a-ravel-option"]),
+    (error) => error.code === 2 && /Unknown option/.test(error.stderr)
+  );
 });
 }

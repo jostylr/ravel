@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
-import { mkdir, mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, readdir, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import { loadBuildInput, loadPretransformGraph, writeDeliverables } from "../packages/host-node/src/index.js";
+import { createBuildManifest, loadBuildInput, loadPretransformGraph, planDeliverables, writeBuildManifest, writeDeliverables } from "../packages/host-node/src/index.js";
 import { markdownToMap } from "../packages/markdown/src/index.js";
 import { combineMaps, transformGraph } from "../packages/core/src/index.js";
 import { markdownLike, pugLike } from "../test-support/phase-transforms.mjs";
@@ -118,6 +118,40 @@ test("Node host refuses symlinked deliverable paths", async () => {
       writeDeliverables(program, join(root, "build"), { rootDirectory: root }),
       /must not traverse a symbolic link/
     );
+  } finally {
+    await rm(sandbox, { recursive: true, force: true });
+  }
+});
+
+test("Node host plans, atomically writes, and manifests deliverables", async () => {
+  const sandbox = await mkdtemp(join(tmpdir(), "ravel-manifest-"));
+  const output = join(sandbox, "build");
+  const program = {
+    version: 1,
+    deliverables: {
+      "dist/z.txt": { name: "dist/z.txt", from: "guide::z", value: "zeta\n" },
+      "dist/a.txt": { name: "dist/a.txt", from: "guide::a", value: "alpha\n" }
+    }
+  };
+
+  try {
+    const plan = planDeliverables(program, output);
+    assert.deepEqual(plan.deliverables.map((entry) => entry.name), ["dist/a.txt", "dist/z.txt"]);
+    assert.equal(plan.deliverables[0].bytes, 6);
+    await mkdir(join(output, "dist"), { recursive: true });
+    await writeFile(join(output, "dist", "a.txt"), "old\n");
+
+    const written = await writeDeliverables(program, output);
+    assert.equal(written.length, 2);
+    assert.equal(await readFile(join(output, "dist", "a.txt"), "utf8"), "alpha\n");
+    assert.equal(await readFile(join(output, "dist", "z.txt"), "utf8"), "zeta\n");
+    assert.deepEqual((await readdir(join(output, "dist"))).sort(), ["a.txt", "z.txt"]);
+
+    const expectedManifest = createBuildManifest(program, output);
+    const { path, manifest } = await writeBuildManifest(program, output);
+    assert.deepEqual(manifest, expectedManifest);
+    assert.deepEqual(JSON.parse(await readFile(path, "utf8")), expectedManifest);
+    assert.equal(manifest.deliverables[0].sha256.length, 64);
   } finally {
     await rm(sandbox, { recursive: true, force: true });
   }

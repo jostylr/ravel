@@ -105,6 +105,15 @@ npm run ravel -- build examples/poc/project.ravel-map.json \
   --graph .ravel/runs/poc/program.json
 ```
 
+Preview the exact deliverables, content hashes, and manifest location without
+writing files:
+
+```sh
+npm run ravel -- build examples/poc/project.ravel-map.json \
+  --out-dir .ravel/runs/poc \
+  --dry-run --json
+```
+
 Build a multi-document Markdown project described by TOML:
 
 ```sh
@@ -119,6 +128,9 @@ node examples/migration/.ravel/runs/legacy-fizzbuzz-migration/dist/fizzbuzz.js
 ```
 
 Generated local runs live below `.ravel/runs/` and are ignored by Git.
+Successful builds write `.ravel-manifest.json` beside their deliverables; it
+records the planned artifact paths, source chunks, byte counts, and SHA-256
+hashes.
 
 ## Minimal Markdown example
 

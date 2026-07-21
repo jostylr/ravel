@@ -1,4 +1,5 @@
-import { lstat, readFile, mkdir, writeFile } from "node:fs/promises";
+import { lstat, readFile, mkdir, rename, unlink, writeFile } from "node:fs/promises";
+import { createHash, randomUUID } from "node:crypto";
 import { basename, dirname, extname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { parse as parseToml } from "smol-toml";
 import { combineMaps } from "@pieceful/ravel-core";
@@ -239,17 +240,124 @@ const safeDestination = (outputDirectory, name) => {
   return destination;
 };
 
+const contentHash = (value) => createHash("sha256").update(value, "utf8").digest("hex");
+
+const orderedDeliverables = (program) => Object.values(program.deliverables ?? [])
+  .slice()
+  .sort((left, right) => left.name.localeCompare(right.name));
+
+/** Build a deterministic, non-writing description of artifact output. */
+export const planDeliverables = (program, outputDirectory) => {
+  const root = resolve(outputDirectory);
+  const destinations = new Set();
+  const deliverables = orderedDeliverables(program).map((deliverable) => {
+    const destination = safeDestination(root, deliverable.name);
+    if (destinations.has(destination)) throw new Error("Multiple deliverables resolve to the same destination: " + deliverable.name);
+    destinations.add(destination);
+    return {
+      name: deliverable.name,
+      path: relative(root, destination),
+      from: deliverable.from,
+      bytes: Buffer.byteLength(deliverable.value, "utf8"),
+      sha256: contentHash(deliverable.value)
+    };
+  });
+  return {
+    version: 1,
+    outputDirectory: root,
+    manifest: join(root, ".ravel-manifest.json"),
+    deliverables
+  };
+};
+
+const existingFile = async (path, description) => {
+  try {
+    const entry = await lstat(path);
+    if (entry.isSymbolicLink()) throw new Error(description + " must not be a symbolic link: " + path);
+    if (!entry.isFile()) throw new Error(description + " must be a file when it already exists: " + path);
+    return true;
+  } catch (error) {
+    if (missing(error)) return false;
+    throw error;
+  }
+};
+
+const removeIfPresent = async (path) => {
+  try {
+    await unlink(path);
+  } catch (error) {
+    if (!missing(error)) throw error;
+  }
+};
+
+/** Stage all files before committing any replacement, with rollback on failure. */
+const writeFilesAtomically = async (scope, entries, description) => {
+  const staged = [];
+  try {
+    for (const entry of entries) {
+      await ensureDirectoryTree(scope.root, dirname(entry.destination), description);
+      await assertNoSymlinks(scope.root, entry.destination, description);
+      const exists = await existingFile(entry.destination, description);
+      const token = randomUUID();
+      const temporary = join(dirname(entry.destination), "." + basename(entry.destination) + ".ravel-stage-" + token);
+      const backup = join(dirname(entry.destination), "." + basename(entry.destination) + ".ravel-backup-" + token);
+      await writeFile(temporary, entry.value, "utf8");
+      staged.push({ ...entry, exists, temporary, backup, committed: false, backedUp: false });
+    }
+
+    for (const entry of staged) {
+      if (entry.exists) {
+        await rename(entry.destination, entry.backup);
+        entry.backedUp = true;
+      }
+      await rename(entry.temporary, entry.destination);
+      entry.committed = true;
+    }
+    for (const entry of staged) if (entry.backedUp) await removeIfPresent(entry.backup);
+  } catch (error) {
+    for (const entry of staged.slice().reverse()) {
+      if (entry.committed) await removeIfPresent(entry.destination);
+      if (entry.backedUp) {
+        try {
+          await rename(entry.backup, entry.destination);
+        } catch (rollbackError) {
+          if (!missing(rollbackError)) throw rollbackError;
+        }
+      }
+      await removeIfPresent(entry.temporary);
+    }
+    throw error;
+  }
+};
+
 export const writeDeliverables = async (program, outputDirectory, { rootDirectory = outputDirectory } = {}) => {
   const scope = await createOutputScope(outputDirectory, rootDirectory);
-  const written = [];
-  for (const deliverable of Object.values(program.deliverables)) {
-    const destination = safeDestination(scope.root, deliverable.name);
-    await ensureDirectoryTree(scope.root, dirname(destination), "Deliverable path");
-    await assertNoSymlinks(scope.root, destination, "Deliverable path");
-    await writeFile(destination, deliverable.value, "utf8");
-    written.push(destination);
-  }
-  return written;
+  const plan = planDeliverables(program, scope.root);
+  const entries = plan.deliverables.map((deliverable) => ({
+    destination: safeDestination(scope.root, deliverable.name),
+    value: program.deliverables[deliverable.name].value
+  }));
+  await writeFilesAtomically(scope, entries, "Deliverable path");
+  return entries.map((entry) => entry.destination);
+};
+
+export const createBuildManifest = (program, outputDirectory) => {
+  const plan = planDeliverables(program, outputDirectory);
+  return {
+    version: 1,
+    ravelVersion: program.version ?? 1,
+    outputDirectory: plan.outputDirectory,
+    deliverables: plan.deliverables,
+    result: "success"
+  };
+};
+
+export const writeBuildManifest = async (program, outputDirectory, { rootDirectory = outputDirectory } = {}) => {
+  const scope = await createOutputScope(outputDirectory, rootDirectory);
+  const manifest = createBuildManifest(program, scope.root);
+  const destination = safeDestination(scope.root, ".ravel-manifest.json");
+  await writeFilesAtomically(scope, [{ destination, value: JSON.stringify(manifest, null, 2) + "\n" }], "Build manifest path");
+  return { path: destination, manifest };
 };
 
 export const writeGraph = async (program, path, { rootDirectory = dirname(resolve(path)) } = {}) => {
