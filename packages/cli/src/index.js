@@ -1,18 +1,20 @@
 #!/usr/bin/env node
-import { loadBuildInput, planDeliverables, writeBuildManifest, writeDeliverables, writeGraph } from "@pieceful/ravel-host-node";
+import { cleanManagedArtifacts, createOutputBackup, loadBuildInput, planDeliverables, planOutputBackup, planStaleDeliverables, refreshStaleArtifacts, writeBuildArtifacts, writeGraph } from "@pieceful/ravel-host-node";
 import { transformGraph } from "@pieceful/ravel-core";
+import { extname } from "node:path";
 
 const EXIT_SOURCE = 1;
 const EXIT_USAGE = 2;
 const EXIT_INTERNAL = 3;
 const valueOptions = new Set(["--config", "--out-dir", "--document", "--mode"]);
-const booleanOptions = new Set(["--json", "--dry-run", "--debug", "--chunks", "--trace"]);
+const booleanOptions = new Set(["--json", "--dry-run", "--debug", "--chunks", "--trace", "--clean"]);
 
 const usage = () => {
   console.error("Usage: ravel check <map.json|document.md> [--config <run.toml>] [--document <name>] [--mode <opt-in|primary>] [--json]");
-  console.error("       ravel build <map.json|document.md> --out-dir <directory> [--document <name>] [--mode <opt-in|primary>] [--graph <program.json>] [--dry-run] [--json]");
-  console.error("       ravel build --config <run.toml> [--out-dir <directory>] [--graph <program.json>] [--dry-run] [--json]");
+  console.error("       ravel build <map.json|document.md> --out-dir <directory> [--document <name>] [--mode <opt-in|primary>] [--graph <program.json>] [--backup [file.zip]] [--clean] [--dry-run] [--json]");
+  console.error("       ravel build --config <run.toml> [--out-dir <directory>] [--graph <program.json>] [--backup [file.zip]] [--clean] [--dry-run] [--json]");
   console.error("       ravel inspect <map.json|document.md> [--config <run.toml>] [--document <name>] [--mode <opt-in|primary>] [--chunks|--graph|--trace] [--json]");
+  console.error("       ravel refresh <output-directory> [--dry-run] [--json]");
 };
 
 const formatDiagnostic = (entry) => {
@@ -37,6 +39,17 @@ const parseArguments = (argumentsValue) => {
     const argument = argumentsValue[index];
     if (!argument.startsWith("--")) {
       positional.push(argument);
+      continue;
+    }
+    if (argument === "--backup") {
+      if (Object.hasOwn(options, argument)) return { error: "Option may be specified only once: " + argument };
+      const following = argumentsValue[index + 1];
+      if (following && !following.startsWith("--") && extname(following).toLowerCase() === ".zip") {
+        options[argument] = following;
+        index += 1;
+      } else {
+        options[argument] = true;
+      }
       continue;
     }
     if (booleanOptions.has(argument) || (argument === "--graph" && command === "inspect")) {
@@ -131,11 +144,34 @@ const printBuildResult = (result, json) => {
     console.log("Ravel build plan for " + result.outputDirectory + ":");
     for (const deliverable of result.deliverables) console.log("  " + deliverable.path + " ← " + deliverable.from);
     console.log("  manifest: " + result.manifest);
+  } else {
+    console.log("Ravel wrote " + result.written.length + " deliverable" + (result.written.length === 1 ? "" : "s") + " to " + result.outputDirectory + ".");
+    for (const deliverable of result.deliverables) console.log("  " + deliverable.path + " ← " + deliverable.from);
+    console.log("Manifest: " + result.manifest);
+  }
+  if (result.stale?.length) {
+    console.log("Stale managed outputs retained:");
+    for (const deliverable of result.stale) console.log("  " + deliverable.path + " ← " + (deliverable.from ?? "previous build"));
+  }
+  if (result.removed?.length) {
+    console.log((result.dryRun ? "Managed outputs that would be removed:" : "Managed outputs removed:"));
+    for (const deliverable of result.removed) console.log("  " + deliverable.path + " ← " + (deliverable.from ?? "previous build"));
+  }
+  if (result.backup) {
+    const action = result.dryRun ? "Backup plan" : "Backup";
+    const count = result.backup.files?.length;
+    console.log(action + ": " + result.backup.path + (count === undefined ? "" : " (" + count + " files)"));
+  }
+};
+
+const printRefreshResult = (result, json) => {
+  if (json) {
+    console.log(JSON.stringify({ ok: true, command: "refresh", ...result }, null, 2));
     return;
   }
-  console.log("Ravel wrote " + result.written.length + " deliverable" + (result.written.length === 1 ? "" : "s") + " to " + result.outputDirectory + ".");
-  for (const deliverable of result.deliverables) console.log("  " + deliverable.path + " ← " + deliverable.from);
-  console.log("Manifest: " + result.manifest);
+  const action = result.dryRun ? "would remove" : "removed";
+  console.log("Ravel refresh " + action + " " + result.removed.length + " stale managed output" + (result.removed.length === 1 ? "" : "s") + ".");
+  for (const deliverable of result.removed) console.log("  " + deliverable.path + " ← " + (deliverable.from ?? "previous build"));
 };
 
 const argumentsValue = process.argv.slice(2);
@@ -150,13 +186,19 @@ if (command === "--help" || command === "-h" || argumentsValue.includes("--help"
   const parsed = parseArguments(argumentsValue);
   const json = parsed.options?.["--json"] === true;
   const debug = parsed.options?.["--debug"] === true;
-  const supported = new Set(["build", "inspect", "check"]);
+  const supported = new Set(["build", "inspect", "check", "refresh"]);
   if (!supported.has(parsed.command) || parsed.error || !parsed.input) {
     if (parsed.error) console.error("ravel usage error: " + parsed.error);
     usage();
     process.exitCode = EXIT_USAGE;
-  } else if (parsed.options["--dry-run"] && parsed.command !== "build") {
-    console.error("ravel usage error: --dry-run is available only with build.");
+  } else if (parsed.options["--dry-run"] && !new Set(["build", "refresh"]).has(parsed.command)) {
+    console.error("ravel usage error: --dry-run is available only with build or refresh.");
+    process.exitCode = EXIT_USAGE;
+  } else if (parsed.options["--clean"] && parsed.command !== "build") {
+    console.error("ravel usage error: --clean is available only with build.");
+    process.exitCode = EXIT_USAGE;
+  } else if (parsed.options["--backup"] && parsed.command !== "build") {
+    console.error("ravel usage error: --backup is available only with build.");
     process.exitCode = EXIT_USAGE;
   } else if (parsed.options["--out-dir"] && parsed.command !== "build") {
     console.error("ravel usage error: --out-dir is available only with build.");
@@ -167,8 +209,18 @@ if (command === "--help" || command === "-h" || argumentsValue.includes("--help"
   } else if (parsed.command === "inspect" && ["--chunks", "--graph", "--trace"].filter((option) => parsed.options[option]).length > 1) {
     console.error("ravel usage error: choose only one inspect view.");
     process.exitCode = EXIT_USAGE;
+  } else if (parsed.command === "refresh" && ["--config", "--document", "--mode", "--chunks", "--trace"].some((option) => parsed.options[option])) {
+    console.error("ravel usage error: refresh accepts only an output directory, --dry-run, and --json.");
+    process.exitCode = EXIT_USAGE;
   } else {
     try {
+      if (parsed.command === "refresh") {
+        printRefreshResult(await refreshStaleArtifacts(parsed.input, {
+          rootDirectory: parsed.input,
+          dryRun: parsed.options["--dry-run"] === true
+        }), json);
+        process.exitCode = 0;
+      } else {
       const loaded = await loadBuildInput(parsed.input, {
         document: parsed.options["--document"],
         mode: parsed.options["--mode"]
@@ -187,26 +239,42 @@ if (command === "--help" || command === "-h" || argumentsValue.includes("--help"
         const outputDirectory = parsed.options["--out-dir"] ?? loaded.outputDirectory;
         if (!outputDirectory) throw new Error("build requires --out-dir or build.out_dir in the TOML config.");
         const plan = planDeliverables(program, outputDirectory);
+        const rootDirectory = parsed.options["--out-dir"] ?? loaded.rootDirectory;
+        const stale = await planStaleDeliverables(program, outputDirectory, { rootDirectory });
+        const backupOptions = {
+          outputRootDirectory: rootDirectory,
+          backupRootDirectory: loaded.rootDirectory,
+          ...(typeof parsed.options["--backup"] === "string" ? { backupPath: parsed.options["--backup"] } : {})
+        };
+        const backup = parsed.options["--backup"]
+          ? parsed.options["--dry-run"]
+            ? await planOutputBackup(outputDirectory, backupOptions)
+            : await createOutputBackup(outputDirectory, backupOptions)
+          : null;
+        const cleanup = parsed.options["--clean"]
+          ? await cleanManagedArtifacts(outputDirectory, { rootDirectory, dryRun: parsed.options["--dry-run"] === true })
+          : { removed: [] };
+        const retainedStale = parsed.options["--clean"] ? [] : stale;
         if (parsed.options["--dry-run"]) {
-          printBuildResult({ ok: true, command: "build", dryRun: true, ...plan }, json);
+          printBuildResult({ ok: true, command: "build", dryRun: true, clean: parsed.options["--clean"] === true, ...plan, stale: retainedStale, removed: cleanup.removed, ...(backup ? { backup } : {}) }, json);
         } else {
-          const written = await writeDeliverables(program, outputDirectory, {
-            rootDirectory: parsed.options["--out-dir"] ?? loaded.rootDirectory
-          });
-          const manifest = await writeBuildManifest(program, outputDirectory, {
-            rootDirectory: parsed.options["--out-dir"] ?? loaded.rootDirectory
-          });
+          const artifacts = await writeBuildArtifacts(program, outputDirectory, { rootDirectory, stale: retainedStale });
           if (parsed.options["--graph"]) await writeGraph(program, parsed.options["--graph"], { rootDirectory: loaded.rootDirectory });
           printBuildResult({
             ok: true,
             command: "build",
             outputDirectory: plan.outputDirectory,
-            written,
-            manifest: manifest.path,
+            written: artifacts.written,
+            manifest: artifacts.manifest.path,
             deliverables: plan.deliverables,
+            stale: retainedStale,
+            removed: cleanup.removed,
+            ...(backup ? { backup } : {}),
+            clean: parsed.options["--clean"] === true,
             chunks: Object.keys(program.chunks).sort()
           }, json);
         }
+      }
       }
     } catch (error) {
       if (Array.isArray(error?.diagnostics)) {

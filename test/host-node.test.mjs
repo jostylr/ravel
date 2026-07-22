@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import { createBuildManifest, loadBuildInput, loadPretransformGraph, planDeliverables, writeBuildManifest, writeDeliverables } from "../packages/host-node/src/index.js";
+import { createBuildManifest, createOutputBackup, loadBuildInput, loadPretransformGraph, planDeliverables, planStaleDeliverables, writeBuildArtifacts, writeBuildManifest, writeDeliverables } from "../packages/host-node/src/index.js";
 import { markdownToMap } from "../packages/markdown/src/index.js";
 import { combineMaps, transformGraph } from "../packages/core/src/index.js";
 import { markdownLike, pugLike } from "../test-support/phase-transforms.mjs";
@@ -187,11 +187,116 @@ test("Node host plans, atomically writes, and manifests deliverables", async () 
     assert.equal(await readFile(join(output, "dist", "z.txt"), "utf8"), "zeta\n");
     assert.deepEqual((await readdir(join(output, "dist"))).sort(), ["a.txt", "z.txt"]);
 
-    const expectedManifest = createBuildManifest(program, output);
-    const { path, manifest } = await writeBuildManifest(program, output);
+    const generatedAt = "2026-07-22T12:34:56.000Z";
+    const expectedManifest = createBuildManifest(program, output, { builtAt: generatedAt });
+    const { path, manifest } = await writeBuildManifest(program, output, { generatedAt });
     assert.deepEqual(manifest, expectedManifest);
     assert.deepEqual(JSON.parse(await readFile(path, "utf8")), expectedManifest);
     assert.equal(manifest.deliverables[0].sha256.length, 64);
+  } finally {
+    await rm(sandbox, { recursive: true, force: true });
+  }
+});
+
+test("Node host creates a no-overwrite ZIP backup of managed output", async () => {
+  const sandbox = await mkdtemp(join(tmpdir(), "ravel-backup-"));
+  const output = join(sandbox, "build");
+  const program = { version: 1, deliverables: {
+    "dist/main.txt": { name: "dist/main.txt", from: "guide::main", value: "ready\\n" }
+  } };
+  try {
+    await writeBuildArtifacts(program, output, { rootDirectory: sandbox, generatedAt: "2026-07-22T12:34:56.000Z" });
+    await writeFile(join(output, "unmanaged.txt"), "keep this too\\n");
+    const backup = await createOutputBackup(output, {
+      outputRootDirectory: sandbox,
+      backupRootDirectory: sandbox
+    });
+    assert.equal(backup.path, join(sandbox, "backups", "build-1784723696.zip"));
+    assert.deepEqual(backup.files, [".manifest.txt", ".ravel-manifest.json", "dist/main.txt", "unmanaged.txt"]);
+    assert.equal((await readFile(backup.path)).subarray(0, 4).toString("binary"), "PK\x03\x04");
+    await assert.rejects(
+      createOutputBackup(output, { outputRootDirectory: sandbox, backupRootDirectory: sandbox }),
+      /Backup file already exists/
+    );
+  } finally {
+    await rm(sandbox, { recursive: true, force: true });
+  }
+});
+
+test("Node host reports stale deliverables from the preceding manifest", async () => {
+  const sandbox = await mkdtemp(join(tmpdir(), "ravel-stale-"));
+  const output = join(sandbox, "build");
+  const first = { version: 1, deliverables: {
+    "dist/current.js": { name: "dist/current.js", from: "guide::current", value: "current\n" },
+    "dist/removed.js": { name: "dist/removed.js", from: "guide::removed", value: "removed\n" }
+  } };
+  const second = { version: 1, deliverables: {
+    "dist/current.js": { name: "dist/current.js", from: "guide::current", value: "current\n" }
+  } };
+  try {
+    await writeDeliverables(first, output);
+    await writeBuildManifest(first, output);
+    assert.deepEqual(await planStaleDeliverables(second, output, { staleSince: "2026-01-02T03:04:05.000Z" }), [{
+      name: "dist/removed.js", path: "dist/removed.js", from: "guide::removed", staleSince: "2026-01-02T03:04:05.000Z"
+    }]);
+    assert.equal(await readFile(join(output, "dist", "removed.js"), "utf8"), "removed\n");
+  } finally {
+    await rm(sandbox, { recursive: true, force: true });
+  }
+});
+
+test("Node host produces repeatable graphs, manifests, and bytes in separate roots", async () => {
+  const sandbox = await mkdtemp(join(tmpdir(), "ravel-repeatable-"));
+  const makeProject = async (name) => {
+    const root = join(sandbox, name);
+    const input = join(root, "project.ravel-map.json");
+    const output = join(root, "output");
+    const source = { uri: input, range: { start: { line: 0, column: 0, offset: 0 }, end: { line: 0, column: 0, offset: 0 } } };
+    await mkdir(root);
+    await writeFile(input, JSON.stringify({
+      version: 1,
+      document: { id: "project", uri: input, format: "ravel-map-v1" },
+      chunks: [{
+        id: "project::main",
+        identity: { document: "project", chunk: "main", minor: null, type: null },
+        body: "_\"|delay('ready')\"",
+        definitionPipeline: [{ type: "transform", name: "concat", arguments: [], source }],
+        source
+      }],
+      directives: [{ kind: "out", name: "dist/main.txt", from: "project::main", source }]
+    }));
+    const loaded = await loadBuildInput(input);
+    const program = transformGraph(loaded.pretransform);
+    await writeDeliverables(program, output);
+    const manifest = createBuildManifest(program, output);
+    return { program, manifest, bytes: await readFile(join(output, "dist", "main.txt"), "utf8") };
+  };
+  try {
+    const first = await makeProject("one");
+    const second = await makeProject("two");
+    assert.deepEqual(first.program, second.program);
+    assert.deepEqual(
+      { ...first.manifest, outputDirectory: "." },
+      { ...second.manifest, outputDirectory: "." }
+    );
+    assert.equal(first.bytes, second.bytes);
+  } finally {
+    await rm(sandbox, { recursive: true, force: true });
+  }
+});
+
+test("Node host does not commit deliverables when an artifact transaction cannot stage", async () => {
+  const sandbox = await mkdtemp(join(tmpdir(), "ravel-transaction-"));
+  const output = join(sandbox, "build");
+  const program = { version: 1, deliverables: {
+    "dist/first.txt": { name: "dist/first.txt", from: "guide::first", value: "first\n" },
+    "dist/second.txt": { name: "dist/second.txt", from: "guide::second", value: "second\n" }
+  } };
+  try {
+    await mkdir(join(output, "dist", "second.txt"), { recursive: true });
+    await assert.rejects(writeBuildArtifacts(program, output), /must be a file when it already exists/);
+    await assert.rejects(readFile(join(output, "dist", "first.txt"), "utf8"), { code: "ENOENT" });
+    await assert.rejects(readFile(join(output, ".ravel-manifest.json"), "utf8"), { code: "ENOENT" });
   } finally {
     await rm(sandbox, { recursive: true, force: true });
   }

@@ -42,7 +42,7 @@ Ravel can currently:
 - inspect a completed graph or write deliverables through the Node CLI;
 - report source-linked parsing, resolution, transform, and cycle diagnostics;
 - reject input/output path escapes and symbolic-link traversal;
-- run the current 26-test suite under both Node and Bun; and
+- run the current automated suites under both Node and Bun; and
 - bundle the portable core and Markdown adapter for the browser harness.
 
 The legacy FizzBuzz migration exercises the whole static path: Markdown
@@ -50,10 +50,10 @@ extraction, multiple documents, imports, greedy fragments, transforms,
 composition directives, aliases, derived chunks, output planning, filesystem
 writing, and execution of the generated JavaScript.
 
-Ravel is not yet 0.1 because runtime Ravel Map validation is incomplete, CLI
-diagnostics are mostly raw JSON or stack traces, generated artifacts do not yet
-carry segment-level source maps, and browser conformance is not automated. See
-[the Ravel 0.1 plan](TODO.md) for the release gate.
+Ravel is not yet 0.1 because generated artifacts do not yet carry segment-level
+source maps, browser conformance is not automated, and the release
+documentation and packed-installation verification are incomplete. See [the
+Ravel 0.1 plan](TODO.md) for the release gate.
 
 ## Requirements and setup
 
@@ -146,9 +146,34 @@ npm run ravel -- build --config examples/benchmark/ravel-benchmark.toml
 ```
 
 Generated local runs live below `.ravel/runs/` and are ignored by Git.
-Successful builds write `.ravel-manifest.json` beside their deliverables; it
-records the planned artifact paths, source chunks, byte counts, and SHA-256
-hashes.
+Successful builds write two manifests beside their deliverables:
+
+- `.ravel-manifest.json` is the machine-readable record of current and stale
+  managed outputs, source chunks, byte counts, and SHA-256 hashes.
+- `.manifest.txt` is a readable inventory with the build time, current files,
+  their producing chunk references, and retained stale files grouped with the
+  time they became stale.
+
+A normal build reports stale managed outputs but deliberately retains them.
+Use `--clean` to remove every file named by the prior manifest, then perform a
+fresh build. It never removes arbitrary files in the output directory. To
+remove only the retained stale files later, use `refresh`; both operations can
+be previewed safely. Add `--backup [file.zip]` to snapshot the complete current
+output tree before Ravel cleans or replaces anything. A named archive must not
+already exist, and backups require the prior Ravel manifest that identifies the
+managed output. Without a name, Ravel writes
+`backups/<output-directory>-<manifest-build-unix-timestamp>.zip` beneath the
+source/config root. `--dry-run` validates and reports the planned archive but
+does not create it:
+
+```sh
+npm run ravel -- build --config examples/benchmark/ravel-benchmark.toml --clean --dry-run
+npm run ravel -- build --config examples/benchmark/ravel-benchmark.toml --clean
+npm run ravel -- build --config examples/benchmark/ravel-benchmark.toml --backup backups/before-refresh.zip --clean
+npm run ravel -- build --config examples/benchmark/ravel-benchmark.toml --backup --dry-run
+npm run ravel -- refresh examples/benchmark/.ravel/runs/fifty-chunk-assembly-benchmark --dry-run
+npm run ravel -- refresh examples/benchmark/.ravel/runs/fifty-chunk-assembly-benchmark
+```
 
 ## Minimal Markdown example
 

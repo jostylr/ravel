@@ -282,6 +282,32 @@ test("delay reports a transform that does not preserve its safe symbol", () => {
   assert.equal(program.diagnostics[0].code, "RV123");
 });
 
+test("automatic delay symbols are deterministic and avoid authored collisions", () => {
+  const graph = (body) => combineMaps([{
+    document: { id: "guide", uri: "guide.ravel-map.json", format: "ravel-map-v1" },
+    chunks: [{
+      id: "guide::page",
+      identity: identity("guide", "page"),
+      body,
+      definitionPipeline: [{ type: "transform", name: "concat", arguments: [], source: source("guide", 1) }],
+      source: source("guide", 1)
+    }],
+    directives: []
+  }]);
+
+  const first = transformGraph(graph("_\"|delay('later')\""));
+  const second = transformGraph(graph("_\"|delay('later')\""));
+  const token = first.trace.chunks["guide::page"][2].delays[0].safeSymbol;
+  assert.match(token, /^RAVELDELAY[A-Z0-9]+$/);
+  assert.equal(second.trace.chunks["guide::page"][2].delays[0].safeSymbol, token);
+
+  const collision = transformGraph(graph("_\"|delay('later')\" " + token));
+  const collisionToken = collision.trace.chunks["guide::page"][2].delays[0].safeSymbol;
+  assert.notEqual(collisionToken, token);
+  assert.deepEqual(collision.diagnostics, []);
+  assert.equal(collision.chunks["guide::page"].value, "later " + token);
+});
+
 test("text and ch reset a pipeline and ch can contain an empty-segment pipeline", () => {
   const graph = combineMaps([{
     document: { id: "guide", uri: "guide.ravel-map.json", format: "ravel-map-v1" },

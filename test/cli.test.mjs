@@ -127,6 +127,66 @@ test("CLI build writes deliverables, a manifest, and an explicit graph", async (
   }
 });
 
+test("CLI dry-run reports stale outputs without deleting them", async () => {
+  const sandbox = await mkdtemp(join(tmpdir(), "ravel-cli-stale-"));
+  const input = join(sandbox, "project.ravel-map.json");
+  const output = join(sandbox, "output");
+  const source = { uri: input, range: { start: { line: 0, column: 0, offset: 0 }, end: { line: 0, column: 0, offset: 0 } } };
+  const project = (outputs) => ({
+    version: 1,
+    document: { id: "project", uri: input, format: "ravel-map-v1" },
+    chunks: [{
+      id: "project::main",
+      identity: { document: "project", chunk: "main", minor: null, type: null },
+      name: "Main",
+      body: "ready\\n",
+      metadata: {},
+      source
+    }],
+    directives: outputs.map((name) => ({ kind: "out", name, from: "project::main", source }))
+  });
+  try {
+    await writeFile(input, JSON.stringify(project(["dist/current.txt", "dist/removed.txt"])));
+    await run(process.execPath, [cli, "build", input, "--out-dir", output, "--json"]);
+    const backupDryRun = await run(process.execPath, [cli, "build", input, "--out-dir", output, "--backup", "snapshots/current.zip", "--dry-run", "--json"]);
+    assert.equal(JSON.parse(backupDryRun.stdout).backup.path, join(sandbox, "snapshots", "current.zip"));
+    await assert.rejects(lstat(join(sandbox, "snapshots", "current.zip")), { code: "ENOENT" });
+    const backup = await run(process.execPath, [cli, "build", input, "--out-dir", output, "--backup", "snapshots/current.zip", "--json"]);
+    assert.equal(JSON.parse(backup.stdout).backup.files.includes("dist/removed.txt"), true);
+    assert.equal((await readFile(join(sandbox, "snapshots", "current.zip"))).subarray(0, 4).toString("binary"), "PK\x03\x04");
+    await assert.rejects(
+      run(process.execPath, [cli, "build", input, "--out-dir", output, "--backup", "snapshots/current.zip", "--json"]),
+      (error) => error.code === 3 && /Backup file already exists/.test(error.stderr)
+    );
+    await writeFile(input, JSON.stringify(project(["dist/current.txt"])));
+    const result = await run(process.execPath, [cli, "build", input, "--out-dir", output, "--dry-run", "--json"]);
+    const stale = JSON.parse(result.stdout).stale;
+    assert.equal(stale.length, 1);
+    assert.deepEqual({ name: stale[0].name, path: stale[0].path, from: stale[0].from }, {
+      name: "dist/removed.txt", path: "dist/removed.txt", from: "project::main"
+    });
+    assert.match(stale[0].staleSince, /^\d{4}-\d{2}-\d{2}T/);
+    assert.equal(await readFile(join(output, "dist", "removed.txt"), "utf8"), "ready\\n");
+
+    const clean = await run(process.execPath, [cli, "build", input, "--out-dir", output, "--clean", "--json"]);
+    assert.deepEqual(JSON.parse(clean.stdout).removed.map((entry) => entry.name), ["dist/current.txt", "dist/removed.txt"]);
+    await assert.rejects(readFile(join(output, "dist", "removed.txt"), "utf8"), { code: "ENOENT" });
+    assert.match(await readFile(join(output, ".manifest.txt"), "utf8"), /Current files:\n  dist\/current\.txt \(project::main\)/);
+
+    await writeFile(input, JSON.stringify(project([])));
+    await run(process.execPath, [cli, "build", input, "--out-dir", output, "--json"]);
+    const refreshDryRun = await run(process.execPath, [cli, "refresh", output, "--dry-run", "--json"]);
+    assert.deepEqual(JSON.parse(refreshDryRun.stdout).removed.map((entry) => entry.name), ["dist/current.txt"]);
+    assert.equal(await readFile(join(output, "dist", "current.txt"), "utf8"), "ready\\n");
+    const refresh = await run(process.execPath, [cli, "refresh", output, "--json"]);
+    assert.deepEqual(JSON.parse(refresh.stdout).removed.map((entry) => entry.name), ["dist/current.txt"]);
+    await assert.rejects(readFile(join(output, "dist", "current.txt"), "utf8"), { code: "ENOENT" });
+    assert.doesNotMatch(await readFile(join(output, ".manifest.txt"), "utf8"), /Stale files/);
+  } finally {
+    await rm(sandbox, { recursive: true, force: true });
+  }
+});
+
 test("CLI rejects unknown flags with a usage exit code", async () => {
   await assert.rejects(
     run(process.execPath, [cli, "check", proofOfConcept, "--not-a-ravel-option"]),

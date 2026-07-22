@@ -576,6 +576,12 @@ const resolveTarget = (target, owner, definitions) => {
 export const transformGraph = (pretransform, options = {}) => {
   const diagnostics = [...(pretransform.diagnostics ?? [])];
   const definitions = new Map();
+  // An automatically generated delay marker must not vary between equivalent
+  // builds. Keep the authored input as a collision corpus so a marker cannot
+  // accidentally replace a literal already present in the project.
+  const delayTokenCorpus = JSON.stringify(pretransform);
+  const compareText = (left, right) => left < right ? -1 : left > right ? 1 : 0;
+  const orderedEntries = (value) => Object.entries(value).sort(([left], [right]) => compareText(left, right));
 
   const normalizeDefinitionPipeline = (steps, source) => {
     if (steps === undefined) return [];
@@ -766,7 +772,15 @@ export const transformGraph = (pretransform, options = {}) => {
   const evaluating = [];
   const resultChunks = {};
   const traceChunks = {};
-  let delayCounter = 0;
+
+  const stableTokenHash = (value) => {
+    let hash = 2166136261;
+    for (let index = 0; index < value.length; index += 1) {
+      hash ^= value.charCodeAt(index);
+      hash = Math.imul(hash, 16777619);
+    }
+    return (hash >>> 0).toString(36).toUpperCase();
+  };
 
   const evaluateReference = (node, owner) => {
     const resolved = resolveTarget(node.target, owner.definition, definitions);
@@ -781,19 +795,24 @@ export const transformGraph = (pretransform, options = {}) => {
     return evaluatePipeline(value, node.pipeline, owner);
   };
 
-  const delayToken = (safeSymbol) => {
+  const delayToken = (node, owner) => {
+    const safeSymbol = node.safeSymbol;
     if (safeSymbol) return safeSymbol;
-    delayCounter += 1;
-    const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    const random = new Uint32Array(8);
-    if (globalThis.crypto?.getRandomValues) globalThis.crypto.getRandomValues(random);
-    return "RAVELDELAY" + [...random].map((value, index) =>
-      letters[(value || delayCounter + index) % letters.length]
-    ).join("");
+    const source = node.source ?? {};
+    const start = source.range?.start ?? {};
+    const identity = owner.definition.id + "\u0000" + (source.uri ?? "") + "\u0000" +
+      (start.offset ?? "") + "\u0000" + (node.expression ?? "");
+    let attempt = 0;
+    while (true) {
+      const token = "RAVELDELAY" + stableTokenHash(identity + "\u0000" + attempt) +
+        (attempt === 0 ? "" : "X" + attempt.toString(36).toUpperCase());
+      if (!delayTokenCorpus.includes(token) && !owner.delays.some((delay) => delay.token === token)) return token;
+      attempt += 1;
+    }
   };
 
   const evaluateDelay = (node, owner) => {
-    const token = delayToken(node.safeSymbol);
+    const token = delayToken(node, owner);
     if (owner.delays.some((delay) => delay.token === token)) {
       diagnostics.push(diagnostic("RV121", "Each delay safe symbol must be unique within a chunk.", node.source));
       return "";
@@ -942,6 +961,8 @@ export const transformGraph = (pretransform, options = {}) => {
       value,
       metadata: definition.metadata,
       dependencies: [...owner.dependencies].sort(),
+      // References retain authored source order, which is deterministic and is
+      // more useful for explaining a chunk than lexical target order.
       references: owner.references,
       trace: owner.trace,
       provenance: [definition.origin],
@@ -988,10 +1009,14 @@ export const transformGraph = (pretransform, options = {}) => {
 
   return {
     version: 1,
-    documents: pretransform.documents,
-    chunks: resultChunks,
-    trace: { chunks: traceChunks },
-    deliverables,
+    documents: (pretransform.documents ?? []).slice().sort((left, right) =>
+      compareText(left.id ?? "", right.id ?? "") || compareText(left.uri ?? "", right.uri ?? "")
+    ),
+    chunks: Object.fromEntries(orderedEntries(resultChunks)),
+    trace: { chunks: Object.fromEntries(orderedEntries(traceChunks)) },
+    deliverables: Object.fromEntries(orderedEntries(deliverables)),
+    // Diagnostics retain parse/evaluation order so related failures read in
+    // the order their authored constructs are encountered.
     diagnostics
   };
 };

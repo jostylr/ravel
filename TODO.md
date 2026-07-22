@@ -30,8 +30,8 @@ The following vertical slice is implemented and should remain passing while the
       and Node filesystem writes.
 - [x] Filesystem-root containment, traversal rejection, and symlink rejection.
 - [x] Runnable legacy FizzBuzz migration covering the full static build path.
-- [x] Twenty-six passing tests under Node and Bun, plus browser harnesses that
-      can be bundled manually.
+- [x] Automated Node and Bun test suites, plus browser harnesses that can be
+      bundled manually.
 
 ## 0.1 scope decisions
 
@@ -210,26 +210,32 @@ Exit criteria:
 Make repeated builds predictable and prevent successful builds from leaving
 ambiguous output state.
 
-- [ ] Define a stable ordering for documents, chunks, diagnostics, references,
+- [x] Define a stable ordering for documents, chunks, diagnostics, references,
       deliverables, trace entries, and serialized graph keys.
 - [x] Store project-relative or root-relative source URIs in persisted build
       artifacts where possible; do not make graphs differ solely because a checkout
       moved to another absolute directory. The Node host redacts absolute URIs
       outside its declared root as `<external>/<basename>`.
-- [ ] Replace random automatic delay placeholders with deterministic,
+- [x] Replace random automatic delay placeholders with deterministic,
       collision-checked tokens derived from stable chunk/expression identity.
-- [x] Add an initial build manifest with Ravel version, output paths, source
-      chunks, content hashes, and build result. Input identities and
-      provenance-map paths remain to be added with the provenance work.
+- [x] Add machine-readable and human-readable build manifests with Ravel
+      version, output paths, source chunks, content hashes, build result, and
+      dated stale-output records. Input identities and provenance-map paths
+      remain to be added with the provenance work.
 - [x] Write files atomically through a temporary sibling followed by rename,
       while retaining the existing containment and symlink protections.
 - [x] Detect conflicting deliverables before writing any output.
-- [ ] Decide and document stale-output behavior. Recommended: report stale files
-      from the preceding manifest and remove them only with an explicit managed
-      output policy or flag.
-- [ ] Do not partially commit a build when validation or graph evaluation has
-      errors. Define recovery behavior for filesystem failures during commit.
-- [ ] Add repeatability tests that build the same project in different temporary
+- [x] Decide and document stale-output behavior: report files from the preceding
+      manifest that are absent from the current plan, retain them by default,
+      remove all manifest-tracked outputs only with `build --clean`, or remove
+      stale entries only with the explicit `refresh` command. Before either a
+      normal replacement or `--clean`, `build --backup [file.zip]` can archive
+      the complete existing output tree as a no-overwrite ZIP; an omitted name
+      is rooted at `backups/` and derived from the prior manifest build time.
+- [x] Do not partially commit a build when validation or graph evaluation has
+      errors. The CLI evaluates before writing, then atomically commits all
+      deliverables and the success manifest with rollback on filesystem failure.
+- [x] Add repeatability tests that build the same project in different temporary
       roots and compare normalized program graphs, manifests, diagnostics, and
       deliverable bytes.
 
@@ -253,15 +259,18 @@ statement.
       real Chromium-class browser.
 - [ ] Add at least a periodic Firefox and WebKit-class run, or narrow the 0.1
       browser claim explicitly if those environments are not maintained.
-- [ ] Add CI jobs for clean `npm ci`, Node tests, Bun tests, schema validation,
-      browser conformance, package smoke tests, and packed-artifact inspection.
+- [x] Add CI jobs for clean `npm ci`, Node tests, Bun tests, schema validation,
+      browser-bundle construction, package smoke tests, and packed-artifact
+      inspection. Browser conformance execution remains a separate item below.
 - [ ] Add regression tests for every new validation and CLI diagnostic.
-- [ ] Add one second nontrivial static example, distinct from FizzBuzz, that
+- [x] Add one second nontrivial static example, distinct from FizzBuzz, that
       exercises multi-file composition and multiple deliverables without relying on
-      external transforms.
-- [ ] Establish a small performance baseline for parsing and building a
+      external transforms. The 50-chunk benchmark also exercises nested imports,
+      directives, derived chunks, and a runnable multi-output build.
+- [x] Establish a small performance baseline for parsing and building a
       representative project. A strict optimizer or cache is not required for 0.1,
-      but obvious accidental quadratic behavior should be caught.
+      but obvious accidental quadratic behavior should be caught. Run
+      `npm run benchmark:assembly` for repeated load-and-evaluate measurements.
 - [ ] Test supported Windows path behavior in CI or explicitly scope 0.1 to the
       operating systems actually verified.
 
