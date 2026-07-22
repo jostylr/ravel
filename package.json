@@ -15,6 +15,7 @@
     "test:node": "node --test",
     "test:bun": "bun test",
     "ravel": "node packages/cli/src/index.js",
+    "benchmark:assembly": "node examples/benchmark/benchmark-build.mjs",
     "validate:schema": "node scripts/validate-map-example.mjs",
     "build:browser-test": "esbuild browser-test/source/markdown-adapter-entry.mjs --bundle --format=esm --platform=browser --outfile=browser-test/generated/markdown-adapter.mjs"
   },

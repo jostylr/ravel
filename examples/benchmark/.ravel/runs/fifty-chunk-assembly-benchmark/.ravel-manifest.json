@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "ravelVersion": 1,
+  "outputDirectory": "/Users/jostylr/ai-repos/literate-programming/ravel/examples/benchmark/.ravel/runs/fifty-chunk-assembly-benchmark",
+  "deliverables": [
+    {
+      "name": "dist/benchmark-captured.js",
+      "path": "dist/benchmark-captured.js",
+      "from": "benchmark::assembly:captured.js",
+      "bytes": 5424,
+      "sha256": "804aee01f1dd65843ff85aa7949b2bb49e0ba84dd76eb00995d8887e0044925b"
+    },
+    {
+      "name": "dist/benchmark-normalized.js",
+      "path": "dist/benchmark-normalized.js",
+      "from": "benchmark::assembly:normalized.js",
+      "bytes": 5425,
+      "sha256": "6e4dbc8de88061a1cf857f11b30a67122c182c8552e956cb23c3bd493c152ee3"
+    },
+    {
+      "name": "dist/benchmark-via-config.js",
+      "path": "dist/benchmark-via-config.js",
+      "from": "benchmark::public.js",
+      "bytes": 5425,
+      "sha256": "6e4dbc8de88061a1cf857f11b30a67122c182c8552e956cb23c3bd493c152ee3"
+    },
+    {
+      "name": "dist/benchmark.js",
+      "path": "dist/benchmark.js",
+      "from": "benchmark::public.js",
+      "bytes": 5425,
+      "sha256": "6e4dbc8de88061a1cf857f11b30a67122c182c8552e956cb23c3bd493c152ee3"
+    }
+  ],
+  "result": "success"
+}

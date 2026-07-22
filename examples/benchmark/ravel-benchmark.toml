@@ -1,0 +1,13 @@
+version = 1
+
+[build]
+name = "fifty-chunk-assembly-benchmark"
+out_dir = ".ravel/runs/fifty-chunk-assembly-benchmark"
+
+[[files]]
+path = "benchmark-50.md"
+mode = "primary"
+
+[[outputs]]
+name = "dist/benchmark-via-config.js"
+from = "benchmark::public.js"

@@ -136,6 +136,15 @@ npm run ravel -- build --config examples/migration/ravel-fizzbuzz.toml
 node examples/migration/.ravel/runs/legacy-fizzbuzz-migration/dist/fizzbuzz.js
 ```
 
+Build the [50-chunk assembly benchmark](examples/benchmark/README.md) when you
+need a repeatable timing fixture for imports, nested substitutions, directives,
+and graph evaluation:
+
+```sh
+npm run benchmark:assembly
+npm run ravel -- build --config examples/benchmark/ravel-benchmark.toml
+```
+
 Generated local runs live below `.ravel/runs/` and are ignored by Git.
 Successful builds write `.ravel-manifest.json` beside their deliverables; it
 records the planned artifact paths, source chunks, byte counts, and SHA-256
