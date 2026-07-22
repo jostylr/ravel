@@ -15,8 +15,8 @@ coverage/
 *.tsbuildinfo
 
 # Ravel local run state
-.ravel/cache/
-.ravel/runs/
+**/.ravel/cache/
+**/.ravel/runs/
 
 # Generated browser conformance bundle
 browser-test/generated/

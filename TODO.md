@@ -212,9 +212,10 @@ ambiguous output state.
 
 - [ ] Define a stable ordering for documents, chunks, diagnostics, references,
       deliverables, trace entries, and serialized graph keys.
-- [ ] Store project-relative or root-relative source URIs in persisted build
+- [x] Store project-relative or root-relative source URIs in persisted build
       artifacts where possible; do not make graphs differ solely because a checkout
-      moved to another absolute directory.
+      moved to another absolute directory. The Node host redacts absolute URIs
+      outside its declared root as `<external>/<basename>`.
 - [ ] Replace random automatic delay placeholders with deterministic,
       collision-checked tokens derived from stable chunk/expression identity.
 - [x] Add an initial build manifest with Ravel version, output paths, source

@@ -63,6 +63,46 @@ test("Node host loads one TOML build run containing multiple Markdown files", as
   assert.match(program.deliverables["dist/main.js"].value, /export const finish/);
 });
 
+test("Node host writes source locations relative to a build root", async () => {
+  const config = fileURLToPath(
+    new URL("../fixtures/markdown/ravel-web.toml", import.meta.url),
+  );
+  const loaded = await loadBuildInput(config);
+  const program = transformGraph(loaded.pretransform);
+
+  assert.deepEqual(loaded.pretransform.documents.map((document) => document.uri).sort(), ["guide.md", "runtime.md"]);
+  assert.equal(loaded.pretransform.chunks.find((chunk) => chunk.id === "handbook::main.javascript").source.uri, "guide.md");
+  assert.equal(program.deliverables["dist/main.js"].source.uri, "ravel-web.toml");
+  assert.equal(program.chunks["handbook::main.javascript"].references[0].source.uri, "guide.md");
+});
+
+test("Node host redacts absolute source locations outside a build root", async () => {
+  const sandbox = await mkdtemp(join(tmpdir(), "ravel-source-uri-"));
+  const root = join(sandbox, "project");
+  const input = join(root, "entry.ravel-map.json");
+  const external = join(sandbox, "private", "source.md");
+  const source = { uri: external, range: { start: { line: 0, column: 0, offset: 0 }, end: { line: 0, column: 0, offset: 0 } } };
+  try {
+    await mkdir(root);
+    await writeFile(input, JSON.stringify({
+      version: 1,
+      document: { id: "entry", uri: external, format: "ravel-map-v1" },
+      chunks: [{
+        id: "entry::main",
+        identity: { document: "entry", chunk: "main", minor: null, type: null },
+        body: "",
+        source
+      }],
+      directives: []
+    }));
+    const loaded = await loadBuildInput(input);
+    assert.equal(loaded.pretransform.documents[0].uri, "<external>/source.md");
+    assert.equal(loaded.pretransform.chunks[0].source.uri, "<external>/source.md");
+  } finally {
+    await rm(sandbox, { recursive: true, force: true });
+  }
+});
+
 test("Node host follows in directives from Markdown into another Markdown map", async () => {
   const entry = fileURLToPath(
     new URL("../fixtures/markdown/importing-entry.md", import.meta.url),

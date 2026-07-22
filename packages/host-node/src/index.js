@@ -13,6 +13,37 @@ const containedIn = (root, target) => {
   return path === "" || (!path.startsWith(".." + sep) && path !== ".." && !isAbsolute(path));
 };
 
+/** Keep persisted source locations portable and avoid exposing absolute paths. */
+const relativeSourceUri = (root, uri) => {
+  if (typeof uri !== "string" || !isAbsolute(uri)) return uri;
+  const path = relative(root, uri);
+  if (containedIn(root, uri)) return path || ".";
+  return "<external>/" + basename(uri);
+};
+
+const normalizeSource = (source, root) => {
+  if (source && typeof source === "object") source.uri = relativeSourceUri(root, source.uri);
+};
+
+/** Rewrite source-bearing IR fields in place after filesystem loading is complete. */
+const relativizeSourceUris = (graph, root) => {
+  const seen = new Set();
+  const visit = (value) => {
+    if (!value || typeof value !== "object" || seen.has(value)) return;
+    seen.add(value);
+    if (value.source) normalizeSource(value.source, root);
+    for (const [key, child] of Object.entries(value)) {
+      if (key !== "source") visit(child);
+    }
+  };
+  for (const document of graph.documents ?? []) {
+    document.uri = relativeSourceUri(root, document.uri);
+  }
+  visit(graph.chunks);
+  visit(graph.directives);
+  return graph;
+};
+
 /** Reject every symlink component at or beneath the declared Ravel root. */
 const assertNoSymlinks = async (root, path, description) => {
   if (!containedIn(root, path)) throw new Error(description + " escapes the Ravel root: " + path);
@@ -151,7 +182,7 @@ export const loadPretransformGraph = async (entryPath, options = {}) => {
   const collected = await collectPretransformMaps(resolve(entryPath), options);
   const graph = combineMaps(collected.maps);
   graph.diagnostics.push(...collected.diagnostics);
-  return graph;
+  return relativizeSourceUris(graph, collected.rootDirectory);
 };
 
 const configSource = (uri) => ({
@@ -202,7 +233,7 @@ export const loadTomlBuild = async (configPath) => {
     });
   }
   return {
-    pretransform,
+    pretransform: relativizeSourceUris(pretransform, scope.root),
     outputDirectory: await scope.path(outDirectory, "build.out_dir"),
     rootDirectory: scope.root
   };

@@ -108,8 +108,8 @@ const printInspectResult = (result, json) => {
     return;
   }
   if (result.view === "graph") {
-    console.log("Ravel dependency graph:");
-    for (const chunk of result.chunks) console.log("  " + chunk.id + " → " + (chunk.dependencies.length ? chunk.dependencies.join(", ") : "(none)"));
+    console.log("Ravel dependency graph (dependent ← dependency):");
+    for (const chunk of result.chunks) console.log("  " + chunk.id + " ← " + (chunk.dependencies.length ? chunk.dependencies.join(", ") : "(none)"));
     if (result.deliverables.length) {
       console.log("Deliverables:");
       for (const deliverable of result.deliverables) console.log("  " + deliverable.name + " ← " + deliverable.from);
