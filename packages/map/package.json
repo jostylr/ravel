@@ -1,12 +1,20 @@
 {
   "name": "@pieceful/ravel-map",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "description": "Ravel Map public metadata and validation contract.",
+  "license": "MIT",
+  "author": "James Taylor",
+  "repository": { "type": "git", "url": "git+https://github.com/jostylr/ravel.git", "directory": "packages/map" },
+  "bugs": { "url": "https://github.com/jostylr/ravel/issues" },
+  "homepage": "https://github.com/jostylr/ravel#readme",
+  "engines": { "node": ">=22" },
+  "keywords": ["ravel", "literate-programming", "schema", "validation"],
   "publishConfig": { "access": "public" },
   "exports": {
     ".": "./src/index.js",
     "./schema": "./schema/ravel-map.schema.json"
   },
-  "files": ["src", "schema"]
+  "types": "./src/index.d.ts",
+  "files": ["src", "schema", "LICENSE"]
 }

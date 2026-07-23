@@ -69,9 +69,11 @@ try {
   for (const entry of packed) {
     const contents = await archiveContents(join(archives, entry.filename));
     assert.ok(contents.includes("package/package.json"), entry.name + " must contain package.json");
+    assert.ok(contents.includes("package/LICENSE"), entry.name + " must contain its MIT license");
     assert.ok(contents.some((path) => path.startsWith("package/src/")), entry.name + " must contain its entry points");
     assert.equal(contents.some((path) => path.startsWith("package/test/")), false, entry.name + " must not contain tests");
     if (entry.name === "@pieceful/ravel-map") assert.ok(contents.includes("package/schema/ravel-map.schema.json"));
+    if (entry.name !== "@pieceful/ravel") assert.ok(contents.includes("package/src/index.d.ts"), entry.name + " must contain declarations");
   }
 
   const installed = join(sandbox, "installed");
@@ -93,7 +95,7 @@ try {
 
   const binary = join(sandbox, "node_modules", ".bin", "ravel");
   assert.match((await run(binary, ["--help"], { cwd: sandbox })).stderr, /Usage: ravel check/);
-  assert.equal((await run(binary, ["--version"], { cwd: sandbox })).stdout.trim(), "0.0.0");
+  assert.equal((await run(binary, ["--version"], { cwd: sandbox })).stdout.trim(), "0.1.0");
   await run(binary, ["build", "smoke.ravel-map.json", "--out-dir", "build"], { cwd: sandbox });
   assert.equal(await readFile(join(sandbox, "build", "dist", "smoke.js"), "utf8"), "export const smoke = true;\n");
   assert.equal(JSON.parse(await readFile(join(sandbox, "build", ".ravel-manifest.json"), "utf8")).result, "success");

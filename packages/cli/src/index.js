@@ -8,6 +8,7 @@ import { fileURLToPath } from "node:url";
 const EXIT_SOURCE = 1;
 const EXIT_USAGE = 2;
 const EXIT_INTERNAL = 3;
+const RAVEL_VERSION = "0.1.0";
 const valueOptions = new Set(["--config", "--out-dir", "--document", "--mode"]);
 const booleanOptions = new Set(["--json", "--dry-run", "--debug", "--chunks", "--trace", "--clean"]);
 
@@ -189,7 +190,7 @@ if (command === "--help" || command === "-h" || argumentsValue.includes("--help"
   usage();
   process.exitCode = 0;
 } else if (command === "--version" || command === "-v") {
-  console.log("0.0.0");
+  console.log(RAVEL_VERSION);
   process.exitCode = 0;
 } else {
   const parsed = parseArguments(argumentsValue);

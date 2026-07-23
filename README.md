@@ -1,10 +1,10 @@
 # Ravel
 
-Ravel is a working, pre-0.1 literate-programming engine for assembling named
-code pieces into artifacts while retaining a source-linked dependency graph.
-It is currently a small static-weaving tool and an experimental library. The
-packages are wired for local npm-workspace development, but have not yet been
-published as a 0.1 release.
+Ravel is a graph-based document composition engine whose first application is
+literate programming: it assembles named code pieces into artifacts while
+retaining a source-linked dependency graph. Ravel 0.1 is a small static-weaving
+tool and library, designed to be published as the `@pieceful/ravel-*` npm
+packages.
 
 Ravel separates source-format policy from program composition:
 
@@ -50,10 +50,9 @@ extraction, multiple documents, imports, greedy fragments, transforms,
 composition directives, aliases, derived chunks, output planning, filesystem
 writing, and execution of the generated JavaScript.
 
-Ravel is not yet 0.1 because generated artifacts do not yet carry segment-level
-source maps, browser conformance is not automated, and the release
-documentation and packed-installation verification are incomplete. See [the
-Ravel 0.1 plan](TODO.md) for the release gate.
+The remaining 0.1 work is generated-output provenance, browser conformance,
+and final public API/release documentation. See [the Ravel 0.1 plan](TODO.md)
+for the release gate.
 
 ## Requirements and setup
 
@@ -268,6 +267,7 @@ explainable, reproducible, and pleasant to use.
 - [Ravel 0.1 implementation plan](TODO.md)
 - [Five-minute installed CLI guide](docs/getting-started.md)
 - [0.1 contracts and TOML configuration](docs/contracts-and-configuration.md)
+- [Public JavaScript API](docs/public-api.md)
 - [Design plan](docs/design.md)
 - [History and predecessor projects](docs/history.md)
 - [Ravel Map schema guide](docs/ravel-map-schema.md)

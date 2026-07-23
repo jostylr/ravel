@@ -1,8 +1,14 @@
 {
   "name": "ravel",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "description": "A source-mapped literate programming engine for weaving and unraveling programs.",
+  "license": "MIT",
+  "author": "James Taylor",
+  "repository": { "type": "git", "url": "git+https://github.com/jostylr/ravel.git" },
+  "bugs": { "url": "https://github.com/jostylr/ravel/issues" },
+  "homepage": "https://github.com/jostylr/ravel#readme",
+  "keywords": ["literate-programming", "document-composition", "code-generation", "weaving"],
   "type": "module",
   "engines": {
     "node": ">=22"

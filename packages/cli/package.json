@@ -1,8 +1,15 @@
 {
   "name": "@pieceful/ravel",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "description": "Ravel command-line interface.",
+  "license": "MIT",
+  "author": "James Taylor",
+  "repository": { "type": "git", "url": "git+https://github.com/jostylr/ravel.git", "directory": "packages/cli" },
+  "bugs": { "url": "https://github.com/jostylr/ravel/issues" },
+  "homepage": "https://github.com/jostylr/ravel#readme",
+  "engines": { "node": ">=22" },
+  "keywords": ["ravel", "literate-programming", "cli", "build"],
   "publishConfig": { "access": "public" },
   "bin": {
     "ravel": "./src/index.js"
@@ -10,9 +17,9 @@
   "exports": {
     ".": "./src/index.js"
   },
-  "files": ["src"],
+  "files": ["src", "LICENSE"],
   "dependencies": {
-    "@pieceful/ravel-core": "0.0.0",
-    "@pieceful/ravel-host-node": "0.0.0"
+    "@pieceful/ravel-core": "0.1.0",
+    "@pieceful/ravel-host-node": "0.1.0"
   }
 }

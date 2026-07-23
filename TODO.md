@@ -57,6 +57,9 @@ These decisions should be recorded before public APIs are frozen:
 - [x] State that plugins, extra adapters, notebooks, editor integration,
       execution, parameters, conditional profiles, and incremental builds are
       post-0.1 work.
+- [x] Describe Ravel as a graph-based document composition engine whose first
+      application is literate programming; it is not an execution notebook or
+      general-purpose build system.
 
 Exit criteria:
 
@@ -76,21 +79,21 @@ Make every advertised package real and consumable before adding new behavior.
 - [x] Add an installed `ravel` executable through a package `bin` entry.
 - [x] Add root development scripts that invoke the same public entry points a
       consumer will use.
-- [ ] Publish JavaScript API documentation and either generated `.d.ts` files,
-      checked JavaScript declarations, or a deliberate TypeScript source/build
-      setup. Public map, program, source-range, diagnostic, transform, and host
-      types must be representable without reading implementation code.
+- [x] Publish JavaScript API documentation and checked handwritten `.d.ts`
+      declarations. Public map, program, source-range, diagnostic, transform,
+      and host types are described without requiring implementation reading.
 - [x] Remove `private` only from packages intended for distribution; retain it
       for repository-only packages.
-- [ ] Replace placeholder `0.0.0` metadata with the chosen pre-release/version
-      policy and add license, repository, engines, files, and keywords metadata.
+- [x] Set the 0.1.0 release policy and add MIT license, author, GitHub repository,
+      Node 22 engine, packed-files, and keywords metadata to every publishable
+      package.
 - [x] Add package smoke tests that pack all public workspaces, install only the
       tarballs into a fresh temporary project, import every public package by
       name, and run `ravel --help`, `ravel --version`, and a minimal build through
       the installed binary (`npm run test:pack`).
-- [ ] Verify the packed artifact contents so examples, schemas, entry points,
-      declarations, and licenses are present while tests and local run outputs are
-      excluded as intended.
+- [x] Verify packed artifact contents through `npm run test:pack`: schemas,
+      entry points, declarations, and package-local MIT licenses must be present;
+      tests are excluded before a clean tarball installation and minimal build.
 
 Exit criteria:
 
