@@ -29,6 +29,14 @@ Use this package at adapter, editor, and host boundaries.
 - `combineMaps(maps)` constructs the pre-transform graph.
 - `transformGraph(graph, { transforms? })` evaluates that graph and returns the
   program, deliverables, diagnostics, dependencies, and trace.
+- `createDeliverableProvenanceMap(deliverable)` and
+  `createBuildProvenanceMap(program)` construct version-1 sidecar and aggregate
+  generated-output maps.
+- `sourceAtGeneratedOffset(map, offset)` and
+  `generatedRangesForSource(map, uri, offset)` provide forward and reverse
+  provenance lookup. Exact results include a corresponding offset; coarse
+  results retain the best attributable range without claiming character identity.
+- `provenanceMapVersion` identifies the generated provenance contract.
 
 The `@pieceful/ravel-core/directives` entry point exposes constructors for the
 portable directive IR. Custom transforms are functions that receive a string
@@ -40,7 +48,8 @@ This Node-only package performs scoped filesystem input and artifact work.
 
 - `loadBuildInput` and `loadTomlBuild` load direct files or version-1 TOML runs.
 - `planDeliverables`, `writeBuildArtifacts`, and `createBuildManifest` support
-  managed artifact production.
+  managed artifact production. A managed build writes a `.ravelmap` sidecar for
+  every deliverable and an aggregate `.ravelmap` bundle.
 - `cleanManagedArtifacts`, `refreshStaleArtifacts`, `planOutputBackup`, and
   `createOutputBackup` implement the safe managed-output lifecycle.
 

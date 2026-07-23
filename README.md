@@ -50,8 +50,9 @@ extraction, multiple documents, imports, greedy fragments, transforms,
 composition directives, aliases, derived chunks, output planning, filesystem
 writing, and execution of the generated JavaScript.
 
-The remaining 0.1 work is generated-output provenance, browser conformance,
-and final public API/release documentation. See [the Ravel 0.1 plan](TODO.md)
+The remaining 0.1 work is completing generated-output provenance coverage,
+browser conformance, and final public API/release documentation. See
+[the Ravel 0.1 plan](TODO.md)
 for the release gate.
 
 ## Requirements and setup
@@ -267,6 +268,7 @@ explainable, reproducible, and pleasant to use.
 - [Ravel 0.1 implementation plan](TODO.md)
 - [Five-minute installed CLI guide](docs/getting-started.md)
 - [0.1 contracts and TOML configuration](docs/contracts-and-configuration.md)
+- [Generated-output provenance maps](docs/provenance-maps.md)
 - [Public JavaScript API](docs/public-api.md)
 - [Design plan](docs/design.md)
 - [History and predecessor projects](docs/history.md)

@@ -2,7 +2,7 @@ export interface SourcePosition { line: number; column: number; offset: number; 
 export interface SourceRange { start: SourcePosition; end: SourcePosition; }
 export interface SourceLocation { uri: string; range: SourceRange; }
 export interface Diagnostic { code: string; severity: "error" | "warning" | "info"; message: string; source: SourceLocation; }
-export interface RavelProgram { version?: number; deliverables: Record<string, { name: string; from: string; value: string }>; }
+export interface RavelProgram { version?: number; deliverables: Record<string, { name: string; from: string; value: string; segments?: unknown[] }>; }
 export interface BuildInput { pretransform: unknown; outputDirectory?: string; rootDirectory: string; buildOptions?: { clean: boolean; backup: boolean | string }; }
 export class RavelInputError extends Error { diagnostics: Diagnostic[]; }
 export function loadPretransformGraph(entryPath: string, options?: { document?: string; mode?: "opt-in" | "primary" }): Promise<unknown>;

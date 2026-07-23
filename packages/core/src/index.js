@@ -4,6 +4,70 @@ export { directiveKinds, compose, append, newline, pipe, pass, createDirective, 
 
 const clone = (value) => JSON.parse(JSON.stringify(value));
 
+const mappedValue = (text = "", segments = []) => ({ text, segments });
+
+const sourceSegment = (text, source, chunk, kind, precision = "exact", via = []) => mappedValue(
+  text,
+  text.length === 0 ? [] : [{
+    generated: { start: 0, end: text.length },
+    source: source ? clone(source) : null,
+    chunk,
+    kind,
+    precision,
+    via: clone(via)
+  }]
+);
+
+const concatMapped = (...values) => {
+  let text = "";
+  const segments = [];
+  for (const value of values) {
+    const offset = text.length;
+    text += value.text;
+    for (const segment of value.segments) {
+      segments.push({
+        ...segment,
+        generated: {
+          start: segment.generated.start + offset,
+          end: segment.generated.end + offset
+        }
+      });
+    }
+  }
+  return mappedValue(text, segments);
+};
+
+const sliceMapped = (value, start, end = value.text.length) => {
+  const text = value.text.slice(start, end);
+  const segments = [];
+  for (const segment of value.segments) {
+    const overlapStart = Math.max(start, segment.generated.start);
+    const overlapEnd = Math.min(end, segment.generated.end);
+    if (overlapStart >= overlapEnd) continue;
+    segments.push({
+      ...segment,
+      generated: {
+        start: overlapStart - start,
+        end: overlapEnd - start
+      }
+    });
+  }
+  return mappedValue(text, segments);
+};
+
+const coarseMapped = (text, source, chunk, kind, via = []) =>
+  sourceSegment(text, source, chunk, kind, "coarse", via);
+
+const replaceMappedOnce = (value, search, replacement) => {
+  const index = value.text.indexOf(search);
+  if (index === -1 || value.text.indexOf(search, index + search.length) !== -1) return null;
+  return concatMapped(
+    sliceMapped(value, 0, index),
+    replacement,
+    sliceMapped(value, index + search.length)
+  );
+};
+
 const advance = (start, text, index) => {
   let line = start.line;
   let column = start.column;
@@ -386,6 +450,66 @@ export const parseChunk = (body, source) => {
   return { nodes, diagnostics };
 };
 
+const parseChunkFragments = (raw) => {
+  const parsed = parseChunk(raw.body, raw.source);
+  if (!Array.isArray(raw.fragments) || raw.fragments.length < 2 ||
+      raw.fragments.some((fragment) => typeof fragment?.body !== "string" || !fragment.source) ||
+      raw.fragments.map((fragment) => fragment.body).join("") !== raw.body) {
+    return parsed;
+  }
+
+  let bodyOffset = 0;
+  const fragments = raw.fragments.map((fragment) => {
+    const start = bodyOffset;
+    bodyOffset += fragment.body.length;
+    return { ...fragment, start, end: bodyOffset };
+  });
+  const syntheticStart = raw.source.range.start.offset;
+  const relativeRange = (source) => ({
+    start: source.range.start.offset - syntheticStart,
+    end: source.range.end.offset - syntheticStart
+  });
+  const remapLocation = (source) => {
+    const range = relativeRange(source);
+    const fragment = fragments.find((entry) => range.start >= entry.start && range.end <= entry.end);
+    if (!fragment) return source;
+    return span(
+      fragment.source,
+      fragment.body,
+      range.start - fragment.start,
+      range.end - fragment.start
+    );
+  };
+  const remapSources = (value) => {
+    if (!value || typeof value !== "object") return value;
+    if (typeof value.uri === "string" && value.range?.start && value.range?.end) {
+      return remapLocation(value);
+    }
+    if (Array.isArray(value)) return value.map(remapSources);
+    return Object.fromEntries(Object.entries(value).map(([key, child]) => [key, remapSources(child)]));
+  };
+
+  const nodes = [];
+  for (const node of parsed.nodes) {
+    if (node.type !== "literal") {
+      nodes.push(remapSources(node));
+      continue;
+    }
+    const range = relativeRange(node.source);
+    for (const fragment of fragments) {
+      const start = Math.max(range.start, fragment.start);
+      const end = Math.min(range.end, fragment.end);
+      if (start >= end) continue;
+      nodes.push({
+        type: "literal",
+        value: raw.body.slice(start, end),
+        source: span(fragment.source, fragment.body, start - fragment.start, end - fragment.start)
+      });
+    }
+  }
+  return { nodes, diagnostics: remapSources(parsed.diagnostics) };
+};
+
 const normalizeChunk = (raw, document, diagnostics) => {
   const identity = validateIdentity(raw.identity);
   if (!identity) {
@@ -610,7 +734,7 @@ export const transformGraph = (pretransform, options = {}) => {
   };
 
   for (const raw of pretransform.chunks ?? []) {
-    const parsed = parseChunk(raw.body, raw.source);
+    const parsed = parseChunkFragments(raw);
     diagnostics.push(...parsed.diagnostics);
     definitions.set(raw.id, {
       id: raw.id,
@@ -795,12 +919,21 @@ export const transformGraph = (pretransform, options = {}) => {
     const resolved = resolveTarget(node.target, owner.definition, definitions);
     if (!resolved) {
       diagnostics.push(diagnostic("RV111", "Unknown chunk reference: " + node.reference, node.source));
-      return "";
+      return mappedValue();
     }
     const dependency = evaluate(resolved, node.source);
     owner.dependencies.add(resolved);
     owner.references.push({ chunk: resolved, requested: node.reference, source: node.source });
-    let value = dependency.value;
+    const reference = {
+      kind: "reference",
+      from: owner.definition.id,
+      to: resolved,
+      source: clone(node.source)
+    };
+    let value = mappedValue(dependency.value, dependency.segments.map((segment) => ({
+      ...clone(segment),
+      via: [...(segment.via ?? []), reference]
+    })));
     return evaluatePipeline(value, node.pipeline, owner);
   };
 
@@ -824,16 +957,16 @@ export const transformGraph = (pretransform, options = {}) => {
     const token = delayToken(node, owner);
     if (owner.delays.some((delay) => delay.token === token)) {
       diagnostics.push(diagnostic("RV121", "Each delay safe symbol must be unique within a chunk.", node.source));
-      return "";
+      return mappedValue();
     }
     owner.delays.push({ ...node, token });
-    return token;
+    return coarseMapped(token, node.source, owner.definition.id, "delay-placeholder");
   };
 
   const evaluateArgument = (argument, owner) => {
     const command = argument?.kind === "ravel-command-argument" ? argument.command : null;
     if (command?.type === "text") return command.value;
-    if (command?.type === "chunk") return evaluateExpression(command.value, owner);
+    if (command?.type === "chunk") return evaluateExpression(command.value, owner).text;
     return argument;
   };
 
@@ -841,45 +974,77 @@ export const transformGraph = (pretransform, options = {}) => {
     let value = initial;
     for (const step of pipeline) {
       if (step.type === "text") {
-        value = step.value;
+        value = coarseMapped(step.value, step.source, owner.definition.id, "text");
       } else if (step.type === "chunk") {
         value = evaluateExpression(step.value, owner);
       } else if (step.type === "transform") {
         const argumentsValue = step.arguments.map((argument) => evaluateArgument(argument, owner));
-        value = applyTransform(value, { ...step, arguments: argumentsValue }, diagnostics, options.transforms, { chunk: owner.definition });
+        value = coarseMapped(
+          applyTransform(value.text, { ...step, arguments: argumentsValue }, diagnostics, options.transforms, { chunk: owner.definition }),
+          step.source,
+          owner.definition.id,
+          "transform",
+          [{ kind: "transform", name: step.name, source: clone(step.source) }]
+        );
       }
     }
     return value;
   };
 
   const evaluateExpression = (node, owner) => node.type === "pipeline"
-    ? evaluatePipeline("", node.pipeline, owner)
+    ? evaluatePipeline(mappedValue(), node.pipeline, owner)
     : evaluateReference(node, owner);
 
-  const evaluateDelayValue = (value, owner) => evaluateArgument(value, owner);
+  const evaluateDelayValue = (value, owner, source) => {
+    const command = value?.kind === "ravel-command-argument" ? value.command : null;
+    if (command?.type === "text") return coarseMapped(command.value, command.source ?? source, owner.definition.id, "text");
+    if (command?.type === "chunk") return evaluateExpression(command.value, owner);
+    const text = typeof value === "string" ? value : String(value ?? "");
+    return sourceSegment(text, source, owner.definition.id, "delay-value");
+  };
 
   const evaluateNode = (node, owner) => {
-    if (node.type === "literal") return node.value;
+    if (node.type === "literal") {
+      return sourceSegment(node.value, node.source, owner.definition.id, "literal");
+    }
     if (node.type === "delay") return evaluateDelay(node, owner);
-    return applyContinuationIndent(evaluateExpression(node, owner), node.continuationIndent);
+    const value = evaluateExpression(node, owner);
+    if (!node.continuationIndent) return value;
+    return coarseMapped(
+      applyContinuationIndent(value.text, node.continuationIndent),
+      node.source,
+      owner.definition.id,
+      "continuation-indent",
+      [{ kind: "indent", value: node.continuationIndent, source: clone(node.source) }]
+    );
   };
 
   const evaluateCompose = (definition, owner, capture = null) => {
-    let value = "";
+    let value = mappedValue();
     let pendingNewlines = 1;
+    let pendingNewlineSource = definition.source;
     let hasAppend = false;
     const composeOwner = { ...owner, definition };
 
     for (const [stepIndex, step] of definition.compose.entries()) {
       if (step.kind === "newline") {
         pendingNewlines = step.count;
+        pendingNewlineSource = step.source;
         continue;
       }
       if (step.kind === "append") {
-        if (hasAppend) value += "\n".repeat(pendingNewlines);
-        value += evaluateNode(step.reference, composeOwner);
+        if (hasAppend) {
+          value = concatMapped(value, coarseMapped(
+            "\n".repeat(pendingNewlines),
+            pendingNewlineSource,
+            definition.id,
+            "compose-newline"
+          ));
+        }
+        value = concatMapped(value, evaluateNode(step.reference, composeOwner));
         hasAppend = true;
         pendingNewlines = 1;
+        pendingNewlineSource = step.source;
         continue;
       }
 
@@ -887,7 +1052,13 @@ export const transformGraph = (pretransform, options = {}) => {
       let transformed = value;
       for (const [pipelineIndex, pipelineStep] of step.pipeline.entries()) {
         if (pipelineStep.type === "transform") {
-          transformed = applyTransform(transformed, pipelineStep, diagnostics, options.transforms, { chunk: definition });
+          transformed = coarseMapped(
+            applyTransform(transformed.text, pipelineStep, diagnostics, options.transforms, { chunk: definition }),
+            pipelineStep.source,
+            definition.id,
+            "transform",
+            [{ kind: "transform", name: pipelineStep.name, source: clone(pipelineStep.source) }]
+          );
         }
         if (capture && capture.stepIndex === stepIndex && capture.pipelineIndex === pipelineIndex) {
           return transformed;
@@ -903,19 +1074,19 @@ export const transformGraph = (pretransform, options = {}) => {
     const definition = definitions.get(id);
     if (!definition) {
       diagnostics.push(diagnostic("RV111", "Unknown chunk reference: " + id, requestedFrom));
-      return { value: "", dependencies: [], provenance: [] };
+      return { value: "", segments: [], dependencies: [], provenance: [] };
     }
 
     const cycleIndex = evaluating.indexOf(id);
     if (cycleIndex !== -1) {
       const cycle = [...evaluating.slice(cycleIndex), id];
       diagnostics.push(diagnostic("RV112", "Chunk reference cycle: " + cycle.join(" → "), requestedFrom));
-      return { value: "", dependencies: [], provenance: [] };
+      return { value: "", segments: [], dependencies: [], provenance: [] };
     }
 
     evaluating.push(id);
     const owner = { definition, dependencies: new Set(), references: [], delays: [], trace: [] };
-    let value = "";
+    let value = mappedValue();
     if (definition.composeCapture) {
       const sourceDefinition = definitions.get(definition.composeCapture.owner);
       if (!sourceDefinition?.compose) {
@@ -927,39 +1098,63 @@ export const transformGraph = (pretransform, options = {}) => {
       value = evaluateCompose(definition, owner);
     } else {
       for (const node of definition.ast) {
-        value += evaluateNode(node, owner);
+        value = concatMapped(value, evaluateNode(node, owner));
       }
     }
 
     const phaseCount = Math.max(1, definition.definitionPipeline.length);
     for (let phase = 1; phase <= phaseCount; phase += 1) {
-      owner.trace.push({ phase, stage: "protected-input", value });
+      owner.trace.push({ phase, stage: "protected-input", value: value.text });
       const step = definition.definitionPipeline[phase - 1];
       if (step) {
-        value = applyTransform(value, step, diagnostics, options.transforms, { chunk: definition, phase });
-        owner.trace.push({ phase, stage: "transform-output", transform: { name: step.name, arguments: clone(step.arguments) }, value });
+        value = coarseMapped(
+          applyTransform(value.text, step, diagnostics, options.transforms, { chunk: definition, phase }),
+          step.source,
+          definition.id,
+          "transform",
+          [{ kind: "transform", name: step.name, phase, source: clone(step.source) }]
+        );
+        owner.trace.push({
+          phase,
+          stage: "transform-output",
+          transform: { name: step.name, arguments: clone(step.arguments) },
+          value: value.text
+        });
       }
       const due = owner.delays.filter((delay) => delay.phase === phase);
       if (due.length) {
         for (const delay of due) {
-          const occurrences = value.split(delay.token).length - 1;
+          const occurrences = value.text.split(delay.token).length - 1;
           if (occurrences !== 1) {
             diagnostics.push(diagnostic("RV123", "Delay safe symbol was " + (occurrences ? "duplicated" : "removed") + " by a transform: " + delay.token, delay.source));
           }
-          const replacement = evaluateDelayValue(delay.value, owner);
-          value = value.split(delay.token).join(replacement);
+          const replacement = evaluateDelayValue(delay.value, owner, delay.source);
+          const exactReplacement = occurrences === 1
+            ? replaceMappedOnce(value, delay.token, replacement)
+            : null;
+          value = exactReplacement ?? coarseMapped(
+            value.text.split(delay.token).join(replacement.text),
+            delay.source,
+            definition.id,
+            "delay-fulfillment"
+          );
         }
         owner.trace.push({
           phase,
           stage: "fulfilled-output",
           delays: due.map((delay) => ({ expression: delay.expression, safeSymbol: delay.token, source: delay.source })),
-          value
+          value: value.text
         });
       }
     }
     for (const delay of owner.delays.filter((entry) => entry.phase > phaseCount)) {
       diagnostics.push(diagnostic("RV122", "delay requests phase " + delay.phase + ", but this chunk has only " + definition.definitionPipeline.length + " definition transform phases.", delay.source));
-      value = value.split(delay.token).join("");
+      value = coarseMapped(
+        value.text.split(delay.token).join(""),
+        delay.source,
+        definition.id,
+        "delay-removal"
+      );
     }
     evaluating.pop();
 
@@ -967,7 +1162,8 @@ export const transformGraph = (pretransform, options = {}) => {
       id,
       identity: definition.identity,
       name: definition.name,
-      value,
+      value: value.text,
+      segments: value.segments,
       metadata: definition.metadata,
       dependencies: [...owner.dependencies].sort(),
       // References retain authored source order, which is deterministic and is
@@ -1010,6 +1206,7 @@ export const transformGraph = (pretransform, options = {}) => {
       name,
       from: id,
       value: chunk.value,
+      segments: chunk.segments,
       dependencies: chunk.dependencies,
       provenance: chunk.provenance,
       source: directive.source
@@ -1028,4 +1225,75 @@ export const transformGraph = (pretransform, options = {}) => {
     // the order their authored constructs are encountered.
     diagnostics
   };
+};
+
+export const provenanceMapVersion = 1;
+
+/**
+ * Create the portable sidecar representation for one generated deliverable.
+ * Offsets use JavaScript/JSON's native UTF-16 code-unit indexing.
+ */
+export const createDeliverableProvenanceMap = (deliverable) => ({
+  version: provenanceMapVersion,
+  kind: "ravel-provenance-map",
+  generated: {
+    uri: deliverable.name,
+    length: deliverable.value.length,
+    offsetEncoding: "utf-16"
+  },
+  from: deliverable.from,
+  segments: clone(deliverable.segments ?? [])
+});
+
+/** Create a deterministic aggregate containing every deliverable sidecar map. */
+export const createBuildProvenanceMap = (program) => ({
+  version: provenanceMapVersion,
+  kind: "ravel-provenance-bundle",
+  maps: Object.values(program.deliverables ?? {})
+    .slice()
+    .sort((left, right) => left.name.localeCompare(right.name))
+    .map(createDeliverableProvenanceMap)
+});
+
+/** Resolve a generated offset to its source segment and exact source offset when possible. */
+export const sourceAtGeneratedOffset = (map, offset) => {
+  if (!Number.isInteger(offset) || offset < 0) return null;
+  const segment = map?.segments?.find((entry) =>
+    offset >= entry.generated.start && offset < entry.generated.end
+  );
+  if (!segment) return null;
+  const result = clone(segment);
+  const sourceStart = segment.source?.range?.start?.offset;
+  const sourceEnd = segment.source?.range?.end?.offset;
+  const generatedLength = segment.generated.end - segment.generated.start;
+  if (segment.precision === "exact" && Number.isInteger(sourceStart) &&
+      sourceEnd - sourceStart === generatedLength) {
+    result.sourceOffset = sourceStart + offset - segment.generated.start;
+  }
+  return result;
+};
+
+/**
+ * Resolve a source offset to generated ranges. Exact segments return a single
+ * corresponding offset; coarse segments return the containing generated range.
+ */
+export const generatedRangesForSource = (map, uri, offset) => {
+  if (typeof uri !== "string" || !Number.isInteger(offset) || offset < 0) return [];
+  const matches = [];
+  for (const segment of map?.segments ?? []) {
+    const start = segment.source?.range?.start?.offset;
+    const end = segment.source?.range?.end?.offset;
+    if (segment.source?.uri !== uri || !Number.isInteger(start) || offset < start || offset >= end) continue;
+    const generatedLength = segment.generated.end - segment.generated.start;
+    const exact = segment.precision === "exact" && end - start === generatedLength;
+    matches.push({
+      generated: clone(segment.generated),
+      ...(exact ? { generatedOffset: segment.generated.start + offset - start } : {}),
+      precision: exact ? "exact" : "coarse",
+      chunk: segment.chunk,
+      kind: segment.kind,
+      via: clone(segment.via ?? [])
+    });
+  }
+  return matches;
 };

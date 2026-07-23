@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { cleanManagedArtifacts, createOutputBackup, loadBuildInput, planDeliverables, planOutputBackup, planStaleDeliverables, refreshStaleArtifacts, writeBuildArtifacts, writeGraph } from "@pieceful/ravel-host-node";
 import { transformGraph } from "@pieceful/ravel-core";
-import { existsSync } from "node:fs";
+import { existsSync, realpathSync } from "node:fs";
 import { extname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -178,7 +178,14 @@ const printRefreshResult = (result, json) => {
   for (const deliverable of result.removed) console.log("  " + deliverable.path + " ← " + (deliverable.from ?? "previous build"));
 };
 
-const invokedAsCli = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+const invokedAsCli = (() => {
+  if (!process.argv[1]) return false;
+  try {
+    return realpathSync(process.argv[1]) === fileURLToPath(import.meta.url);
+  } catch {
+    return resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+  }
+})();
 
 if (invokedAsCli) {
 const rawArguments = process.argv.slice(2);

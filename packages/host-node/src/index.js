@@ -2,7 +2,12 @@ import { lstat, readFile, readdir, mkdir, rename, unlink, writeFile } from "node
 import { createHash, randomUUID } from "node:crypto";
 import { basename, dirname, extname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { parse as parseToml } from "smol-toml";
-import { combineMaps } from "@pieceful/ravel-core";
+import {
+  combineMaps,
+  createBuildProvenanceMap,
+  createDeliverableProvenanceMap,
+  provenanceMapVersion
+} from "@pieceful/ravel-core";
 import { markdownToMap } from "@pieceful/ravel-markdown";
 import { assertRavelMap } from "@pieceful/ravel-map";
 
@@ -346,6 +351,8 @@ const orderedDeliverables = (program) => Object.values(program.deliverables ?? [
 
 const manifestName = ".ravel-manifest.json";
 const textManifestName = ".manifest.txt";
+const aggregateProvenanceName = ".ravelmap";
+const sidecarName = (name) => name + ".ravelmap";
 
 /** Build a deterministic, non-writing description of artifact output. */
 export const planDeliverables = (program, outputDirectory) => {
@@ -355,14 +362,30 @@ export const planDeliverables = (program, outputDirectory) => {
     const destination = safeDestination(root, deliverable.name);
     if (destinations.has(destination)) throw new Error("Multiple deliverables resolve to the same destination: " + deliverable.name);
     destinations.add(destination);
+    const hasProvenance = Array.isArray(deliverable.segments);
+    const ravelmap = hasProvenance ? sidecarName(deliverable.name) : null;
+    if (ravelmap) {
+      const mapDestination = safeDestination(root, ravelmap);
+      if (destinations.has(mapDestination)) {
+        throw new Error("A deliverable provenance map collides with another output: " + ravelmap);
+      }
+      destinations.add(mapDestination);
+    }
     return {
       name: deliverable.name,
       path: relative(root, destination),
       from: deliverable.from,
       bytes: Buffer.byteLength(deliverable.value, "utf8"),
-      sha256: contentHash(deliverable.value)
+      sha256: contentHash(deliverable.value),
+      ...(ravelmap ? { ravelmap } : {})
     };
   });
+  if (deliverables.some((deliverable) => deliverable.ravelmap)) {
+    const aggregateDestination = safeDestination(root, aggregateProvenanceName);
+    if (destinations.has(aggregateDestination)) {
+      throw new Error("The aggregate provenance map collides with another output: " + aggregateProvenanceName);
+    }
+  }
   return {
     version: 1,
     outputDirectory: root,
@@ -436,7 +459,8 @@ export const planStaleDeliverables = async (program, outputDirectory, {
       name: deliverable.name,
       path: relative(plan.outputDirectory, safeDestination(plan.outputDirectory, deliverable.name)),
       from: deliverable.from ?? null,
-      staleSince: deliverable.staleSince ?? staleSince
+      staleSince: deliverable.staleSince ?? staleSince,
+      ...(deliverable.ravelmap ? { ravelmap: deliverable.ravelmap } : {})
     }))
     .sort((left, right) => left.name.localeCompare(right.name));
 };
@@ -524,6 +548,7 @@ export const writeDeliverables = async (program, outputDirectory, { rootDirector
 
 export const createBuildManifest = (program, outputDirectory, { stale = [], builtAt } = {}) => {
   const plan = planDeliverables(program, outputDirectory);
+  const hasProvenance = plan.deliverables.some((deliverable) => deliverable.ravelmap);
   return {
     version: 2,
     ravelVersion: program.version ?? 1,
@@ -533,8 +558,12 @@ export const createBuildManifest = (program, outputDirectory, { stale = [], buil
       name: deliverable.name,
       path: deliverable.path,
       from: deliverable.from ?? null,
-      staleSince: deliverable.staleSince
+      staleSince: deliverable.staleSince,
+      ...(deliverable.ravelmap ? { ravelmap: deliverable.ravelmap } : {})
     })),
+    ...(hasProvenance ? {
+      provenance: { version: provenanceMapVersion, aggregate: aggregateProvenanceName }
+    } : {}),
     ...(builtAt ? { builtAt } : {}),
     result: "success"
   };
@@ -544,6 +573,10 @@ const formatTextManifest = (manifest, generatedAt = new Date().toISOString()) =>
   const lines = ["Ravel managed output manifest", "Generated: " + generatedAt, "", "Current files:"];
   for (const deliverable of manifest.deliverables) {
     lines.push("  " + deliverable.path + " (" + deliverable.from + ")");
+    if (deliverable.ravelmap) lines.push("    provenance: " + deliverable.ravelmap);
+  }
+  if (manifest.provenance?.aggregate) {
+    lines.push("  Aggregate provenance: " + manifest.provenance.aggregate);
   }
   if (manifest.stale.length) {
     lines.push("", "Stale files (retained):");
@@ -557,6 +590,7 @@ const formatTextManifest = (manifest, generatedAt = new Date().toISOString()) =>
       lines.push("  Since " + date + ":");
       for (const deliverable of deliverables) {
         lines.push("    " + deliverable.path + " (" + (deliverable.from ?? "previous build") + ")");
+        if (deliverable.ravelmap) lines.push("      provenance: " + deliverable.ravelmap);
       }
     }
   }
@@ -595,15 +629,35 @@ export const writeBuildArtifacts = async (program, outputDirectory, {
     destination: safeDestination(scope.root, deliverable.name),
     value: program.deliverables[deliverable.name].value
   }));
+  const provenanceEntries = plan.deliverables
+    .filter((deliverable) => deliverable.ravelmap)
+    .map((deliverable) => ({
+      destination: safeDestination(scope.root, deliverable.ravelmap),
+      value: JSON.stringify(
+        createDeliverableProvenanceMap(program.deliverables[deliverable.name]),
+        null,
+        2
+      ) + "\n"
+    }));
+  const aggregateEntry = provenanceEntries.length ? [{
+    destination: safeDestination(scope.root, aggregateProvenanceName),
+    value: JSON.stringify(createBuildProvenanceMap(program), null, 2) + "\n"
+  }] : [];
   const manifestDestination = safeDestination(scope.root, manifestName);
   const textManifestDestination = safeDestination(scope.root, textManifestName);
   await writeFilesAtomically(scope, [
     ...deliverableEntries,
+    ...provenanceEntries,
+    ...aggregateEntry,
     { destination: manifestDestination, value: JSON.stringify(manifest, null, 2) + "\n" },
     { destination: textManifestDestination, value: formatTextManifest(manifest, generatedAt) }
   ], "Build artifact path");
   return {
     written: deliverableEntries.map((entry) => entry.destination),
+    provenance: {
+      sidecars: provenanceEntries.map((entry) => entry.destination),
+      aggregate: aggregateEntry[0]?.destination ?? null
+    },
     manifest: { path: manifestDestination, textPath: textManifestDestination, manifest }
   };
 };
@@ -619,17 +673,27 @@ const planManagedRemoval = async (outputDirectory, rootDirectory, staleOnly) => 
       name: deliverable.name,
       path: relative(resolve(outputDirectory), safeDestination(resolve(outputDirectory), deliverable.name)),
       from: deliverable.from ?? null,
-      staleSince: deliverable.staleSince
+      staleSince: deliverable.staleSince,
+      ...(deliverable.ravelmap ? { ravelmap: deliverable.ravelmap } : {})
     }))
     .sort((left, right) => left.name.localeCompare(right.name));
-  return { outputDirectory: resolve(outputDirectory), manifest: previous, deliverables };
+  return {
+    outputDirectory: resolve(outputDirectory),
+    manifest: previous,
+    deliverables,
+    aggregate: staleOnly ? null : previous.manifest.provenance?.aggregate ?? null
+  };
 };
 
 const removeManagedFiles = async (plan, rootDirectory, dryRun, removeManifest) => {
   if (!plan.manifest || dryRun) return { removed: plan.deliverables, manifestRemoved: false };
   const scope = await createOutputScope(plan.outputDirectory, rootDirectory);
   const targets = [
-    ...plan.deliverables.map((deliverable) => safeDestination(scope.root, deliverable.name)),
+    ...plan.deliverables.flatMap((deliverable) => [
+      safeDestination(scope.root, deliverable.name),
+      ...(deliverable.ravelmap ? [safeDestination(scope.root, deliverable.ravelmap)] : [])
+    ]),
+    ...(plan.aggregate ? [safeDestination(scope.root, plan.aggregate)] : []),
     ...(removeManifest ? [safeDestination(scope.root, manifestName), safeDestination(scope.root, textManifestName)] : [])
   ];
   for (const target of targets) await existingFile(target, "Managed output path");

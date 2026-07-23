@@ -187,26 +187,36 @@ Exit criteria:
 Complete Ravel's central promise that an artifact can be explained in terms of
 its literate source.
 
-- [ ] Specify a Ravel generated-source-map version 1 format. At minimum it must
-      map generated UTF-16 ranges to source URI/ranges and identify the contributing
+- [x] Specify a Ravel generated-source-map version 1 format. It maps generated
+      UTF-16 ranges to source URI/ranges and identifies the contributing
       chunk, reference, transform/compose step, and derivation chain.
-- [ ] Preserve fragment-level provenance while joining greedy chunks.
+- [x] Preserve fragment-level provenance while joining greedy chunks, including
+      non-contiguous Markdown source ranges.
 - [ ] Propagate output spans through literals, substitutions, continuation
       indentation, composition newlines, aliases, definition transforms, use-site
       transforms, `pipe`, `pass`, delayed substitution, and `emit`.
-- [ ] Define honest mapping behavior for transforms that cannot provide precise
+      The first evaluator pass covers all of these paths, with conservative
+      coarse spans for indentation, newlines, and transforms; finer mappings
+      remain.
+- [x] Define honest mapping behavior for transforms that cannot provide precise
       character correspondence. Such transforms should retain coarse input/output
       provenance rather than inventing exact mappings.
-- [ ] Make deliverable provenance transitive instead of containing only the
+- [x] Make deliverable provenance transitive instead of containing only the
       final chunk's origin and a flat dependency list.
-- [ ] Add an optional sidecar output for each deliverable or a build-level map
-      referenced from the output manifest.
+- [x] Add a sidecar output for each deliverable and an embedded build-level map,
+      both referenced from the output manifest and managed by clean/refresh.
 - [ ] Expose provenance queries in the public API: generated position to source,
       source range to generated ranges, definition, references, and dependency
       path.
+      Forward and reverse offset queries are public now and return chunk and
+      reference-chain data; higher-level range/definition helpers and CLI
+      position queries remain.
 - [ ] Add golden tests for direct literals, nested references, indentation,
       greedy fragments, aliases, derived chunks, compose operations, and transformed
       content.
+      Direct nested substitutions, greedy fragments, exact reverse lookup,
+      coarse transforms, and sidecar/aggregate artifact lifecycle now have
+      focused tests.
 
 Exit criteria:
 

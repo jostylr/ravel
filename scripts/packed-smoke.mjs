@@ -98,7 +98,13 @@ try {
   assert.equal((await run(binary, ["--version"], { cwd: sandbox })).stdout.trim(), "0.1.0");
   await run(binary, ["build", "smoke.ravel-map.json", "--out-dir", "build"], { cwd: sandbox });
   assert.equal(await readFile(join(sandbox, "build", "dist", "smoke.js"), "utf8"), "export const smoke = true;\n");
-  assert.equal(JSON.parse(await readFile(join(sandbox, "build", ".ravel-manifest.json"), "utf8")).result, "success");
+  const manifest = JSON.parse(await readFile(join(sandbox, "build", ".ravel-manifest.json"), "utf8"));
+  const sidecar = JSON.parse(await readFile(join(sandbox, "build", "dist", "smoke.js.ravelmap"), "utf8"));
+  const aggregate = JSON.parse(await readFile(join(sandbox, "build", ".ravelmap"), "utf8"));
+  assert.equal(manifest.result, "success");
+  assert.equal(manifest.provenance.aggregate, ".ravelmap");
+  assert.equal(sidecar.kind, "ravel-provenance-map");
+  assert.deepEqual(aggregate.maps, [sidecar]);
   console.log("Packed Ravel workspace artifacts import and build successfully.");
 } finally {
   await rm(sandbox, { recursive: true, force: true });

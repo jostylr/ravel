@@ -12,11 +12,12 @@ object shapes and implementation details are not public API.
 | Markdown profile | documented `markdown+ravel-v1` fenced profile | The documented opt-in and primary modes are stable; undocumented fence behavior is not. |
 | TOML run config | `version = 1` | Reject unsupported fields or versions. |
 | Output manifest | version `2` | Readers accept legacy version `1` manifests for managed cleanup; writers emit version `2`. |
+| Generated provenance map | version `1` | Sidecars and aggregate bundles use UTF-16 ranges; unknown versions must not be interpreted as version 1. |
 | CLI results and diagnostics | documented commands, exits, and JSON shapes | Additive fields may appear; consumers should use documented fields. |
 
-Generated source/provenance maps have no released version yet. Ravel records
-chunk-level origins and dependency information today, but it does not yet claim
-segment-level generated-to-source mapping.
+Generated provenance maps distinguish exact character correspondence from
+coarse transform attribution. See [Generated-output provenance maps](provenance-maps.md)
+for the format, derivation chains, query API, and current precision boundary.
 
 ## Canonical `ravel.toml`
 
