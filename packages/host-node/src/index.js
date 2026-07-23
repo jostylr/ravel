@@ -260,8 +260,18 @@ export const loadTomlBuild = async (configPath) => {
   if (!config.build || typeof config.build !== "object") {
     throw inputError("RC102", "build must be a [build] table.", absoluteConfig);
   }
-  reportUnknownKeys(config.build, new Set(["name", "out_dir"]), "build", absoluteConfig);
+  reportUnknownKeys(config.build, new Set(["name", "out_dir", "clean", "backup"]), "build", absoluteConfig);
   if (config.build.name !== undefined) requireConfigString(config.build.name, "build.name", absoluteConfig);
+  if (config.build.clean !== undefined && typeof config.build.clean !== "boolean") {
+    throw inputError("RC102", "build.clean must be true or false.", absoluteConfig);
+  }
+  if (config.build.backup !== undefined && typeof config.build.backup !== "boolean" &&
+      (typeof config.build.backup !== "string" || config.build.backup.length === 0)) {
+    throw inputError("RC102", "build.backup must be true, false, or a non-empty .zip path.", absoluteConfig);
+  }
+  if (typeof config.build.backup === "string" && extname(config.build.backup).toLowerCase() !== ".zip") {
+    throw inputError("RC102", "build.backup must name a .zip file.", absoluteConfig);
+  }
   const outDirectory = requireConfigString(config.build.out_dir, "build.out_dir", absoluteConfig);
   const baseDirectory = scope.root;
   const results = await Promise.all(config.files.map(async (file, index) => {
@@ -288,7 +298,11 @@ export const loadTomlBuild = async (configPath) => {
   return {
     pretransform: relativizeSourceUris(pretransform, scope.root),
     outputDirectory: await scope.path(outDirectory, "build.out_dir"),
-    rootDirectory: scope.root
+    rootDirectory: scope.root,
+    buildOptions: {
+      clean: config.build.clean === true,
+      backup: config.build.backup ?? false
+    }
   };
 };
 

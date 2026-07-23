@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 import { cleanManagedArtifacts, createOutputBackup, loadBuildInput, planDeliverables, planOutputBackup, planStaleDeliverables, refreshStaleArtifacts, writeBuildArtifacts, writeGraph } from "@pieceful/ravel-host-node";
 import { transformGraph } from "@pieceful/ravel-core";
-import { extname } from "node:path";
+import { existsSync } from "node:fs";
+import { extname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const EXIT_SOURCE = 1;
 const EXIT_USAGE = 2;
@@ -11,6 +13,7 @@ const booleanOptions = new Set(["--json", "--dry-run", "--debug", "--chunks", "-
 
 const usage = () => {
   console.error("Usage: ravel check <map.json|document.md> [--config <run.toml>] [--document <name>] [--mode <opt-in|primary>] [--json]");
+  console.error("       ravel                 # builds ./ravel.toml when it exists");
   console.error("       ravel build <map.json|document.md> --out-dir <directory> [--document <name>] [--mode <opt-in|primary>] [--graph <program.json>] [--backup [file.zip]] [--clean] [--dry-run] [--json]");
   console.error("       ravel build --config <run.toml> [--out-dir <directory>] [--graph <program.json>] [--backup [file.zip]] [--clean] [--dry-run] [--json]");
   console.error("       ravel inspect <map.json|document.md> [--config <run.toml>] [--document <name>] [--mode <opt-in|primary>] [--chunks|--graph|--trace] [--json]");
@@ -174,7 +177,13 @@ const printRefreshResult = (result, json) => {
   for (const deliverable of result.removed) console.log("  " + deliverable.path + " ← " + (deliverable.from ?? "previous build"));
 };
 
-const argumentsValue = process.argv.slice(2);
+const invokedAsCli = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+
+if (invokedAsCli) {
+const rawArguments = process.argv.slice(2);
+const argumentsValue = rawArguments.length === 0 && existsSync("ravel.toml")
+  ? ["build", "--config", "ravel.toml"]
+  : rawArguments;
 const command = argumentsValue[0];
 if (command === "--help" || command === "-h" || argumentsValue.includes("--help")) {
   usage();
@@ -240,23 +249,27 @@ if (command === "--help" || command === "-h" || argumentsValue.includes("--help"
         if (!outputDirectory) throw new Error("build requires --out-dir or build.out_dir in the TOML config.");
         const plan = planDeliverables(program, outputDirectory);
         const rootDirectory = parsed.options["--out-dir"] ?? loaded.rootDirectory;
+        const configuredClean = loaded.buildOptions?.clean === true;
+        const configuredBackup = loaded.buildOptions?.backup ?? false;
+        const clean = parsed.options["--clean"] === true || configuredClean;
+        const backupSetting = parsed.options["--backup"] ?? configuredBackup;
         const stale = await planStaleDeliverables(program, outputDirectory, { rootDirectory });
         const backupOptions = {
           outputRootDirectory: rootDirectory,
           backupRootDirectory: loaded.rootDirectory,
-          ...(typeof parsed.options["--backup"] === "string" ? { backupPath: parsed.options["--backup"] } : {})
+          ...(typeof backupSetting === "string" ? { backupPath: backupSetting } : {})
         };
-        const backup = parsed.options["--backup"]
+        const backup = backupSetting
           ? parsed.options["--dry-run"]
             ? await planOutputBackup(outputDirectory, backupOptions)
             : await createOutputBackup(outputDirectory, backupOptions)
           : null;
-        const cleanup = parsed.options["--clean"]
+        const cleanup = clean
           ? await cleanManagedArtifacts(outputDirectory, { rootDirectory, dryRun: parsed.options["--dry-run"] === true })
           : { removed: [] };
-        const retainedStale = parsed.options["--clean"] ? [] : stale;
+        const retainedStale = clean ? [] : stale;
         if (parsed.options["--dry-run"]) {
-          printBuildResult({ ok: true, command: "build", dryRun: true, clean: parsed.options["--clean"] === true, ...plan, stale: retainedStale, removed: cleanup.removed, ...(backup ? { backup } : {}) }, json);
+          printBuildResult({ ok: true, command: "build", dryRun: true, clean, ...plan, stale: retainedStale, removed: cleanup.removed, ...(backup ? { backup } : {}) }, json);
         } else {
           const artifacts = await writeBuildArtifacts(program, outputDirectory, { rootDirectory, stale: retainedStale });
           if (parsed.options["--graph"]) await writeGraph(program, parsed.options["--graph"], { rootDirectory: loaded.rootDirectory });
@@ -270,7 +283,7 @@ if (command === "--help" || command === "-h" || argumentsValue.includes("--help"
             stale: retainedStale,
             removed: cleanup.removed,
             ...(backup ? { backup } : {}),
-            clean: parsed.options["--clean"] === true,
+            clean,
             chunks: Object.keys(program.chunks).sort()
           }, json);
         }
@@ -290,4 +303,5 @@ if (command === "--help" || command === "-h" || argumentsValue.includes("--help"
       }
     }
   }
+}
 }

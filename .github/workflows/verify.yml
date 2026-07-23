@@ -21,7 +21,7 @@ jobs:
       - run: npm test
       - run: npm run validate:schema
       - run: npm run build:browser-test
-      - run: npm pack --workspaces --dry-run --ignore-scripts --loglevel warn
+      - run: npm run test:pack
 
   bun:
     name: Bun portable verification

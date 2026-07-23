@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
-import { lstat, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { lstat, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -27,6 +27,27 @@ test("CLI check accepts direct Markdown and TOML project inputs", async () => {
 
   const toml = await run(process.execPath, [cli, "check", "--config", "fixtures/markdown/ravel-web.toml"]);
   assert.match(toml.stdout, /Ravel check passed\./);
+});
+
+test("CLI builds a canonical ravel.toml and honors its clean and backup policy", async () => {
+  const sandbox = await mkdtemp(join(tmpdir(), "ravel-cli-default-config-"));
+  const source = "```javascript {.ravel #main}\nexport const ready = true;\n```\n\n```ravel\nout(\"dist/main.js\", _\"main.javascript\")\n```\n";
+  const config = (backup = "false") => "version = 1\n\n[build]\nout_dir = \"build\"\nclean = true\nbackup = " + backup + "\n\n[[files]]\npath = \"guide.md\"\n";
+  try {
+    await writeFile(join(sandbox, "guide.md"), source);
+    await writeFile(join(sandbox, "ravel.toml"), config());
+    const first = await run(process.execPath, [cli], { cwd: sandbox });
+    assert.match(first.stdout, /Ravel wrote 1 deliverable/);
+    assert.equal(await readFile(join(sandbox, "build", "dist", "main.js"), "utf8"), "export const ready = true;\n");
+
+    await writeFile(join(sandbox, "ravel.toml"), config('"archives/before-clean.zip"'));
+    const second = await run(process.execPath, [cli], { cwd: sandbox });
+    assert.match(second.stdout, /Backup: .*archives\/before-clean\.zip/);
+    assert.equal((await readFile(join(sandbox, "archives", "before-clean.zip"))).subarray(0, 4).toString("binary"), "PK\x03\x04");
+    assert.deepEqual(await readdir(join(sandbox, "archives")), ["before-clean.zip"]);
+  } finally {
+    await rm(sandbox, { recursive: true, force: true });
+  }
 });
 
 test("CLI check renders map validation errors without a stack trace", async () => {

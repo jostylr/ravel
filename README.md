@@ -246,6 +246,7 @@ npm test                    # complete Node test suite
 npm run test:bun            # same test files under Bun
 npm run validate:schema     # structural validation of checked-in map examples
 npm run build:browser-test  # bundle the Markdown browser harness
+npm run test:pack           # pack, install, import, and build through tarballs
 ```
 
 The browser command currently builds the harness but does not launch a browser.
@@ -265,6 +266,7 @@ explainable, reproducible, and pleasant to use.
 ## Documentation
 
 - [Ravel 0.1 implementation plan](TODO.md)
+- [Five-minute installed CLI guide](docs/getting-started.md)
 - [Design plan](docs/design.md)
 - [History and predecessor projects](docs/history.md)
 - [Ravel Map schema guide](docs/ravel-map-schema.md)

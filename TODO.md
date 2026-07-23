@@ -84,9 +84,10 @@ Make every advertised package real and consumable before adding new behavior.
       for repository-only packages.
 - [ ] Replace placeholder `0.0.0` metadata with the chosen pre-release/version
       policy and add license, repository, engines, files, and keywords metadata.
-- [ ] Add package smoke tests that import each public package by name and run
-      `ravel --help`, `ravel --version`, and a minimal build through the installed
-      binary.
+- [x] Add package smoke tests that pack all public workspaces, install only the
+      tarballs into a fresh temporary project, import every public package by
+      name, and run `ravel --help`, `ravel --version`, and a minimal build through
+      the installed binary (`npm run test:pack`).
 - [ ] Verify the packed artifact contents so examples, schemas, entry points,
       declarations, and licenses are present while tests and local run outputs are
       excluded as intended.
@@ -289,8 +290,8 @@ Exit criteria:
 
 ## Phase 7: documentation and 0.1 release
 
-- [ ] Write a five-minute getting-started guide using the installed `ravel`
-      command rather than source paths.
+- [x] Write a five-minute getting-started guide using the installed `ravel`
+      command rather than source paths (`docs/getting-started.md`).
 - [ ] Update all reference documents so they distinguish implemented 0.1
       behavior from future design.
 - [ ] Document map, syntax, CLI, configuration, diagnostics, provenance-map, and

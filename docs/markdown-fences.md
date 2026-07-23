@@ -143,6 +143,9 @@ version = 1
 [build]
 name = "web"
 out_dir = "dist/web"
+clean = false
+# backup = true
+# backup = "backups/web-before-clean.zip"
 
 [[files]]
 path = "docs/guide.md"
@@ -158,7 +161,8 @@ name = "dist/main.js"
 from = "guide::main.javascript"
 ```
 
-Run `ravel build --config ravel-web.toml`. Paths, including `build.out_dir`, are
+Run `ravel build --config ravel-web.toml`. A project file named `ravel.toml` can
+instead be run with plain `ravel`. Paths, including `build.out_dir`, are
 resolved relative to the TOML file and must remain below its directory. Use a
 separate TOML for a different build pathway; configs are not merged.
 
