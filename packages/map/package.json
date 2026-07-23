@@ -5,7 +5,8 @@
   "description": "Ravel Map public metadata and validation contract.",
   "publishConfig": { "access": "public" },
   "exports": {
-    ".": "./src/index.js"
+    ".": "./src/index.js",
+    "./schema": "./schema/ravel-map.schema.json"
   },
-  "files": ["src"]
+  "files": ["src", "schema"]
 }

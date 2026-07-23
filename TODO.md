@@ -111,8 +111,10 @@ No malformed or unsupported map should reach graph evaluation as trusted data.
       explicit tests. The current example-only checker is no longer the runtime
       validation boundary; a complete JSON Schema 2020-12 validator remains for
       a later pass.
-- [ ] Compile and expose the checked-in Ravel Map schema through
-      `@pieceful/ravel-map`.
+- [x] Ship the checked-in Ravel Map schema through `@pieceful/ravel-map` as
+      `RAVEL_MAP_SCHEMA` and the `@pieceful/ravel-map/schema` JSON entry point;
+      the map-contract test checks the published artifact remains identical to
+      the repository schema.
 - [x] Validate every JSON Ravel Map at the Node host boundary before following
       its directives or combining its chunks.
 - [x] Validate adapter-produced Markdown maps in the Node host path so adapter bugs
@@ -120,14 +122,18 @@ No malformed or unsupported map should reach graph evaluation as trusted data.
 - [x] Reject unsupported map versions instead of normalizing them to version 1.
 - [x] Validate canonical IDs against their explicit identity components,
       document identity, directives, source ranges, metadata, and unknown fields.
-- [ ] Convert JSON parse, schema, TOML, configuration, and unsupported-input
+- [x] Convert JSON parse, schema, TOML, configuration, and unsupported-input
       failures into the shared diagnostic model rather than exposing raw exceptions
-      to CLI users.
-- [ ] Give configuration diagnostics precise TOML locations where the parser
+      to CLI users. The host reports RM201, RC101/RC102, and RH101/RH102 source
+      diagnostics; map-shape validation retains its RM200 diagnostics.
+- [x] Give configuration diagnostics precise TOML locations where the parser
       makes them available; otherwise report the configuration file and field path.
-- [ ] Expand invalid fixtures beyond the current version, ID, identity, body,
-      and host-boundary cases to cover malformed ranges, bad directives,
-      duplicate documents, and unsupported configuration keys.
+      `smol-toml` does not expose field ranges, so RC diagnostics point to the
+      configuration file and name the invalid field path.
+- [x] Expand validation regression coverage beyond version, ID, identity, and
+      body cases: malformed source ranges, unsupported/missing directive fields,
+      duplicate documents, and unsupported configuration keys now have portable
+      map/core/host tests.
 - [ ] Keep validation usable in browsers and Bun; Node path and file checks stay
       in `host-node`.
 

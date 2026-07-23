@@ -34,6 +34,15 @@ test("parses and canonicalizes document, chunk, minor, and type addresses", () =
   }
 });
 
+test("reports duplicate document identities before graph evaluation", () => {
+  const first = { version: 1, document: { id: "guide", uri: "first.md", format: "markdown+ravel-v1" }, chunks: [], directives: [] };
+  const second = { version: 1, document: { id: "guide", uri: "second.md", format: "markdown+ravel-v1" }, chunks: [], directives: [] };
+  const graph = combineMaps([first, second]);
+  assert.deepEqual(graph.documents.map((document) => document.uri), ["first.md"]);
+  assert.deepEqual(graph.diagnostics.map((diagnostic) => diagnostic.code), ["RV102"]);
+  assert.match(graph.diagnostics[0].message, /Duplicate document ID: guide/);
+});
+
 test("transforms references, expands emit chunks, and plans out deliverables", () => {
   const graph = combineMaps([{
     document: { id: "test", uri: "test.ravel-map.json", format: "ravel-map-v1" },

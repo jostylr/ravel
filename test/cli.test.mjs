@@ -67,6 +67,29 @@ test("CLI check can emit machine-readable diagnostics", async () => {
   }
 });
 
+test("CLI renders malformed JSON and TOML configuration as source errors", async () => {
+  const sandbox = await mkdtemp(join(tmpdir(), "ravel-cli-input-errors-"));
+  const map = join(sandbox, "broken.ravel-map.json");
+  const config = join(sandbox, "ravel.toml");
+  try {
+    await writeFile(map, "{ broken");
+    await assert.rejects(
+      run(process.execPath, [cli, "check", map]),
+      (error) => error.code === 1 && /RM201/.test(error.stderr) && /Invalid JSON Ravel Map/.test(error.stderr)
+    );
+    await writeFile(config, "version = 1\nwrong = true\n[build]\nout_dir = \"build\"\n");
+    await assert.rejects(
+      run(process.execPath, [cli, "check", config, "--json"]),
+      (error) => {
+        const diagnostics = JSON.parse(error.stderr);
+        return error.code === 1 && diagnostics[0].code === "RC102" && /config\.wrong/.test(diagnostics[0].message);
+      }
+    );
+  } finally {
+    await rm(sandbox, { recursive: true, force: true });
+  }
+});
+
 test("CLI build dry-run emits a stable plan without creating its output directory", async () => {
   const sandbox = await mkdtemp(join(tmpdir(), "ravel-cli-dry-run-"));
   const output = join(sandbox, "output");

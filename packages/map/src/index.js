@@ -1,3 +1,5 @@
+import ravelMapSchema from "../schema/ravel-map.schema.json" with { type: "json" };
+
 const componentPattern = /^[a-z][a-z0-9-]*$/;
 const addressPattern = /^(?:[a-z][a-z0-9-]*::(?:[a-z][a-z0-9-]*)?(?::[a-z][a-z0-9-]*)?(?:\.[a-z][a-z0-9-]*)?|[a-z][a-z0-9-]*(?::[a-z][a-z0-9-]*)?(?:\.[a-z][a-z0-9-]*)?)$/;
 const mapKeys = new Set(["version", "document", "chunks", "directives", "metadata"]);
@@ -5,9 +7,12 @@ const documentKeys = new Set(["id", "uri", "format"]);
 const chunkKeys = new Set(["id", "identity", "name", "body", "definitionPipeline", "metadata", "source", "fragments"]);
 const identityKeys = new Set(["document", "chunk", "minor", "type"]);
 const directiveKeys = new Set(["kind", "name", "from", "target", "arguments", "metadata", "source", "document", "compose", "reference", "body"]);
+const directiveKinds = new Set(["in", "out", "create", "alias"]);
 
 export const RAVEL_MAP_VERSION = 1;
 export const RAVEL_MAP_SCHEMA_ID = "https://ravel.dev/schema/ravel-map-v1.json";
+/** The complete JSON Schema 2020-12 artifact shipped with this package. */
+export const RAVEL_MAP_SCHEMA = ravelMapSchema;
 
 const zeroPosition = () => ({ line: 0, column: 0, offset: 0 });
 
@@ -29,7 +34,8 @@ const validPosition = (value) => isObject(value) &&
   Number.isInteger(value.column) && value.column >= 0 &&
   Number.isInteger(value.offset) && value.offset >= 0;
 
-const validRange = (value) => isObject(value) && validPosition(value.start) && validPosition(value.end);
+const validRange = (value) => isObject(value) && validPosition(value.start) && validPosition(value.end) &&
+  value.end.offset >= value.start.offset;
 
 const validSource = (value) => isObject(value) && typeof value.uri === "string" && value.uri.length > 0 && validRange(value.range);
 
@@ -119,7 +125,7 @@ export const validateRavelMap = (map, { uri } = {}) => {
         continue;
       }
       for (const key of Object.keys(directive)) if (!directiveKeys.has(key)) report(path + "." + key, "is not a recognized directive field.");
-      if (typeof directive.kind !== "string" || directive.kind.length === 0) report(path + ".kind", "must be a non-empty string.");
+      if (typeof directive.kind !== "string" || !directiveKinds.has(directive.kind)) report(path + ".kind", "must be one of in, out, create, or alias.");
       if (!validSource(directive.source)) report(path + ".source", "must contain a URI and a valid source range.");
       if (directive.name !== undefined && (typeof directive.name !== "string" || directive.name.length === 0)) report(path + ".name", "must be a non-empty string when present.");
       if (directive.from !== undefined && (typeof directive.from !== "string" || !addressPattern.test(directive.from))) report(path + ".from", "must be a canonical Ravel address when present.");
@@ -130,6 +136,21 @@ export const validateRavelMap = (map, { uri } = {}) => {
       if (directive.compose !== undefined && !Array.isArray(directive.compose)) report(path + ".compose", "must be an array when present.");
       if (directive.reference !== undefined && typeof directive.reference !== "string") report(path + ".reference", "must be a string when present.");
       if (directive.body !== undefined && typeof directive.body !== "string") report(path + ".body", "must be a string when present.");
+      if (directive.kind === "in" && (typeof directive.target !== "string" || directive.target.length === 0)) report(path + ".target", "is required for an in directive.");
+      if (directive.kind === "out") {
+        if (typeof directive.name !== "string" || directive.name.length === 0) report(path + ".name", "is required for an out directive.");
+        if (typeof directive.from !== "string" || !addressPattern.test(directive.from)) report(path + ".from", "is required for an out directive.");
+      }
+      if (directive.kind === "create") {
+        if (!componentPattern.test(directive.document ?? "")) report(path + ".document", "is required for a create directive.");
+        if (typeof directive.name !== "string" || directive.name.length === 0) report(path + ".name", "is required for a create directive.");
+        if (!Array.isArray(directive.compose)) report(path + ".compose", "is required for a create directive.");
+      }
+      if (directive.kind === "alias") {
+        if (!componentPattern.test(directive.document ?? "")) report(path + ".document", "is required for an alias directive.");
+        if (typeof directive.name !== "string" || directive.name.length === 0) report(path + ".name", "is required for an alias directive.");
+        if (typeof directive.reference !== "string" || directive.reference.length === 0) report(path + ".reference", "is required for an alias directive.");
+      }
     }
   }
   if (map.metadata !== undefined && !isObject(map.metadata)) report("metadata", "must be an object when present.");

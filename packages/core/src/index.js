@@ -410,8 +410,17 @@ export const combineMaps = (maps) => {
   const directives = [];
   const documents = [];
   const ids = new Set();
+  const documentIds = new Set();
 
   for (const map of maps) {
+    if (documentIds.has(map.document.id)) {
+      diagnostics.push(diagnostic("RV102", "Duplicate document ID: " + map.document.id, {
+        uri: map.document.uri,
+        range: { start: { line: 0, column: 0, offset: 0 }, end: { line: 0, column: 0, offset: 0 } }
+      }));
+      continue;
+    }
+    documentIds.add(map.document.id);
     documents.push(clone(map.document));
     for (const raw of map.chunks ?? []) {
       const chunk = normalizeChunk(raw, map.document, diagnostics);

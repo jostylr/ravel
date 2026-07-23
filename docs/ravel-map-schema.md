@@ -144,5 +144,17 @@ Version changes only for incompatible map-shape changes. Optional namespaced
 metadata is the preferred extension mechanism. Adapters reject map versions they
 cannot understand rather than guessing semantics.
 
-See the machine-readable schema in schemas/ravel-map.schema.json and the
-example in examples/greeting.ravel-map.json.
+The schema is published with `@pieceful/ravel-map`, both as the portable
+`RAVEL_MAP_SCHEMA` JavaScript export and as the JSON module
+`@pieceful/ravel-map/schema`. The repository copy at
+`schemas/ravel-map.schema.json` is checked against that packaged artifact in
+the public map-contract test.
+
+```js
+import { RAVEL_MAP_SCHEMA, validateRavelMap } from "@pieceful/ravel-map";
+
+const diagnostics = validateRavelMap(map, { uri: "editor-buffer.ravel-map.json" });
+console.log(RAVEL_MAP_SCHEMA.$id, diagnostics);
+```
+
+See the example in examples/greeting.ravel-map.json.

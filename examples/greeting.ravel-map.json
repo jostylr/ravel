@@ -43,9 +43,9 @@
   ],
   "directives": [
     {
-      "kind": "write",
+      "kind": "out",
       "from": "greeting::main",
-      "target": "dist/greeting.js",
+      "name": "dist/greeting.js",
       "source": {
         "uri": "examples/greeting.md",
         "range": {

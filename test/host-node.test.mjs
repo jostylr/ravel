@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import { createBuildManifest, createOutputBackup, loadBuildInput, loadPretransformGraph, planDeliverables, planStaleDeliverables, writeBuildArtifacts, writeBuildManifest, writeDeliverables } from "../packages/host-node/src/index.js";
+import { createBuildManifest, createOutputBackup, loadBuildInput, loadPretransformGraph, planDeliverables, planStaleDeliverables, RavelInputError, writeBuildArtifacts, writeBuildManifest, writeDeliverables } from "../packages/host-node/src/index.js";
 import { markdownToMap } from "../packages/markdown/src/index.js";
 import { combineMaps, transformGraph } from "../packages/core/src/index.js";
 import { markdownLike, pugLike } from "../test-support/phase-transforms.mjs";
@@ -39,6 +39,32 @@ test("Node host validates JSON maps before following imports", async () => {
       loadPretransformGraph(input),
       (error) => error.name === "RavelMapValidationError" &&
         error.diagnostics.some((diagnostic) => diagnostic.message.includes("version must be 1"))
+    );
+  } finally {
+    await rm(sandbox, { recursive: true, force: true });
+  }
+});
+
+test("Node host reports malformed inputs and TOML fields as source diagnostics", async () => {
+  const sandbox = await mkdtemp(join(tmpdir(), "ravel-input-diagnostics-"));
+  const malformedMap = join(sandbox, "broken.ravel-map.json");
+  const config = join(sandbox, "ravel.toml");
+  try {
+    await writeFile(malformedMap, "{ not JSON");
+    await assert.rejects(
+      loadBuildInput(malformedMap),
+      (error) => error instanceof RavelInputError && error.diagnostics[0].code === "RM201" &&
+        error.diagnostics[0].source.uri === malformedMap
+    );
+    await writeFile(config, "version = 1\nunknown = true\n[build]\nout_dir = \"build\"\n");
+    await assert.rejects(
+      loadBuildInput(config),
+      (error) => error instanceof RavelInputError && error.diagnostics[0].code === "RC102" &&
+        /config\.unknown/.test(error.diagnostics[0].message)
+    );
+    await assert.rejects(
+      loadBuildInput(join(sandbox, "unsupported.txt")),
+      (error) => error instanceof RavelInputError && error.diagnostics[0].code === "RH101"
     );
   } finally {
     await rm(sandbox, { recursive: true, force: true });
