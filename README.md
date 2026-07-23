@@ -267,6 +267,7 @@ explainable, reproducible, and pleasant to use.
 
 - [Ravel 0.1 implementation plan](TODO.md)
 - [Five-minute installed CLI guide](docs/getting-started.md)
+- [0.1 contracts and TOML configuration](docs/contracts-and-configuration.md)
 - [Design plan](docs/design.md)
 - [History and predecessor projects](docs/history.md)
 - [Ravel Map schema guide](docs/ravel-map-schema.md)

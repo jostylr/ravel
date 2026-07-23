@@ -294,8 +294,12 @@ Exit criteria:
       command rather than source paths (`docs/getting-started.md`).
 - [ ] Update all reference documents so they distinguish implemented 0.1
       behavior from future design.
-- [ ] Document map, syntax, CLI, configuration, diagnostics, provenance-map, and
-      manifest versioning.
+- [x] Document map, syntax, CLI, configuration, diagnostics, and manifest
+      versioning, including canonical `ravel.toml` behavior and CLI exit codes
+      (`docs/contracts-and-configuration.md`).
+- [ ] Specify and document provenance-map versioning after the generated-source
+      map format and query API exist; no segment-level provenance contract is
+      claimed before then.
 - [ ] Add a cookbook for single-document builds, multi-document TOML projects,
       reusable libraries, derived chunks, generated variants, and CI checks.
 - [ ] Document filesystem trust boundaries, symlink policy, output authorization,
