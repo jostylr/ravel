@@ -51,7 +51,7 @@ const expectedPackages = new Set([
   "@pieceful/ravel-markdown"
 ]);
 
-const archiveContents = async (path) => (await run("tar", ["-tzf", path])).stdout.split("\n").filter(Boolean);
+const archiveContents = async (path) => (await run("tar", ["-tzf", path])).stdout.split(/\r?\n/).filter(Boolean);
 
 const sandbox = await mkdtemp(join(tmpdir(), "ravel-packed-smoke-"));
 try {
