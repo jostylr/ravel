@@ -23,6 +23,20 @@ jobs:
       - run: npm run build:browser-test
       - run: npm run test:pack
 
+  windows:
+    name: Windows Node verification
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run validate:schema
+      - run: npm run test:pack
+
   bun:
     name: Bun portable verification
     runs-on: ubuntu-latest
