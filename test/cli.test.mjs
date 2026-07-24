@@ -42,7 +42,7 @@ test("CLI builds a canonical ravel.toml and honors its clean and backup policy",
 
     await writeFile(join(sandbox, "ravel.toml"), config('"archives/before-clean.zip"'));
     const second = await run(process.execPath, [cli], { cwd: sandbox });
-    assert.match(second.stdout, /Backup: .*archives\/before-clean\.zip/);
+    assert.match(second.stdout, /Backup: .*archives(?:\/|\\)before-clean\.zip/);
     assert.equal((await readFile(join(sandbox, "archives", "before-clean.zip"))).subarray(0, 4).toString("binary"), "PK\x03\x04");
     assert.deepEqual(await readdir(join(sandbox, "archives")), ["before-clean.zip"]);
   } finally {

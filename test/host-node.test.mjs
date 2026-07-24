@@ -79,7 +79,7 @@ test("Node host loads one TOML build run containing multiple Markdown files", as
   const program = transformGraph(loaded.pretransform);
 
   assert.deepEqual(program.diagnostics, []);
-  assert.match(loaded.outputDirectory, /\.ravel\/runs\/markdown-web$/);
+  assert.ok(loaded.outputDirectory.endsWith(join(".ravel", "runs", "markdown-web")));
   assert.deepEqual(Object.keys(program.chunks).sort(), [
     "handbook::compiler:what.ts",
     "handbook::main.javascript",

@@ -343,6 +343,8 @@ const safeDestination = (outputDirectory, name) => {
   return destination;
 };
 
+const portableRelative = (root, target) => relative(root, target).split(sep).join("/");
+
 const contentHash = (value) => createHash("sha256").update(value, "utf8").digest("hex");
 
 const orderedDeliverables = (program) => Object.values(program.deliverables ?? [])
@@ -373,7 +375,7 @@ export const planDeliverables = (program, outputDirectory) => {
     }
     return {
       name: deliverable.name,
-      path: relative(root, destination),
+      path: portableRelative(root, destination),
       from: deliverable.from,
       bytes: Buffer.byteLength(deliverable.value, "utf8"),
       sha256: contentHash(deliverable.value),
@@ -457,7 +459,7 @@ export const planStaleDeliverables = async (program, outputDirectory, {
     .filter((deliverable, index, entries) => entries.findIndex((entry) => entry.name === deliverable.name) === index)
     .map((deliverable) => ({
       name: deliverable.name,
-      path: relative(plan.outputDirectory, safeDestination(plan.outputDirectory, deliverable.name)),
+      path: portableRelative(plan.outputDirectory, safeDestination(plan.outputDirectory, deliverable.name)),
       from: deliverable.from ?? null,
       staleSince: deliverable.staleSince ?? staleSince,
       ...(deliverable.ravelmap ? { ravelmap: deliverable.ravelmap } : {})
@@ -671,7 +673,7 @@ const planManagedRemoval = async (outputDirectory, rootDirectory, staleOnly) => 
   const deliverables = (staleOnly ? previous.manifest.stale ?? [] : managedDeliverables(previous.manifest))
     .map((deliverable) => ({
       name: deliverable.name,
-      path: relative(resolve(outputDirectory), safeDestination(resolve(outputDirectory), deliverable.name)),
+      path: portableRelative(resolve(outputDirectory), safeDestination(resolve(outputDirectory), deliverable.name)),
       from: deliverable.from ?? null,
       staleSince: deliverable.staleSince,
       ...(deliverable.ravelmap ? { ravelmap: deliverable.ravelmap } : {})
