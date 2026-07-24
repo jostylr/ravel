@@ -60,7 +60,7 @@ refuses to overwrite an existing archive.
 | Command | Effect |
 | --- | --- |
 | `ravel check <input>` | Validate and evaluate without writing artifacts. |
-| `ravel inspect <input>` | Show the completed program, or `--chunks`, `--graph`, or `--trace`. |
+| `ravel inspect <input>` | Show the completed program, `--chunks`, `--graph`, `--trace`, or a `--provenance <deliverable>` query. |
 | `ravel build <input>` | Build declared artifacts. TOML supplies `out_dir`; direct inputs require `--out-dir`. |
 | `ravel refresh <output-dir>` | Remove only stale managed outputs retained by a prior build. |
 

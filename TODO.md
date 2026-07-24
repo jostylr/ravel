@@ -192,12 +192,12 @@ its literate source.
       chunk, reference, transform/compose step, and derivation chain.
 - [x] Preserve fragment-level provenance while joining greedy chunks, including
       non-contiguous Markdown source ranges.
-- [ ] Propagate output spans through literals, substitutions, continuation
+- [x] Propagate output spans through literals, substitutions, continuation
       indentation, composition newlines, aliases, definition transforms, use-site
       transforms, `pipe`, `pass`, delayed substitution, and `emit`.
-      The first evaluator pass covers all of these paths, with conservative
-      coarse spans for indentation, newlines, and transforms; finer mappings
-      remain.
+      Literal content remains exact through ordinary composition. Inserted
+      indentation/newlines and transforms without a mapping rule remain
+      explicitly coarse.
 - [x] Define honest mapping behavior for transforms that cannot provide precise
       character correspondence. Such transforms should retain coarse input/output
       provenance rather than inventing exact mappings.
@@ -205,18 +205,17 @@ its literate source.
       final chunk's origin and a flat dependency list.
 - [x] Add a sidecar output for each deliverable and an embedded build-level map,
       both referenced from the output manifest and managed by clean/refresh.
-- [ ] Expose provenance queries in the public API: generated position to source,
+- [x] Expose provenance queries in the public API: generated position to source,
       source range to generated ranges, definition, references, and dependency
       path.
-      Forward and reverse offset queries are public now and return chunk and
-      reference-chain data; higher-level range/definition helpers and CLI
-      position queries remain.
-- [ ] Add golden tests for direct literals, nested references, indentation,
+      `ravel inspect --provenance` exposes forward and reverse offset queries;
+      JavaScript callers additionally have source-range and full explanation
+      helpers.
+- [x] Add golden tests for direct literals, nested references, indentation,
       greedy fragments, aliases, derived chunks, compose operations, and transformed
       content.
-      Direct nested substitutions, greedy fragments, exact reverse lookup,
-      coarse transforms, and sidecar/aggregate artifact lifecycle now have
-      focused tests.
+      The FizzBuzz migration has a checked-in region map with 33 exact regions
+      and one honest coarse composition-newline region.
 
 Exit criteria:
 

@@ -104,6 +104,8 @@ dump:
 npm run ravel -- inspect examples/poc/project.ravel-map.json --chunks
 npm run ravel -- inspect examples/poc/project.ravel-map.json --graph
 npm run ravel -- inspect examples/poc/project.ravel-map.json --trace --json
+npm run ravel -- inspect examples/poc/project.ravel-map.json \
+  --provenance dist/greeting.js --generated-offset 0
 ```
 
 Build the JSON-map proof of concept and save its completed graph:

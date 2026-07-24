@@ -5,8 +5,9 @@ export interface Diagnostic { code: string; severity: "error" | "warning" | "inf
 export interface ChunkIdentity { document: string | null; chunk: string | null; minor: string | null; type: string | null; explicitDocument?: boolean; }
 export interface RavelMap { version: 1; document: { id: string; uri: string; format: string }; chunks: Array<Record<string, unknown>>; directives?: Array<Record<string, unknown>>; diagnostics?: Diagnostic[]; }
 export interface PretransformGraph { version: 1; documents: Array<{ id: string; uri: string; format: string }>; chunks: Array<Record<string, unknown>>; directives: Array<Record<string, unknown>>; diagnostics: Diagnostic[]; }
-export interface ProvenanceStep { kind: string; source?: SourceLocation; from?: string; to?: string; name?: string; phase?: number; value?: string; }
-export interface ProvenanceSegment { generated: { start: number; end: number }; source: SourceLocation | null; chunk: string; kind: string; precision: "exact" | "coarse"; via: ProvenanceStep[]; }
+export interface ProvenanceStep { kind: string; source?: SourceLocation; from?: string; to?: string; name?: string; phase?: number; value?: string; owner?: string; target?: string; }
+export interface ProvenanceOrigin { source: SourceLocation | null; chunk: string; kind: string; precision: "exact" | "coarse"; via: ProvenanceStep[]; }
+export interface ProvenanceSegment { generated: { start: number; end: number }; source: SourceLocation | null; chunk: string; kind: string; precision: "exact" | "coarse"; via: ProvenanceStep[]; origins?: ProvenanceOrigin[]; }
 export interface DeliverableProvenanceMap { version: 1; kind: "ravel-provenance-map"; generated: { uri: string; length: number; offsetEncoding: "utf-16" }; from: string; segments: ProvenanceSegment[]; }
 export interface BuildProvenanceMap { version: 1; kind: "ravel-provenance-bundle"; maps: DeliverableProvenanceMap[]; }
 export interface ProgramChunk { id: string; identity: ChunkIdentity; value: string; segments: ProvenanceSegment[]; source: SourceLocation; dependencies: string[]; references: Array<{ chunk: string; requested: string; source: SourceLocation }>; provenance: unknown[]; generated?: boolean; }
@@ -22,7 +23,10 @@ export const provenanceMapVersion: 1;
 export function createDeliverableProvenanceMap(deliverable: Deliverable): DeliverableProvenanceMap;
 export function createBuildProvenanceMap(program: RavelProgram): BuildProvenanceMap;
 export function sourceAtGeneratedOffset(map: DeliverableProvenanceMap, offset: number): (ProvenanceSegment & { sourceOffset?: number }) | null;
-export function generatedRangesForSource(map: DeliverableProvenanceMap, uri: string, offset: number): Array<{ generated: { start: number; end: number }; generatedOffset?: number; precision: "exact" | "coarse"; chunk: string; kind: string; via: ProvenanceStep[] }>;
+export interface GeneratedSourceMatch { generated: { start: number; end: number }; generatedOffset?: number; source?: { start: number; end: number }; precision: "exact" | "coarse"; chunk: string; kind: string; via: ProvenanceStep[]; through?: "transform-origin"; }
+export function generatedRangesForSource(map: DeliverableProvenanceMap, uri: string, offset: number): GeneratedSourceMatch[];
+export function generatedRangesForSourceRange(map: DeliverableProvenanceMap, uri: string, range: { start: number | SourcePosition; end: number | SourcePosition }): GeneratedSourceMatch[];
+export function explainGeneratedOffset(program: RavelProgram, deliverableName: string, offset: number): { deliverable: { name: string; from: string }; generatedOffset: number; segment: ProvenanceSegment & { sourceOffset?: number }; definition: { id: string; identity: ChunkIdentity; metadata: unknown; generated?: boolean } | null; references: ProvenanceStep[]; dependencyPath: string[] } | null;
 export const directiveKinds: Set<string>;
 export function compose(steps: unknown[], source: SourceLocation): unknown;
 export function append(reference: string, source: SourceLocation): unknown;

@@ -36,6 +36,9 @@ Use this package at adapter, editor, and host boundaries.
   `generatedRangesForSource(map, uri, offset)` provide forward and reverse
   provenance lookup. Exact results include a corresponding offset; coarse
   results retain the best attributable range without claiming character identity.
+- `generatedRangesForSourceRange(map, uri, range)` maps a half-open source
+  range, while `explainGeneratedOffset(program, deliverable, offset)` adds the
+  definition, references, and dependency path.
 - `provenanceMapVersion` identifies the generated provenance contract.
 
 The `@pieceful/ravel-core/directives` entry point exposes constructors for the

@@ -42,6 +42,31 @@ test("the legacy FizzBuzz migration builds static, runnable outputs", async () =
   assert.equal(program.chunks["fizzbuzz::fizzbuzz:source.js"].value, program.chunks["fizzbuzz::fizzbuzz.js"].value);
   assert.equal(program.chunks["fizzbuzz::fizzbuzz:compact.js"].value, program.chunks["fizzbuzz::fizzbuzz.js"].value);
   assert.equal(program.deliverables["dist/fizzbuzz-compact.js"].value, program.chunks["fizzbuzz::fizzbuzz:compact.js"].value);
+  const expectedProvenance = JSON.parse(await readFile(
+    new URL("../fixtures/provenance/fizzbuzz.ravelmap.golden.json", import.meta.url),
+    "utf8"
+  ));
+  const fizzbuzz = program.deliverables["dist/fizzbuzz.js"];
+  const actualProvenance = {
+    version: 1,
+    generated: { uri: fizzbuzz.name, length: fizzbuzz.value.length },
+    regions: fizzbuzz.segments.map((segment) => ({
+      generated: [segment.generated.start, segment.generated.end],
+      source: segment.source ? [
+        segment.source.uri,
+        segment.source.range.start.offset,
+        segment.source.range.end.offset
+      ] : null,
+      chunk: segment.chunk,
+      kind: segment.kind,
+      precision: segment.precision,
+      derivation: segment.via.map((step) =>
+        step.kind + (step.name ? ":" + step.name : "")
+      )
+    }))
+  };
+  assert.deepEqual(actualProvenance, expectedProvenance);
+  assert.equal(fizzbuzz.segments.filter((segment) => segment.precision === "exact").length, 33);
 
   const outputDirectory = await mkdtemp(join(tmpdir(), "ravel-fizzbuzz-"));
   try {

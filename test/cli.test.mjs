@@ -140,6 +140,53 @@ test("CLI inspect provides compact chunk and dependency-graph views", async () =
   assert.deepEqual(graphView.deliverables.map((deliverable) => deliverable.name), ["dist/greeting.js", "generated/greeting.js"]);
 });
 
+test("CLI inspect queries generated and source provenance offsets", async () => {
+  const generated = await run(process.execPath, [
+    cli,
+    "inspect",
+    proofOfConcept,
+    "--provenance",
+    "dist/greeting.js",
+    "--generated-offset",
+    "1",
+    "--json"
+  ]);
+  const generatedView = JSON.parse(generated.stdout);
+  assert.equal(generatedView.view, "provenance");
+  assert.equal(generatedView.match.chunk, "library::greeting");
+  assert.equal(generatedView.match.precision, "exact");
+  assert.equal(generatedView.match.sourceOffset, generatedView.match.source.range.start.offset + 1);
+  assert.equal(generatedView.definition.id, "library::greeting");
+  assert.deepEqual(generatedView.dependencyPath, [
+    "project::main",
+    "project::greeting",
+    "library::greeting"
+  ]);
+  assert.deepEqual(generatedView.match.via.map(({ from, to }) => [from, to]), [
+    ["project::greeting", "library::greeting"],
+    ["project::main", "project::greeting"]
+  ]);
+
+  const reverse = await run(process.execPath, [
+    cli,
+    "inspect",
+    proofOfConcept,
+    "--provenance",
+    "dist/greeting.js",
+    "--source-uri",
+    generatedView.match.source.uri,
+    "--source-offset",
+    String(generatedView.match.sourceOffset),
+    "--json"
+  ]);
+  assert.equal(JSON.parse(reverse.stdout).matches[0].generatedOffset, 1);
+
+  await assert.rejects(
+    run(process.execPath, [cli, "inspect", proofOfConcept, "--generated-offset", "1"]),
+    (error) => error.code === 2 && /require --provenance/.test(error.stderr)
+  );
+});
+
 test("CLI build writes deliverables, a manifest, and an explicit graph", async () => {
   const sandbox = await mkdtemp(join(tmpdir(), "ravel-cli-write-"));
   const input = join(sandbox, "project.ravel-map.json");

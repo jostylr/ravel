@@ -1,6 +1,11 @@
 #!/usr/bin/env node
 import { cleanManagedArtifacts, createOutputBackup, loadBuildInput, planDeliverables, planOutputBackup, planStaleDeliverables, refreshStaleArtifacts, writeBuildArtifacts, writeGraph } from "@pieceful/ravel-host-node";
-import { transformGraph } from "@pieceful/ravel-core";
+import {
+  createDeliverableProvenanceMap,
+  explainGeneratedOffset,
+  generatedRangesForSource,
+  transformGraph
+} from "@pieceful/ravel-core";
 import { existsSync, realpathSync } from "node:fs";
 import { extname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -9,7 +14,16 @@ const EXIT_SOURCE = 1;
 const EXIT_USAGE = 2;
 const EXIT_INTERNAL = 3;
 const RAVEL_VERSION = "0.1.0";
-const valueOptions = new Set(["--config", "--out-dir", "--document", "--mode"]);
+const valueOptions = new Set([
+  "--config",
+  "--out-dir",
+  "--document",
+  "--mode",
+  "--provenance",
+  "--generated-offset",
+  "--source-uri",
+  "--source-offset"
+]);
 const booleanOptions = new Set(["--json", "--dry-run", "--debug", "--chunks", "--trace", "--clean"]);
 
 const usage = () => {
@@ -18,6 +32,7 @@ const usage = () => {
   console.error("       ravel build <map.json|document.md> --out-dir <directory> [--document <name>] [--mode <opt-in|primary>] [--graph <program.json>] [--backup [file.zip]] [--clean] [--dry-run] [--json]");
   console.error("       ravel build --config <run.toml> [--out-dir <directory>] [--graph <program.json>] [--backup [file.zip]] [--clean] [--dry-run] [--json]");
   console.error("       ravel inspect <map.json|document.md> [--config <run.toml>] [--document <name>] [--mode <opt-in|primary>] [--chunks|--graph|--trace] [--json]");
+  console.error("       ravel inspect <input> --provenance <deliverable> [--generated-offset <offset> | --source-uri <uri> --source-offset <offset>] [--json]");
   console.error("       ravel refresh <output-directory> [--dry-run] [--json]");
 };
 
@@ -77,7 +92,48 @@ const parseArguments = (argumentsValue) => {
 
 const sortedEntries = (value) => Object.entries(value ?? []).sort(([left], [right]) => left.localeCompare(right));
 
+class CliUsageError extends Error {}
+
 const inspectProgram = (program, options) => {
+  if (options["--provenance"]) {
+    const deliverable = program.deliverables[options["--provenance"]];
+    if (!deliverable) {
+      throw new CliUsageError("Unknown deliverable for --provenance: " + options["--provenance"]);
+    }
+    const map = createDeliverableProvenanceMap(deliverable);
+    const generatedOffset = options["--generated-offset"];
+    if (generatedOffset !== undefined) {
+      const offset = Number(generatedOffset);
+      const explanation = explainGeneratedOffset(program, deliverable.name, offset);
+      return {
+        version: program.version,
+        view: "provenance",
+        deliverable: { name: deliverable.name, from: deliverable.from },
+        query: { kind: "generated-offset", offset },
+        match: explanation?.segment ?? null,
+        definition: explanation?.definition ?? null,
+        references: explanation?.references ?? [],
+        dependencyPath: explanation?.dependencyPath ?? []
+      };
+    }
+    if (options["--source-uri"] !== undefined) {
+      const uri = options["--source-uri"];
+      const offset = Number(options["--source-offset"]);
+      return {
+        version: program.version,
+        view: "provenance",
+        deliverable: { name: deliverable.name, from: deliverable.from },
+        query: { kind: "source-offset", uri, offset },
+        matches: generatedRangesForSource(map, uri, offset)
+      };
+    }
+    return {
+      version: program.version,
+      view: "provenance",
+      deliverable: { name: deliverable.name, from: deliverable.from },
+      map
+    };
+  }
   if (options["--chunks"]) {
     return {
       version: program.version,
@@ -130,6 +186,52 @@ const printInspectResult = (result, json) => {
     if (result.deliverables.length) {
       console.log("Deliverables:");
       for (const deliverable of result.deliverables) console.log("  " + deliverable.name + " ← " + deliverable.from);
+    }
+    return;
+  }
+  if (result.view === "provenance") {
+    console.log("Ravel provenance for " + result.deliverable.name + " ← " + result.deliverable.from + ":");
+    const printVia = (segment) => {
+      for (const step of segment.via ?? []) {
+        if (step.kind === "reference") console.log("    via " + step.from + " → " + step.to);
+        else console.log("    via " + step.kind + (step.name ? " " + step.name : ""));
+      }
+    };
+    const printSegment = (segment) => {
+      if (!segment) {
+        console.log("  (no matching generated segment)");
+        return;
+      }
+      const source = segment.source;
+      const start = source?.range?.start;
+      const location = source
+        ? source.uri + (start ? ":" + (start.line + 1) + ":" + (start.column + 1) : "")
+        : "(generated)";
+      console.log(
+        "  " + segment.generated.start + ".." + segment.generated.end +
+        " ← " + location + " [" + segment.precision + ", " + segment.chunk + "]"
+      );
+      printVia(segment);
+    };
+    if (result.query?.kind === "generated-offset") {
+      console.log("Generated offset " + result.query.offset + ":");
+      printSegment(result.match);
+      if (result.dependencyPath.length) {
+        console.log("  dependency path: " + result.dependencyPath.join(" → "));
+      }
+    } else if (result.query?.kind === "source-offset") {
+      console.log("Source offset " + result.query.uri + ":" + result.query.offset + ":");
+      if (!result.matches.length) console.log("  (no generated ranges)");
+      for (const match of result.matches) {
+        console.log(
+          "  " + match.generated.start + ".." + match.generated.end +
+          (match.generatedOffset === undefined ? "" : " (exact offset " + match.generatedOffset + ")") +
+          " [" + match.precision + ", " + match.chunk + "]"
+        );
+        printVia(match);
+      }
+    } else {
+      for (const segment of result.map.segments) printSegment(segment);
     }
     return;
   }
@@ -223,8 +325,28 @@ if (command === "--help" || command === "-h" || argumentsValue.includes("--help"
   } else if ((parsed.options["--chunks"] || parsed.options["--trace"]) && parsed.command !== "inspect") {
     console.error("ravel usage error: --chunks and --trace are available only with inspect.");
     process.exitCode = EXIT_USAGE;
-  } else if (parsed.command === "inspect" && ["--chunks", "--graph", "--trace"].filter((option) => parsed.options[option]).length > 1) {
+  } else if (["--provenance", "--generated-offset", "--source-uri", "--source-offset"]
+    .some((option) => parsed.options[option] !== undefined) && parsed.command !== "inspect") {
+    console.error("ravel usage error: provenance options are available only with inspect.");
+    process.exitCode = EXIT_USAGE;
+  } else if (parsed.command === "inspect" && ["--chunks", "--graph", "--trace", "--provenance"].filter((option) => parsed.options[option]).length > 1) {
     console.error("ravel usage error: choose only one inspect view.");
+    process.exitCode = EXIT_USAGE;
+  } else if ((parsed.options["--generated-offset"] !== undefined ||
+      parsed.options["--source-uri"] !== undefined ||
+      parsed.options["--source-offset"] !== undefined) && parsed.options["--provenance"] === undefined) {
+    console.error("ravel usage error: offset queries require --provenance <deliverable>.");
+    process.exitCode = EXIT_USAGE;
+  } else if (parsed.options["--generated-offset"] !== undefined &&
+      (parsed.options["--source-uri"] !== undefined || parsed.options["--source-offset"] !== undefined)) {
+    console.error("ravel usage error: choose either a generated-offset or source-offset provenance query.");
+    process.exitCode = EXIT_USAGE;
+  } else if ((parsed.options["--source-uri"] === undefined) !== (parsed.options["--source-offset"] === undefined)) {
+    console.error("ravel usage error: --source-uri and --source-offset must be used together.");
+    process.exitCode = EXIT_USAGE;
+  } else if (["--generated-offset", "--source-offset"].some((option) =>
+    parsed.options[option] !== undefined && !/^(?:0|[1-9][0-9]*)$/.test(parsed.options[option]))) {
+    console.error("ravel usage error: provenance offsets must be non-negative integers.");
     process.exitCode = EXIT_USAGE;
   } else if (parsed.command === "refresh" && ["--config", "--document", "--mode", "--chunks", "--trace"].some((option) => parsed.options[option])) {
     console.error("ravel usage error: refresh accepts only an output directory, --dry-run, and --json.");
@@ -298,7 +420,10 @@ if (command === "--help" || command === "-h" || argumentsValue.includes("--help"
       }
       }
     } catch (error) {
-      if (Array.isArray(error?.diagnostics)) {
+      if (error instanceof CliUsageError) {
+        console.error("ravel usage error: " + error.message);
+        process.exitCode = EXIT_USAGE;
+      } else if (Array.isArray(error?.diagnostics)) {
         printDiagnostics(error.diagnostics, json);
         process.exitCode = EXIT_SOURCE;
       } else if (json) {

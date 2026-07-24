@@ -44,8 +44,24 @@ const sliceMapped = (value, start, end = value.text.length) => {
     const overlapStart = Math.max(start, segment.generated.start);
     const overlapEnd = Math.min(end, segment.generated.end);
     if (overlapStart >= overlapEnd) continue;
+    let source = segment.source;
+    const segmentLength = segment.generated.end - segment.generated.start;
+    const sourceStart = segment.source?.range?.start;
+    const sourceEnd = segment.source?.range?.end;
+    if (segment.precision === "exact" && sourceStart && sourceEnd &&
+        sourceEnd.offset - sourceStart.offset === segmentLength) {
+      const segmentText = value.text.slice(segment.generated.start, segment.generated.end);
+      source = {
+        uri: segment.source.uri,
+        range: {
+          start: advance(sourceStart, segmentText, overlapStart - segment.generated.start),
+          end: advance(sourceStart, segmentText, overlapEnd - segment.generated.start)
+        }
+      };
+    }
     segments.push({
       ...segment,
+      source,
       generated: {
         start: overlapStart - start,
         end: overlapEnd - start
@@ -57,6 +73,89 @@ const sliceMapped = (value, start, end = value.text.length) => {
 
 const coarseMapped = (text, source, chunk, kind, via = []) =>
   sourceSegment(text, source, chunk, kind, "coarse", via);
+
+const segmentOrigins = (value) => {
+  const origins = [];
+  const seen = new Set();
+  for (const segment of value.segments) {
+    const candidates = segment.origins ?? [{
+      source: segment.source,
+      chunk: segment.chunk,
+      kind: segment.kind,
+      precision: segment.precision,
+      via: segment.via ?? []
+    }];
+    for (const candidate of candidates) {
+      const key = JSON.stringify(candidate);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      origins.push(clone(candidate));
+    }
+  }
+  return origins;
+};
+
+const coarseDerivedMapped = (text, source, chunk, kind, via, input) => {
+  const result = coarseMapped(text, source, chunk, kind, via);
+  if (result.segments.length) result.segments[0].origins = segmentOrigins(input);
+  return result;
+};
+
+const withMappedDerivation = (value, derivation) => mappedValue(
+  value.text,
+  value.segments.map((segment) => ({
+    ...segment,
+    via: [...(segment.via ?? []), clone(derivation)]
+  }))
+);
+
+const mapBuiltinTransform = (input, output, step, chunk) => {
+  const derivation = { kind: "transform", name: step.name, source: clone(step.source) };
+  if (step.name === "concat") return withMappedDerivation(input, derivation);
+  if (step.name === "trim") {
+    const start = input.text.length - input.text.trimStart().length;
+    const end = input.text.trimEnd().length;
+    return withMappedDerivation(sliceMapped(input, start, Math.max(start, end)), derivation);
+  }
+  if (step.name === "indent" && Number.isInteger(step.arguments[0]) && step.arguments[0] >= 0) {
+    const padding = " ".repeat(step.arguments[0]);
+    const parts = [];
+    const lines = input.text.split("\n");
+    let cursor = 0;
+    for (const line of lines) {
+      if (line.length) {
+        parts.push(coarseMapped(padding, step.source, chunk, "transform-insert", [derivation]));
+        parts.push(withMappedDerivation(sliceMapped(input, cursor, cursor + line.length), derivation));
+      }
+      cursor += line.length;
+      if (cursor < input.text.length) {
+        parts.push(withMappedDerivation(sliceMapped(input, cursor, cursor + 1), derivation));
+        cursor += 1;
+      }
+    }
+    const result = concatMapped(...parts);
+    return result.text === output ? result : null;
+  }
+  if (step.name === "dedent") {
+    const lines = input.text.split("\n");
+    const indents = lines.filter((line) => /\S/.test(line)).map((line) => /^\s*/.exec(line)[0].length);
+    const amount = indents.length ? Math.min(...indents) : 0;
+    const parts = [];
+    let cursor = 0;
+    for (const line of lines) {
+      const end = cursor + line.length;
+      parts.push(withMappedDerivation(sliceMapped(input, Math.min(end, cursor + amount), end), derivation));
+      cursor = end;
+      if (cursor < input.text.length) {
+        parts.push(withMappedDerivation(sliceMapped(input, cursor, cursor + 1), derivation));
+        cursor += 1;
+      }
+    }
+    const result = concatMapped(...parts);
+    return result.text === output ? result : null;
+  }
+  return null;
+};
 
 const replaceMappedOnce = (value, search, replacement) => {
   const index = value.text.indexOf(search);
@@ -392,11 +491,26 @@ const continuationIndentAt = (body, index) => {
   return /^[\t ]*/.exec(body.slice(lineStart, index))[0];
 };
 
-const applyContinuationIndent = (value, indentation) => {
-  if (!indentation || !/[\r\n]/.test(value)) return value;
-  return value.replace(/(\r\n|\n|\r)([^\r\n]*)/g, (match, eol, line) =>
-    /\S/.test(line) ? eol + indentation + line : eol + line
-  );
+const applyContinuationIndentMapped = (value, indentation, source, chunk) => {
+  if (!indentation || !/[\r\n]/.test(value.text)) return value;
+  const parts = [];
+  const pattern = /(\r\n|\n|\r)([^\r\n]*)/g;
+  let cursor = 0;
+  for (const match of value.text.matchAll(pattern)) {
+    if (!/\S/.test(match[2])) continue;
+    const insertion = match.index + match[1].length;
+    parts.push(sliceMapped(value, cursor, insertion));
+    parts.push(coarseMapped(
+      indentation,
+      source,
+      chunk,
+      "continuation-indent",
+      [{ kind: "indent", value: indentation, source: clone(source) }]
+    ));
+    cursor = insertion;
+  }
+  parts.push(sliceMapped(value, cursor));
+  return concatMapped(...parts);
 };
 
 export const parseChunk = (body, source) => {
@@ -915,6 +1029,29 @@ export const transformGraph = (pretransform, options = {}) => {
     return (hash >>> 0).toString(36).toUpperCase();
   };
 
+  const evaluateTransformMapped = (input, step, definition, context = {}) => {
+    const output = applyTransform(
+      input.text,
+      step,
+      diagnostics,
+      options.transforms,
+      { chunk: definition, ...context }
+    );
+    return mapBuiltinTransform(input, output, step, definition.id) ?? coarseDerivedMapped(
+      output,
+      step.source,
+      definition.id,
+      "transform",
+      [{
+        kind: "transform",
+        name: step.name,
+        ...(context.phase ? { phase: context.phase } : {}),
+        source: clone(step.source)
+      }],
+      input
+    );
+  };
+
   const evaluateReference = (node, owner) => {
     const resolved = resolveTarget(node.target, owner.definition, definitions);
     if (!resolved) {
@@ -979,13 +1116,7 @@ export const transformGraph = (pretransform, options = {}) => {
         value = evaluateExpression(step.value, owner);
       } else if (step.type === "transform") {
         const argumentsValue = step.arguments.map((argument) => evaluateArgument(argument, owner));
-        value = coarseMapped(
-          applyTransform(value.text, { ...step, arguments: argumentsValue }, diagnostics, options.transforms, { chunk: owner.definition }),
-          step.source,
-          owner.definition.id,
-          "transform",
-          [{ kind: "transform", name: step.name, source: clone(step.source) }]
-        );
+        value = evaluateTransformMapped(value, { ...step, arguments: argumentsValue }, owner.definition);
       }
     }
     return value;
@@ -1010,12 +1141,11 @@ export const transformGraph = (pretransform, options = {}) => {
     if (node.type === "delay") return evaluateDelay(node, owner);
     const value = evaluateExpression(node, owner);
     if (!node.continuationIndent) return value;
-    return coarseMapped(
-      applyContinuationIndent(value.text, node.continuationIndent),
+    return applyContinuationIndentMapped(
+      value,
+      node.continuationIndent,
       node.source,
-      owner.definition.id,
-      "continuation-indent",
-      [{ kind: "indent", value: node.continuationIndent, source: clone(node.source) }]
+      owner.definition.id
     );
   };
 
@@ -1052,13 +1182,7 @@ export const transformGraph = (pretransform, options = {}) => {
       let transformed = value;
       for (const [pipelineIndex, pipelineStep] of step.pipeline.entries()) {
         if (pipelineStep.type === "transform") {
-          transformed = coarseMapped(
-            applyTransform(transformed.text, pipelineStep, diagnostics, options.transforms, { chunk: definition }),
-            pipelineStep.source,
-            definition.id,
-            "transform",
-            [{ kind: "transform", name: pipelineStep.name, source: clone(pipelineStep.source) }]
-          );
+          transformed = evaluateTransformMapped(transformed, pipelineStep, definition);
         }
         if (capture && capture.stepIndex === stepIndex && capture.pipelineIndex === pipelineIndex) {
           return transformed;
@@ -1107,13 +1231,7 @@ export const transformGraph = (pretransform, options = {}) => {
       owner.trace.push({ phase, stage: "protected-input", value: value.text });
       const step = definition.definitionPipeline[phase - 1];
       if (step) {
-        value = coarseMapped(
-          applyTransform(value.text, step, diagnostics, options.transforms, { chunk: definition, phase }),
-          step.source,
-          definition.id,
-          "transform",
-          [{ kind: "transform", name: step.name, phase, source: clone(step.source) }]
-        );
+        value = evaluateTransformMapped(value, step, definition, { phase });
         owner.trace.push({
           phase,
           stage: "transform-output",
@@ -1155,6 +1273,18 @@ export const transformGraph = (pretransform, options = {}) => {
         definition.id,
         "delay-removal"
       );
+    }
+    if (definition.generated) {
+      const derivation = {
+        kind: definition.origin.kind,
+        source: clone(definition.origin.source),
+        ...(definition.origin.owner ? { owner: definition.origin.owner } : {}),
+        ...(definition.origin.target ? { target: definition.origin.target } : {})
+      };
+      value = mappedValue(value.text, value.segments.map((segment) => ({
+        ...segment,
+        via: [...(segment.via ?? []), derivation]
+      })));
     }
     evaluating.pop();
 
@@ -1273,6 +1403,22 @@ export const sourceAtGeneratedOffset = (map, offset) => {
   return result;
 };
 
+const sourceOffsetValue = (position) => Number.isInteger(position)
+  ? position
+  : position?.offset;
+
+const sourceCandidates = (segment) => [
+  {
+    source: segment.source,
+    chunk: segment.chunk,
+    kind: segment.kind,
+    precision: segment.precision,
+    via: segment.via ?? [],
+    through: "segment"
+  },
+  ...(segment.origins ?? []).map((origin) => ({ ...origin, through: "origin" }))
+];
+
 /**
  * Resolve a source offset to generated ranges. Exact segments return a single
  * corresponding offset; coarse segments return the containing generated range.
@@ -1280,20 +1426,101 @@ export const sourceAtGeneratedOffset = (map, offset) => {
 export const generatedRangesForSource = (map, uri, offset) => {
   if (typeof uri !== "string" || !Number.isInteger(offset) || offset < 0) return [];
   const matches = [];
+  const seen = new Set();
   for (const segment of map?.segments ?? []) {
-    const start = segment.source?.range?.start?.offset;
-    const end = segment.source?.range?.end?.offset;
-    if (segment.source?.uri !== uri || !Number.isInteger(start) || offset < start || offset >= end) continue;
-    const generatedLength = segment.generated.end - segment.generated.start;
-    const exact = segment.precision === "exact" && end - start === generatedLength;
-    matches.push({
-      generated: clone(segment.generated),
-      ...(exact ? { generatedOffset: segment.generated.start + offset - start } : {}),
-      precision: exact ? "exact" : "coarse",
-      chunk: segment.chunk,
-      kind: segment.kind,
-      via: clone(segment.via ?? [])
-    });
+    for (const candidate of sourceCandidates(segment)) {
+      const start = candidate.source?.range?.start?.offset;
+      const end = candidate.source?.range?.end?.offset;
+      if (candidate.source?.uri !== uri || !Number.isInteger(start) || offset < start || offset >= end) continue;
+      const generatedLength = segment.generated.end - segment.generated.start;
+      const exact = candidate.through === "segment" && candidate.precision === "exact" &&
+        end - start === generatedLength;
+      const match = {
+        generated: clone(segment.generated),
+        ...(exact ? { generatedOffset: segment.generated.start + offset - start } : {}),
+        precision: exact ? "exact" : "coarse",
+        chunk: candidate.chunk,
+        kind: candidate.kind,
+        via: clone([...(candidate.via ?? []), ...(candidate.through === "origin" ? segment.via ?? [] : [])]),
+        ...(candidate.through === "origin" ? { through: "transform-origin" } : {})
+      };
+      const key = JSON.stringify(match);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      matches.push(match);
+    }
   }
   return matches;
+};
+
+/**
+ * Resolve a half-open source range to generated ranges. The range may use
+ * integer offsets or SourcePosition-like objects with an `offset` field.
+ */
+export const generatedRangesForSourceRange = (map, uri, range) => {
+  const queryStart = sourceOffsetValue(range?.start);
+  const queryEnd = sourceOffsetValue(range?.end);
+  if (typeof uri !== "string" || !Number.isInteger(queryStart) ||
+      !Number.isInteger(queryEnd) || queryStart < 0 || queryEnd <= queryStart) {
+    return [];
+  }
+  const matches = [];
+  const seen = new Set();
+  for (const segment of map?.segments ?? []) {
+    for (const candidate of sourceCandidates(segment)) {
+      const sourceStart = candidate.source?.range?.start?.offset;
+      const sourceEnd = candidate.source?.range?.end?.offset;
+      const overlapStart = Math.max(queryStart, sourceStart ?? Number.POSITIVE_INFINITY);
+      const overlapEnd = Math.min(queryEnd, sourceEnd ?? Number.NEGATIVE_INFINITY);
+      if (candidate.source?.uri !== uri || overlapStart >= overlapEnd) continue;
+      const generatedLength = segment.generated.end - segment.generated.start;
+      const exact = candidate.through === "segment" && candidate.precision === "exact" &&
+        sourceEnd - sourceStart === generatedLength;
+      const generated = exact ? {
+        start: segment.generated.start + overlapStart - sourceStart,
+        end: segment.generated.start + overlapEnd - sourceStart
+      } : clone(segment.generated);
+      const match = {
+        generated,
+        source: { start: overlapStart, end: overlapEnd },
+        precision: exact ? "exact" : "coarse",
+        chunk: candidate.chunk,
+        kind: candidate.kind,
+        via: clone([...(candidate.via ?? []), ...(candidate.through === "origin" ? segment.via ?? [] : [])]),
+        ...(candidate.through === "origin" ? { through: "transform-origin" } : {})
+      };
+      const key = JSON.stringify(match);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      matches.push(match);
+    }
+  }
+  return matches;
+};
+
+/** Explain one generated offset using the evaluated program and its graph. */
+export const explainGeneratedOffset = (program, deliverableName, offset) => {
+  const deliverable = program?.deliverables?.[deliverableName];
+  if (!deliverable) return null;
+  const segment = sourceAtGeneratedOffset(createDeliverableProvenanceMap(deliverable), offset);
+  if (!segment) return null;
+  const references = (segment.via ?? []).filter((step) => step.kind === "reference");
+  const dependencyPath = [deliverable.from];
+  for (const reference of references.slice().reverse()) {
+    if (reference.from === dependencyPath[dependencyPath.length - 1]) dependencyPath.push(reference.to);
+  }
+  const definition = program.chunks?.[segment.chunk];
+  return {
+    deliverable: { name: deliverable.name, from: deliverable.from },
+    generatedOffset: offset,
+    segment,
+    definition: definition ? {
+      id: definition.id,
+      identity: clone(definition.identity),
+      metadata: clone(definition.metadata),
+      generated: definition.generated
+    } : null,
+    references: clone(references),
+    dependencyPath
+  };
 };
