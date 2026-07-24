@@ -42,9 +42,12 @@ format adapters or filesystem hosts responsible for the feature.
 | markdown | Markdown profiles and extraction | Node-only host APIs |
 | host-node | filesystem, cache, and effect capabilities | Markdown-specific policy |
 | cli | command parsing and presentation | direct compiler internals |
+| explorer (proposed) | portable focused graph projections, provenance/change UI, and host protocol | Node filesystem, VS Code APIs |
+| vscode (proposed) | VS Code webview host, source synchronization, preview overlays, and WorkspaceEdit | compiler internals bypassing public package contracts |
 
 Future packages include notebook, lsp, trace, and format adapters such as
-asciidoc.
+asciidoc. The proposed Explorer and its VS Code integration are specified in
+[the Explorer design](explorer-design.md).
 
 ## Runtime support
 

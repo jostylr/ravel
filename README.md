@@ -229,6 +229,8 @@ packages/
   host-node/  scoped filesystem input, TOML builds, and artifact writing
   cli/        development command-line entry point
   map/        Ravel Map public metadata and structural validation
+  explorer/   proposed portable graph, provenance, and change explorer
+  vscode/     proposed VS Code host for Explorer and source-linked editing
 schemas/      Ravel Map JSON Schema
 examples/     proof-of-concept and migration builds
 fixtures/     Markdown, map, and configuration cases
@@ -268,6 +270,8 @@ explainable, reproducible, and pleasant to use.
 ## Documentation
 
 - [Ravel 0.1 implementation plan](TODO.md)
+- [Ravel Explorer implementation plan](EXPLORER-TODO.md)
+- [Ravel Explorer design](docs/explorer-design.md)
 - [Five-minute installed CLI guide](docs/getting-started.md)
 - [0.1 contracts and TOML configuration](docs/contracts-and-configuration.md)
 - [Generated-output provenance maps](docs/provenance-maps.md)

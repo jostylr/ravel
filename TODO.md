@@ -361,3 +361,8 @@ release:
 
 After 0.1, prioritize these from demonstrated workflows rather than expanding
 the core language speculatively.
+
+The source-linked graph, provenance, generated-output preview, and VS Code
+workflow are developed as a separate post-0.1
+[Explorer design](docs/explorer-design.md) and
+[implementation plan](EXPLORER-TODO.md).
