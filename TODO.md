@@ -301,12 +301,12 @@ Exit criteria:
 ## Phase 7: documentation and 0.1 release
 
 - [x] Write a five-minute getting-started guide using the installed `ravel`
-      command rather than source paths (`docs/getting-started.md`).
+      command rather than source paths (`documentation/getting-started.md`).
 - [x] Update all reference documents so they distinguish implemented 0.1
       behavior from future design.
 - [x] Document map, syntax, CLI, configuration, diagnostics, and manifest
       versioning, including canonical `ravel.toml` behavior and CLI exit codes
-      (`docs/contracts-and-configuration.md`).
+      (`documentation/contracts-and-configuration.md`).
 - [x] Specify and document provenance-map versioning after the generated-source
       map format and query API exist; no segment-level provenance contract is
       claimed before then.
@@ -363,5 +363,5 @@ the core language speculatively.
 
 The source-linked graph, provenance, generated-output preview, and VS Code
 workflow are developed as a separate post-0.1
-[Explorer design](docs/explorer-design.md) and
+[Explorer design](documentation/explorer-design.md) and
 [implementation plan](EXPLORER-TODO.md).

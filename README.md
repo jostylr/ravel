@@ -53,13 +53,19 @@ writing, and execution of the generated JavaScript.
 
 The remaining 0.1 work is release verification and publication, rather than a
 new language feature. See [the Ravel 0.1 plan](TODO.md) and the
-[release checklist](docs/release-checklist.md) for the release gate.
+[release checklist](documentation/release-checklist.md) for the release gate.
+
+Try the complete portable pipeline in the
+[live browser playground](https://jostylr.github.io/ravel/playground/): edit a
+single-file FizzBuzz document, render its generated artifact, and navigate its
+source provenance without uploading or saving files.
 
 ## Requirements and setup
 
 - Node.js 22 or newer
 - npm
 - Bun is optional and used only for the portability test command
+- Quarto is optional and required only to rebuild the documentation site
 
 From this directory:
 
@@ -214,8 +220,8 @@ The Markdown adapter has two modes:
 - `primary` requires every non-excluded fence to be a named Ravel chunk, a
   valid greedy continuation, or explicitly marked `.no-ravel`.
 
-See the [Markdown profile](docs/markdown-fences.md) and
-[pipes and directives reference](docs/pipes-and-directives.md) for the full
+See the [Markdown profile](documentation/markdown-fences.md) and
+[pipes and directives reference](documentation/pipes-and-directives.md) for the full
 implemented syntax.
 
 ## Architecture
@@ -225,6 +231,7 @@ packages/
   core/       portable chunk syntax, graph evaluation, diagnostics, provenance
   markdown/   portable Markdown fenced-block adapter
   host-node/  scoped filesystem input, TOML builds, and artifact writing
+  host-browser/in-memory document rendering and live CodeMirror playground
   cli/        development command-line entry point
   map/        Ravel Map public metadata and structural validation
   explorer/   proposed portable graph, provenance, and change explorer
@@ -234,7 +241,8 @@ examples/     proof-of-concept and migration builds
 fixtures/     Markdown, map, and configuration cases
 test/         Node/Bun test suite
 browser-test/ browser portability harnesses
-docs/         design and language documentation
+documentation/ Quarto source for design and language documentation
+docs/         compiled documentation and browser playground for GitHub Pages
 ```
 
 Portable packages use native ESM and Web Platform APIs. Filesystem and process
@@ -249,6 +257,7 @@ npm run test:bun            # same test files under Bun
 npm run validate:schema     # structural validation of checked-in map examples
 npm run test:browser         # bundle and execute browser harnesses in Chromium
 npm run test:pack           # pack, install, import, and build through tarballs
+npm run build:site          # render Quarto docs and bundle the browser playground
 ```
 
 The browser test downloads a Playwright Chromium binary on first use. CI installs
@@ -276,21 +285,22 @@ that policy may change after the 0.1 release.
 
 - [Ravel 0.1 implementation plan](TODO.md)
 - [Ravel Explorer implementation plan](EXPLORER-TODO.md)
-- [Ravel Explorer design](docs/explorer-design.md)
-- [Five-minute installed CLI guide](docs/getting-started.md)
-- [0.1 contracts and TOML configuration](docs/contracts-and-configuration.md)
-- [Generated-output provenance maps](docs/provenance-maps.md)
-- [Public JavaScript API](docs/public-api.md)
-- [Cookbook](docs/cookbook.md)
-- [Filesystem safety and trust boundaries](docs/filesystem-safety.md)
-- [Migration from FizzBuzz-era Ravel](docs/migration-from-legacy.md)
-- [Release checklist](docs/release-checklist.md)
-- [Design plan](docs/design.md)
-- [History and predecessor projects](docs/history.md)
-- [Ravel Map schema guide](docs/ravel-map-schema.md)
+- [Live browser playground](https://jostylr.github.io/ravel/playground/)
+- [Ravel Explorer design](documentation/explorer-design.md)
+- [Five-minute installed CLI guide](documentation/getting-started.md)
+- [0.1 contracts and TOML configuration](documentation/contracts-and-configuration.md)
+- [Generated-output provenance maps](documentation/provenance-maps.md)
+- [Public JavaScript API](documentation/public-api.md)
+- [Cookbook](documentation/cookbook.md)
+- [Filesystem safety and trust boundaries](documentation/filesystem-safety.md)
+- [Migration from FizzBuzz-era Ravel](documentation/migration-from-legacy.md)
+- [Release checklist](documentation/release-checklist.md)
+- [Design plan](documentation/design.md)
+- [History and predecessor projects](documentation/history.md)
+- [Ravel Map schema guide](documentation/ravel-map-schema.md)
 - [Machine-readable Ravel Map schema](schemas/ravel-map.schema.json)
-- [Embedded chunk syntax](docs/chunk-syntax.md)
-- [Pipes and directives](docs/pipes-and-directives.md)
-- [Markdown fenced-block profile](docs/markdown-fences.md)
-- [Proof of concept](docs/proof-of-concept.md)
-- [Runtime support and testing policy](docs/runtime-support.md)
+- [Embedded chunk syntax](documentation/chunk-syntax.md)
+- [Pipes and directives](documentation/pipes-and-directives.md)
+- [Markdown fenced-block profile](documentation/markdown-fences.md)
+- [Proof of concept](documentation/proof-of-concept.md)
+- [Runtime support and testing policy](documentation/runtime-support.md)

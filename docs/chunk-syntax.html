@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>chunk-syntax – Ravel</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-1e4583d3cb3a1f6d0546bea703db5b48.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<meta property="og:title" content="Ravel">
+<meta property="og:image" content="https://jostylr.github.io/ravel/og.png">
+<meta property="og:site_name" content="Ravel">
+<meta property="og:locale" content="en_US">
+<meta property="og:image:height" content="630">
+<meta property="og:image:width" content="1200">
+<meta name="twitter:title" content="Ravel">
+<meta name="twitter:image" content="https://jostylr.github.io/ravel/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image-height" content="630">
+<meta name="twitter:image-width" content="1200">
+</head>
+
+<body class="nav-sidebar docked nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">Ravel</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="./getting-started.html" aria-current="page"> 
+<span class="menu-text">Get started</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-guides" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Guides</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-guides">    
+        <li>
+    <a class="dropdown-item" href="./cookbook.html">
+ <span class="dropdown-text">Cookbook</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./markdown-fences.html">
+ <span class="dropdown-text">Markdown fences</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./pipes-and-directives.html">
+ <span class="dropdown-text">Pipes and directives</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./provenance-maps.html">
+ <span class="dropdown-text">Provenance maps</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-reference" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Reference</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-reference">    
+        <li>
+    <a class="dropdown-item" href="./public-api.html">
+ <span class="dropdown-text">Public API</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./contracts-and-configuration.html">
+ <span class="dropdown-text">0.1 contracts</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./ravel-map-schema.html">
+ <span class="dropdown-text">Ravel Map schema</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./chunk-syntax.html">
+ <span class="dropdown-text">Chunk syntax</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="./playground/"> 
+<span class="menu-text">Playground</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./markdown-fences.html">Language</a></li><li class="breadcrumb-item"><a href="./chunk-syntax.html">Ravel embedded chunk syntax guide</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Start here</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./getting-started.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Five-minute getting started</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./cookbook.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Ravel cookbook</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./migration-from-legacy.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Migrating FizzBuzz-era Ravel material</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Language</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./markdown-fences.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Markdown fenced-block profile</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./chunk-syntax.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Ravel embedded chunk syntax guide</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./pipes-and-directives.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Ravel pipes and directives reference</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Reference</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./contracts-and-configuration.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">0.1 contracts and configuration</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./public-api.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Public JavaScript API</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./ravel-map-schema.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Ravel Map schema guide</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./provenance-maps.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Generated-output provenance maps</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./filesystem-safety.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Filesystem safety and trust boundaries</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./runtime-support.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Runtime support and testing policy</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Design and history</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./design.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Ravel design plan</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./proof-of-concept.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">First graph and chunk-processing proof of concept</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./explorer-design.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Ravel Explorer design</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./history.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">History and starting point</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./release-checklist.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">0.1 release checklist</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#ravel-embedded-chunk-syntax-guide" id="toc-ravel-embedded-chunk-syntax-guide" class="nav-link active" data-scroll-target="#ravel-embedded-chunk-syntax-guide">Ravel embedded chunk syntax guide</a>
+  <ul class="collapse">
+  <li><a href="#scope" id="toc-scope" class="nav-link" data-scroll-target="#scope">Scope</a></li>
+  <li><a href="#literals-and-substitutions" id="toc-literals-and-substitutions" class="nav-link" data-scroll-target="#literals-and-substitutions">Literals and substitutions</a>
+  <ul class="collapse">
+  <li><a href="#continuation-indentation" id="toc-continuation-indentation" class="nav-link" data-scroll-target="#continuation-indentation">Continuation indentation</a></li>
+  </ul></li>
+  <li><a href="#escaping-and-errors" id="toc-escaping-and-errors" class="nav-link" data-scroll-target="#escaping-and-errors">Escaping and errors</a></li>
+  <li><a href="#transform-semantics" id="toc-transform-semantics" class="nav-link" data-scroll-target="#transform-semantics">Transform semantics</a></li>
+  <li><a href="#emit-chunks-from-a-pipe" id="toc-emit-chunks-from-a-pipe" class="nav-link" data-scroll-target="#emit-chunks-from-a-pipe">Emit chunks from a pipe</a></li>
+  <li><a href="#chunk-identity-and-resolution" id="toc-chunk-identity-and-resolution" class="nav-link" data-scroll-target="#chunk-identity-and-resolution">Chunk identity and resolution</a></li>
+  <li><a href="#deferred-composition" id="toc-deferred-composition" class="nav-link" data-scroll-target="#deferred-composition">Deferred composition</a></li>
+  <li><a href="#not-in-the-first-parser" id="toc-not-in-the-first-parser" class="nav-link" data-scroll-target="#not-in-the-first-parser">Not in the first parser</a></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/jostylr/ravel/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./markdown-fences.html">Language</a></li><li class="breadcrumb-item"><a href="./chunk-syntax.html">Ravel embedded chunk syntax guide</a></li></ol></nav></header>
+
+
+
+
+<section id="ravel-embedded-chunk-syntax-guide" class="level1">
+<h1>Ravel embedded chunk syntax guide</h1>
+<section id="scope" class="level2">
+<h2 class="anchored" data-anchor-id="scope">Scope</h2>
+<p>This syntax is parsed inside a Ravel Map chunk body. It is independent of Markdown headings, HTML, AsciiDoc, and Rix blocks. Those systems create the map; Ravel core parses the syntax below.</p>
+<p>The initial vertical slice has one indispensable construct: substitute a named chunk using underscore-quote notation.</p>
+<pre><code>const router = _"router";</code></pre>
+</section>
+<section id="literals-and-substitutions" class="level2">
+<h2 class="anchored" data-anchor-id="literals-and-substitutions">Literals and substitutions</h2>
+<p>Everything in a chunk body is literal text except a recognized substitution.</p>
+<pre><code>Chunk        = { Literal | Substitution | DelayedSubstitution }
+Substitution = "_" Quote Expression Quote
+DelayedSubstitution = "_" Quote "|" Delay Quote
+Quote        = double-quote | single-quote | backtick
+Expression   = Reference { Space? "|" Space? PipeStep }
+Reference    = [ DocumentID "::" ] [ ChunkID ] [ ":" MinorID ] [ "." TypeID ]
+PipeStep     = Transform | Emit | Text | Chunk
+Text         = "text" "(" [ String ] ")"
+Chunk        = "ch" "(" String ")"
+Transform    = Identifier [ "(" Arguments ")" ]
+Emit         = "emit" "(" String [ "," MetadataObject ] ")"
+Arguments    = Value { "," Space? Value }
+Value        = String | Number | Boolean | Null | Array | Object</code></pre>
+<p>Quote choices have the same Ravel meaning; choose one that avoids conflict with surrounding target code. Opening and closing quotes must match.</p>
+<pre><code>_"parser"
+_'sql-query'
+_"web-app::router"
+_"widget:browser | indent(2) | format('typescript')"</code></pre>
+<p>The pipeline is inside the quotes, so target-language operators remain irrelevant to the Ravel parser.</p>
+<section id="continuation-indentation" class="level3">
+<h3 class="anchored" data-anchor-id="continuation-indentation">Continuation indentation</h3>
+<p>An embedded substitution automatically gives each later nonblank inserted line the leading whitespace of the line containing the substitution. Its first line is not changed, because the literal text before the substitution has already placed it. This preserves the referenced chunk’s relative indentation without aligning its continuation lines under the substitution’s column.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode javascript code-with-copy"><code class="sourceCode javascript"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>  handler <span class="op">=</span> _<span class="st">"function-def"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>If <code>function-def</code> is:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode javascript code-with-copy"><code class="sourceCode javascript"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> () {</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>the result is:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode javascript code-with-copy"><code class="sourceCode javascript"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>  handler <span class="op">=</span> <span class="kw">function</span> () {</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  }</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Blank lines remain blank, and tabs or spaces in the containing line’s leading whitespace are preserved exactly. This is use-site behavior, distinct from <code>indent(n)</code>, which explicitly prefixes every nonempty line of its input.</p>
+</section>
+</section>
+<section id="escaping-and-errors" class="level2">
+<h2 class="anchored" data-anchor-id="escaping-and-errors">Escaping and errors</h2>
+<p>A backslash immediately before an underscore-quote start makes it literal:</p>
+<pre><code>\_"not a reference"</code></pre>
+<p>The parser reports exact ranges for unmatched quotes, malformed references, malformed transform arguments, and unexpected tokens. Resolution later reports unknown references/transforms and cycles. It returns a partial AST after local syntax errors so editors can continue to diagnose a document.</p>
+</section>
+<section id="transform-semantics" class="level2">
+<h2 class="anchored" data-anchor-id="transform-semantics">Transform semantics</h2>
+<p>Transforms are registered by the core/host registry. They run left-to-right; the prior result is their implicit first input.</p>
+<pre><code>_"widget | dedent() | indent(2)"</code></pre>
+<p>Core transforms are pure: no filesystem, network, process, or JavaScript evaluation. Those operations are explicit host-gated directives/effects in the Ravel Map.</p>
+<p>Initial intended transforms:</p>
+<pre><code>concat()
+indent(columns)
+dedent()
+trim()
+normalize-eol()
+replace(search, replacement)
+quote-reference()</code></pre>
+</section>
+<section id="emit-chunks-from-a-pipe" class="level2">
+<h2 class="anchored" data-anchor-id="emit-chunks-from-a-pipe">Emit chunks from a pipe</h2>
+<p>An earlier draft used quote-reference only to emit a literal reference for a later build stage. Ravel also supports the distinct and important idea of <strong>emitting a new named chunk from a pipe</strong>. The special <code>emit</code> pipe step creates a derived chunk declaration during graph expansion; it is not a filesystem or runtime side effect.</p>
+<pre><code>_`widget | dedent() | emit('clean', {
+  "name": "Clean widget",
+  "language": "typescript",
+  "tags": ["generated", "browser"],
+  "data": { "target": "modern" }
+})`</code></pre>
+<p>Within <code>guide::widget</code>, this declaration means that <code>guide::widget:clean</code> has the definition <code>widget | dedent()</code>. Use a backtick-quoted reference when JSON metadata contains double quotes. The emitted chunk receives the supplied display name, language, tags, and JSON data. Its provenance includes the emit call and every source range in the captured prefix pipeline.</p>
+<p><code>emit</code> is a tee: it returns the incoming value unchanged, so the enclosing substitution may still use it. A pipe may contain more than one emit step; each captures the prefix before that step. Use a normal transform before <code>emit</code> when the emitted chunk needs a transform. This avoids a second, competing transform syntax inside emit metadata.</p>
+<p>The first implementation imposes these rules:</p>
+<ul>
+<li>the emitted suffix and metadata are static literal values, known while parsing;</li>
+<li>an emission always keeps the owning chunk’s document and base chunk; it cannot redefine either scope component;</li>
+<li>the emitted ID is unique across source and other emitted chunks;</li>
+<li>an emission cannot overwrite or mutate an existing chunk;</li>
+<li>emission expands the graph before resolution/evaluation, so unknown names and cycles receive ordinary source-linked diagnostics;</li>
+<li>emitted chunks are immutable derived definitions, not copied computed text.</li>
+</ul>
+<p><code>emit("minor")</code> sets the emitted minor and clears its type. <code>emit("minor.type")</code> sets both. <code>emit(".type")</code> retains the owner’s minor while changing only its type. For example, inside <code>doc::chunk:what.ts</code>, <code>emit("cool")</code> creates <code>doc::chunk:cool</code>, while <code>emit(".js")</code> creates <code>doc::chunk:what.js</code>. This local-only rule makes an emitted chunk’s heritage obvious and prevents an arbitrary pipe from claiming another document or base chunk. The explicit <code>alias</code> directive provides intentional cross-scope names without weakening that rule; its provenance retains the original target.</p>
+<p>The Ravel Map remains the adapter output. Chunk parsing produces emission declarations, and graph expansion adds generated chunks to the Ravel Program. This keeps Markdown/AsciiDoc/Rix adapters unaware of the chunk-language macro.</p>
+</section>
+<section id="chunk-identity-and-resolution" class="level2">
+<h2 class="anchored" data-anchor-id="chunk-identity-and-resolution">Chunk identity and resolution</h2>
+<p>Every source chunk has four explicit identity fields: <code>document</code>, <code>chunk</code>, <code>minor</code>, and <code>type</code>. Each field is an identifier or <code>null</code>; the map stores all four even when their value is <code>null</code>. Its <code>id</code> is the canonical, lossless serialization of those fields:</p>
+<pre><code>guide::parser:preamble.javascript
+
+{
+  "id": "guide::parser:preamble.javascript",
+  "identity": {
+    "document": "guide",
+    "chunk": "parser",
+    "minor": "preamble",
+    "type": "javascript"
+  }
+}</code></pre>
+<p>The document name scopes ordinary source chunks. A source chunk may instead use <code>document: null</code> (for example <code>shared</code>); that is a deliberately global fallback and not an accidental collision domain.</p>
+<p>The canonical address grammar permits these useful root and partial forms:</p>
+<pre><code>guide::                         # document root / pre-heading chunk
+guide::.javascript              # document root, typed
+guide:::preamble.javascript     # document root, named minor and typed
+guide::parser.javascript         # ordinary chunk, typed
+guide::parser:preamble.javascript</code></pre>
+<p>Within a chunk, omitted <code>document</code> means “try this document first.” A bareword is therefore the base chunk name: <code>parser</code> tries <code>current-doc::parser</code>, then the document-less global <code>parser</code>. <code>parser:preamble</code> and <code>parser.javascript</code> behave similarly. <code>:preamble</code> and <code>.javascript</code> retain the current chunk name, so they are convenient for focused variants within a chunk. An explicit address such as <code>other-doc::parser</code> resolves only in that document and never falls back to a global chunk. This gives the shorthand its convenience without making an import silently bind to an unrelated document.</p>
+<p>Minor is a focused named variant, while type is a classification/matching axis; neither is a filesystem extension. Hosts may later select compatible types, but the first evaluator resolves the exact address written by the author.</p>
+<p>Every reference stores its exact body range. Artifact provenance contains the chunks and substitutions that contributed to it, allowing downstream errors to point to both output and Ravel source.</p>
+</section>
+<section id="deferred-composition" class="level2">
+<h2 class="anchored" data-anchor-id="deferred-composition">Deferred composition</h2>
+<p>Use <code>delay</code> when an enclosing definition transform must finish before a reference is resolved:</p>
+<pre><code>_"|delay(ch('content.markdown | markdown()'), 1)"</code></pre>
+<p><code>ch(...)</code> explicitly evaluates a quoted ordinary Ravel reference/pipeline; <code>text(...)</code> produces literal text and <code>text()</code> produces an empty string. Both reset the current pipeline value, so <code>_"|text('cool')|capitalize()"</code> produces <code>Cool</code> and <code>ch('|text("cool")|capitalize()')</code> is valid. A plain string passed to <code>delay</code> is delayed literal text, while <code>delay(ch("content"))</code> delays a chunk evaluation. The optional positive phase defaults to <code>1</code>; a delay becomes real immediately after that definition-transform phase. The optional third argument is an alphanumeric safe symbol. Otherwise Ravel creates a short random safe symbol and verifies that the transform preserved it exactly once.</p>
+<p>For example, a Pug definition may hold a delay as literal Pug text, run Pug, then insert rendered Markdown into its HTML output. A delay requesting a phase that the definition pipeline does not have is an error.</p>
+<p>Every transformed chunk records <code>protected-input</code>, <code>transform-output</code>, and <code>fulfilled-output</code> snapshots in <code>program.trace.chunks[chunkId]</code>. Each delayed snapshot includes its expression, safe symbol, and source range, so hosts can show the intermediate text when reporting a transform error.</p>
+</section>
+<section id="not-in-the-first-parser" class="level2">
+<h2 class="anchored" data-anchor-id="not-in-the-first-parser">Not in the first parser</h2>
+<p>Parameterized pieces, conditionals/build profiles, arbitrary JavaScript interpolation, command execution/eval, and syntax depending on Markdown heading depth or link behavior are all deliberately out of the first parser.</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/jostylr\.github\.io\/ravel\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // default icon
+            link.classList.add("external");
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Ravel 0.1 · MIT licensed</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/jostylr/ravel/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></div>
+    <div class="nav-footer-right">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+    <a class="nav-link" href="https://github.com/jostylr/ravel">
+<p>GitHub</p>
+</a>
+  </li>  
+    <li class="nav-item">
+    <a class="nav-link" href="./playground/">
+<p>Playground</p>
+</a>
+  </li>  
+</ul>
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Write a Ravel document and inspect its generated output and provenance—entirely in your browser.">
+    <meta name="theme-color" content="#10261f">
+    <title>Ravel Playground</title>
+    <link rel="stylesheet" href="./app.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#editor">Skip to editor</a>
+    <header class="site-header">
+      <a class="brand" href="../" aria-label="Ravel documentation home">
+        <span class="brand-mark" aria-hidden="true">R</span>
+        <span>
+          <strong>Ravel</strong>
+          <small>live playground</small>
+        </span>
+      </a>
+      <nav aria-label="Primary navigation">
+        <a href="../">Documentation</a>
+        <a href="https://github.com/jostylr/ravel">GitHub</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="intro" aria-labelledby="playground-title">
+        <div>
+          <p class="eyebrow">Browser host · Ravel 0.1</p>
+          <h1 id="playground-title">Trace the thread from prose to program.</h1>
+          <p>Edit a literate document, weave it in memory, then follow every generated range back to its source.</p>
+        </div>
+        <div class="render-controls">
+          <label class="auto-toggle">
+            <input id="auto-render" type="checkbox">
+            <span aria-hidden="true"></span>
+            Auto render
+          </label>
+          <button id="render-button" class="primary-button" type="button">
+            <span>Render document</span>
+            <kbd>⌘/Ctrl ↵</kbd>
+          </button>
+        </div>
+      </section>
+
+      <section class="workspace" aria-label="Ravel document workspace">
+        <article class="panel editor-panel">
+          <header class="panel-header">
+            <div>
+              <span class="panel-kicker">Source</span>
+              <strong>fizzbuzz.md</strong>
+            </div>
+            <div class="status-cluster">
+              <span id="dirty-status" class="dirty-status" data-state="clean">Rendered</span>
+              <span class="language-badge">Markdown + Ravel</span>
+            </div>
+          </header>
+          <div id="editor" aria-label="Ravel Markdown source editor"></div>
+        </article>
+
+        <article class="panel result-panel">
+          <header class="panel-header result-header">
+            <div class="view-tabs" role="tablist" aria-label="Result view">
+              <button id="output-tab" role="tab" aria-selected="true" aria-controls="output-view" type="button">Output</button>
+              <button id="provenance-tab" role="tab" aria-selected="false" aria-controls="provenance-view" type="button">
+                Provenance
+                <span id="segment-count" class="count-badge">0</span>
+              </button>
+            </div>
+            <div class="result-actions">
+              <label class="deliverable-field" for="deliverable-select">
+                <span class="visually-hidden">Generated file</span>
+                <select id="deliverable-select"></select>
+              </label>
+              <button id="copy-button" class="icon-button" type="button">Copy output</button>
+            </div>
+          </header>
+
+          <div id="diagnostics" class="diagnostics" hidden aria-live="polite"></div>
+
+          <section id="output-view" class="result-view" role="tabpanel" aria-labelledby="output-tab">
+            <div class="output-summary">
+              <div>
+                <span class="panel-kicker">Generated artifact</span>
+                <strong id="artifact-name">dist/fizzbuzz.js</strong>
+              </div>
+              <span id="artifact-size" class="artifact-size"></span>
+            </div>
+            <pre class="code-output"><code id="output-code"></code></pre>
+          </section>
+
+          <section id="provenance-view" class="result-view provenance-view" role="tabpanel" aria-labelledby="provenance-tab" hidden>
+            <div class="provenance-intro">
+              <div>
+                <span class="panel-kicker">Source map</span>
+                <strong>Click a colored range to trace it.</strong>
+              </div>
+              <p>Exact ranges preserve character offsets; coarse ranges identify their originating span.</p>
+            </div>
+            <div class="provenance-layout">
+              <div class="mapped-output-wrap">
+                <pre id="mapped-output" class="mapped-output" aria-label="Generated output mapped to source"></pre>
+                <div id="provenance-legend" class="provenance-legend" aria-label="Chunk color legend"></div>
+              </div>
+              <aside id="segment-detail" class="segment-detail" aria-live="polite"></aside>
+            </div>
+            <details class="raw-map">
+              <summary>Raw provenance map <span>JSON</span></summary>
+              <pre><code id="raw-map-json"></code></pre>
+            </details>
+          </section>
+        </article>
+      </section>
+
+      <footer class="workspace-footer">
+        <p>Everything stays in this tab. There is no file loading, upload, or export.</p>
+        <p id="render-status" aria-live="polite">FizzBuzz rendered successfully.</p>
+      </footer>
+    </main>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

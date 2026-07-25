@@ -1,0 +1,97 @@
+project:
+  type: website
+  output-dir: _site
+  resources:
+    - .nojekyll
+
+website:
+  title: "Ravel"
+  site-url: "https://jostylr.github.io/ravel/"
+  description: "A source-mapped literate programming engine for weaving and unraveling programs."
+  repo-url: "https://github.com/jostylr/ravel"
+  repo-actions: [issue]
+  open-graph:
+    image: og.png
+    locale: en_US
+  twitter-card:
+    image: og.png
+    card-style: summary_large_image
+  navbar:
+    background: dark
+    left:
+      - text: "Get started"
+        href: getting-started.md
+      - text: "Guides"
+        menu:
+          - text: "Cookbook"
+            href: cookbook.md
+          - text: "Markdown fences"
+            href: markdown-fences.md
+          - text: "Pipes and directives"
+            href: pipes-and-directives.md
+          - text: "Provenance maps"
+            href: provenance-maps.md
+      - text: "Reference"
+        menu:
+          - text: "Public API"
+            href: public-api.md
+          - text: "0.1 contracts"
+            href: contracts-and-configuration.md
+          - text: "Ravel Map schema"
+            href: ravel-map-schema.md
+          - text: "Chunk syntax"
+            href: chunk-syntax.md
+    right:
+      - text: "Playground"
+        href: playground/
+  sidebar:
+    style: "docked"
+    search: true
+    contents:
+      - section: "Start here"
+        contents:
+          - getting-started.md
+          - cookbook.md
+          - migration-from-legacy.md
+      - section: "Language"
+        contents:
+          - markdown-fences.md
+          - chunk-syntax.md
+          - pipes-and-directives.md
+      - section: "Reference"
+        contents:
+          - contracts-and-configuration.md
+          - public-api.md
+          - ravel-map-schema.md
+          - provenance-maps.md
+          - filesystem-safety.md
+          - runtime-support.md
+      - section: "Design and history"
+        contents:
+          - design.md
+          - proof-of-concept.md
+          - explorer-design.md
+          - history.md
+          - release-checklist.md
+  page-footer:
+    left: "Ravel 0.1 · MIT licensed"
+    right:
+      - text: "GitHub"
+        href: "https://github.com/jostylr/ravel"
+      - text: "Playground"
+        href: playground/
+
+format:
+  html:
+    theme:
+      - cosmo
+      - theme.scss
+    toc: true
+    toc-depth: 3
+    code-copy: true
+    code-overflow: wrap
+    link-external-icon: true
+    anchor-sections: true
+
+execute:
+  freeze: auto

@@ -46,6 +46,7 @@ const minimalMap = {
 const expectedPackages = new Set([
   "@pieceful/ravel",
   "@pieceful/ravel-core",
+  "@pieceful/ravel-host-browser",
   "@pieceful/ravel-host-node",
   "@pieceful/ravel-map",
   "@pieceful/ravel-markdown"
@@ -86,6 +87,7 @@ try {
 
   await run(process.execPath, ["--input-type=module", "--eval", [
     'await import("@pieceful/ravel-core");',
+    'await import("@pieceful/ravel-host-browser");',
     'await import("@pieceful/ravel-markdown");',
     'await import("@pieceful/ravel-host-node");',
     'const map = await import("@pieceful/ravel-map");',

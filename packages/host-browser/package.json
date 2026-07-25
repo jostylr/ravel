@@ -1,0 +1,42 @@
+{
+  "name": "@pieceful/ravel-host-browser",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "In-memory browser host and live playground for Ravel.",
+  "license": "MIT",
+  "author": "James Taylor",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jostylr/ravel.git",
+    "directory": "packages/host-browser"
+  },
+  "bugs": {
+    "url": "https://github.com/jostylr/ravel/issues"
+  },
+  "homepage": "https://github.com/jostylr/ravel#readme",
+  "engines": {
+    "node": ">=22"
+  },
+  "keywords": [
+    "ravel",
+    "literate-programming",
+    "browser",
+    "codemirror"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "types": "./src/index.d.ts",
+  "files": [
+    "src",
+    "LICENSE"
+  ],
+  "dependencies": {
+    "@pieceful/ravel-core": "0.1.0",
+    "@pieceful/ravel-map": "0.1.0",
+    "@pieceful/ravel-markdown": "0.1.0"
+  }
+}

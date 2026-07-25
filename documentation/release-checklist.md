@@ -10,6 +10,7 @@ npm run test:bun
 npm run validate:schema
 npm run test:browser
 npm run test:pack
+npm run build:site
 ```
 
 Confirm the GitHub Actions Node, Bun, Chromium, and Windows jobs are green for

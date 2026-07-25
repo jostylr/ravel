@@ -1,0 +1,96 @@
+---
+title: "Ravel"
+pagetitle: "Ravel — source-mapped literate programming"
+description: "Assemble named code pieces into artifacts while retaining a source-linked dependency graph."
+page-layout: full
+toc: false
+title-block-banner: false
+---
+
+::: {.ravel-hero}
+::: {.ravel-hero-copy}
+<p class="hero-eyebrow">Literate programming, with receipts</p>
+
+# Weave the story.<br><em>Keep the thread.</em>
+
+Ravel assembles named code pieces into finished artifacts while preserving the
+dependency graph and provenance that explain exactly where every generated
+range came from.
+
+::: {.hero-actions}
+[Open the live playground](playground/){.btn .btn-primary .btn-lg}
+[Get started](getting-started.md){.btn .btn-outline-light .btn-lg}
+:::
+
+<p class="hero-note">Static by design · Browser-safe core · Source-linked diagnostics</p>
+:::
+
+::: {.ravel-hero-map}
+<div class="map-label">fizzbuzz.md</div>
+<div class="map-thread thread-a"><span>program:main.js</span><i></i><strong>dist/fizzbuzz.js</strong></div>
+<div class="map-thread thread-b"><span>format-output.js</span><i></i><strong>lines 5–7</strong></div>
+<div class="map-thread thread-c"><span>program:helpers.js</span><i></i><strong>lines 9–13</strong></div>
+<div class="map-caption"><span></span> exact source range</div>
+:::
+:::
+
+::: {.feature-strip}
+::: {.feature}
+<span>01</span>
+### Write in narrative order
+
+Name fenced code chunks where they make sense in the explanation. Assembly
+order stays explicit and independent.
+:::
+
+::: {.feature}
+<span>02</span>
+### Generate deterministically
+
+The portable graph evaluator composes, transforms, and emits artifacts without
+executing document JavaScript or shell commands.
+:::
+
+::: {.feature}
+<span>03</span>
+### Trace every range
+
+Versioned provenance maps connect generated offsets back to exact or honestly
+coarse source locations and derivation steps.
+:::
+:::
+
+::: {.quickstart}
+::: {.quickstart-copy}
+<p class="hero-eyebrow">Five minutes to a woven file</p>
+
+## Small surface. Explicit composition.
+
+Ravel 0.1 focuses on dependable static weaving: Markdown fences become a
+portable Ravel Map, the core resolves a graph, and hosts decide where artifacts
+may be written.
+
+[Read the five-minute guide](getting-started.md) or experiment without installing
+anything in the [browser playground](playground/).
+:::
+
+````{.markdown filename="greeting.md"}
+---
+ravel:
+  document: greeting
+---
+
+```javascript {.ravel #message}
+const message = "Hello from Ravel";
+```
+
+```javascript {.ravel #main}
+_"message.javascript"
+console.log(message);
+```
+
+```ravel
+out("dist/greeting.js", _"main.javascript")
+```
+````
+:::

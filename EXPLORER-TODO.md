@@ -1,7 +1,7 @@
 # Ravel Explorer implementation plan
 
 This is the working backlog for the design in
-[`docs/explorer-design.md`](docs/explorer-design.md). Explorer is a post-0.1
+[`documentation/explorer-design.md`](documentation/explorer-design.md). Explorer is a post-0.1
 track and does not block the static Ravel 0.1 release.
 
 ## Outcome

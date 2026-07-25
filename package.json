@@ -33,11 +33,16 @@
     "ravel": "node packages/cli/src/index.js",
     "benchmark:assembly": "node examples/benchmark/benchmark-build.mjs",
     "validate:schema": "node scripts/validate-map-example.mjs",
+    "build:browser": "node scripts/build-browser.mjs",
+    "build:docs": "node scripts/build-docs.mjs",
+    "build:site": "npm run build:docs && npm run build:browser",
     "build:browser-test": "esbuild browser-test/source/markdown-adapter-entry.mjs --bundle --format=esm --platform=browser --outfile=browser-test/generated/markdown-adapter.mjs",
     "test:browser": "npm run build:browser-test && node scripts/browser-conformance.mjs",
     "test:pack": "node scripts/packed-smoke.mjs"
   },
   "devDependencies": {
+    "@codemirror/lang-markdown": "^6.3.4",
+    "codemirror": "^6.0.2",
     "esbuild": "^0.28.1",
     "playwright": "^1.61.1"
   }

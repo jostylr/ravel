@@ -12,6 +12,8 @@ dist/
 build/
 coverage/
 .cache/
+.quarto/
+_site/
 *.tsbuildinfo
 
 # Ravel local run state
