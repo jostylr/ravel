@@ -93,10 +93,11 @@ try {
     'if (map.RAVEL_MAP_SCHEMA.$id !== map.RAVEL_MAP_SCHEMA_ID) process.exit(1);'
   ].join(" ")], { cwd: sandbox });
 
-  const binary = join(sandbox, "node_modules", ".bin", "ravel");
-  assert.match((await run(binary, ["--help"], { cwd: sandbox })).stderr, /Usage: ravel check/);
-  assert.equal((await run(binary, ["--version"], { cwd: sandbox })).stdout.trim(), "0.1.0");
-  await run(binary, ["build", "smoke.ravel-map.json", "--out-dir", "build"], { cwd: sandbox });
+  const binary = join(sandbox, "node_modules", ".bin", process.platform === "win32" ? "ravel.cmd" : "ravel");
+  const cliOptions = { cwd: sandbox, ...(process.platform === "win32" ? { shell: true } : {}) };
+  assert.match((await run(binary, ["--help"], cliOptions)).stderr, /Usage: ravel check/);
+  assert.equal((await run(binary, ["--version"], cliOptions)).stdout.trim(), "0.1.0");
+  await run(binary, ["build", "smoke.ravel-map.json", "--out-dir", "build"], cliOptions);
   assert.equal(await readFile(join(sandbox, "build", "dist", "smoke.js"), "utf8"), "export const smoke = true;\n");
   const manifest = JSON.parse(await readFile(join(sandbox, "build", ".ravel-manifest.json"), "utf8"));
   const sidecar = JSON.parse(await readFile(join(sandbox, "build", "dist", "smoke.js.ravelmap"), "utf8"));

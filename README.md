@@ -42,18 +42,18 @@ Ravel can currently:
 - inspect a completed graph or write deliverables through the Node CLI;
 - report source-linked parsing, resolution, transform, and cycle diagnostics;
 - reject input/output path escapes and symbolic-link traversal;
-- run the current automated suites under both Node and Bun; and
-- bundle the portable core and Markdown adapter for the browser harness.
+- run the current automated suites under Node and Bun;
+- run the browser harnesses in headless Chromium; and
+- pack, install, import, and build through the publishable npm tarballs.
 
 The legacy FizzBuzz migration exercises the whole static path: Markdown
 extraction, multiple documents, imports, greedy fragments, transforms,
 composition directives, aliases, derived chunks, output planning, filesystem
 writing, and execution of the generated JavaScript.
 
-The remaining 0.1 work is completing generated-output provenance coverage,
-browser conformance, and final public API/release documentation. See
-[the Ravel 0.1 plan](TODO.md)
-for the release gate.
+The remaining 0.1 work is release verification and publication, rather than a
+new language feature. See [the Ravel 0.1 plan](TODO.md) and the
+[release checklist](docs/release-checklist.md) for the release gate.
 
 ## Requirements and setup
 
@@ -70,8 +70,7 @@ npm run validate:schema
 ```
 
 The workspace packages expose local entry points and an installed `ravel`
-executable after `npm install`. Until 0.1 packaging is complete, invoke the
-CLI through the local workspace script:
+executable after `npm install`. Invoke the local workspace CLI with:
 
 ```sh
 npm run ravel -- --help
@@ -80,8 +79,7 @@ node -e 'import("@pieceful/ravel-core").then(() => console.log("local workspace 
 
 `npm install` links the `@pieceful/ravel-*` packages from `packages/` into the
 local workspace. It does not download these Ravel packages from npm. The
-package metadata, exports, and CLI `bin` entry are already shaped for later
-publishing.
+package metadata, exports, and CLI `bin` entry match the publishable packages.
 
 ## Try the current CLI
 
@@ -249,12 +247,12 @@ Node-only APIs.
 npm test                    # complete Node test suite
 npm run test:bun            # same test files under Bun
 npm run validate:schema     # structural validation of checked-in map examples
-npm run build:browser-test  # bundle the Markdown browser harness
+npm run test:browser         # bundle and execute browser harnesses in Chromium
 npm run test:pack           # pack, install, import, and build through tarballs
 ```
 
-The browser command currently builds the harness but does not launch a browser.
-Automated browser execution is part of the 0.1 plan.
+The browser test downloads a Playwright Chromium binary on first use. CI installs
+that binary explicitly before running the same command.
 
 ## Current scope and intentional limits
 
@@ -267,6 +265,13 @@ Those are possible later extensions of the same Ravel Map and graph model. The
 immediate work is to make the existing static path validated, installable,
 explainable, reproducible, and pleasant to use.
 
+## Project participation
+
+Issues with a small reproduction are welcome at
+[jostylr/ravel](https://github.com/jostylr/ravel/issues). Ravel is not currently
+soliciting external contributions or operating a formal contributor program;
+that policy may change after the 0.1 release.
+
 ## Documentation
 
 - [Ravel 0.1 implementation plan](TODO.md)
@@ -276,6 +281,10 @@ explainable, reproducible, and pleasant to use.
 - [0.1 contracts and TOML configuration](docs/contracts-and-configuration.md)
 - [Generated-output provenance maps](docs/provenance-maps.md)
 - [Public JavaScript API](docs/public-api.md)
+- [Cookbook](docs/cookbook.md)
+- [Filesystem safety and trust boundaries](docs/filesystem-safety.md)
+- [Migration from FizzBuzz-era Ravel](docs/migration-from-legacy.md)
+- [Release checklist](docs/release-checklist.md)
 - [Design plan](docs/design.md)
 - [History and predecessor projects](docs/history.md)
 - [Ravel Map schema guide](docs/ravel-map-schema.md)

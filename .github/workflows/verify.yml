@@ -20,7 +20,8 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run validate:schema
-      - run: npm run build:browser-test
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:browser
       - run: npm run test:pack
 
   windows:

@@ -1,5 +1,8 @@
 # Runtime support and testing policy
 
+This document records the implemented 0.1 support policy. Explorer, notebook,
+and editor work mentioned elsewhere is post-0.1 and is not part of this matrix.
+
 ## Promise
 
 Ravel will run where modern JavaScript runs: browsers, Bun, and Node. This does
@@ -9,7 +12,7 @@ not mean every package runs everywhere. The boundary is intentional:
 | --- | --- | --- | --- |
 | Ravel Map and core graph/syntax | yes | yes | yes |
 | Browser-safe format adapters | yes | yes | yes |
-| Notebook/editor integration | yes | yes where embedding makes sense | yes where embedding makes sense |
+| Notebook/editor integration | post-0.1 | post-0.1 | post-0.1 |
 | Node filesystem/process host | no | only if separately implemented | yes |
 | CLI | no | future optional wrapper | yes |
 
@@ -20,8 +23,8 @@ host package rather than core.
 ## Source and package rules
 
 - Publish portable packages as native ESM with explicit export maps.
-- Use TypeScript for types, but compile to browser-compatible ESM; do not make
-  a bundler a runtime requirement.
+- Publish browser-compatible ESM with checked handwritten `.d.ts` declarations;
+  do not make TypeScript or a bundler a runtime requirement.
 - Do not import `node:*`, use CommonJS, `process`, `Buffer`, or a filesystem in
   portable packages.
 - Prefer Web Platform APIs: `URL`, `TextEncoder`, `TextDecoder`, `crypto`,
@@ -52,14 +55,13 @@ adapters invoke that function from each environment:
 | Browser | a module test page importing the same fixtures and assertion function |
 
 The browser page is both a useful development inspector and the target driven
-by browser automation in CI. Select the automation wrapper only when the first
-browser test exists; it should launch real Chromium, Firefox, and WebKit-class
-browsers where practical, without changing the portable test cases.
+by Playwright automation in CI. `npm run test:browser` bundles the Markdown
+adapter, serves the self-contained pages from a loopback-only server, and checks
+both pages in headless Chromium.
 
 The initial browser page is `browser-test/runtime-contract.html`. It imports
 the same `runtimeContractFailures` assertion module as the Node and Bun test,
-then exposes `data-ravel-test=passed` or `failed` for a future automation
-driver.
+then exposes `data-ravel-test=passed` or `failed` for the automation driver.
 
 ## Required matrix
 
@@ -67,16 +69,21 @@ Every portable package change must pass:
 
 1. Node 22+ test suite;
 2. current Bun test suite;
-3. browser conformance suite in at least one modern Chromium-class browser;
-4. a periodic cross-browser run for Firefox and WebKit-class coverage.
+3. browser conformance suite in Playwright Chromium.
+
+Chromium is the intentionally narrow 0.1 browser policy. Firefox and WebKit
+coverage may be added later, but their absence must not be described as tested
+cross-browser support.
 
 Before Node, Bun, or browser support is claimed for an API, add at least one
 shared fixture exercising it. Add a regression fixture for every portability
 bug.
 
-## Current scaffold
+## Current coverage
 
-The initial runtime-contract test verifies the portable Web Platform baseline
-in both Node and Bun. The first core implementation task must add one shared
-map fixture, one Node adapter, one Bun adapter, and a browser module-page
-adapter together.
+`browser-test/shared/runtime-contract.mjs` is shared by the Node and Bun test
+and the runtime browser page. The bundled Markdown page exercises fenced chunk
+extraction, directives, graph evaluation, and built-in transforms through the
+same portable packages used by the Node and Bun suites. The broader fixture
+corpus lives in `test/` and `fixtures/`; additions should include a regression
+case in every relevant runtime.

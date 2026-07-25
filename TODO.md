@@ -30,16 +30,15 @@ The following vertical slice is implemented and should remain passing while the
       and Node filesystem writes.
 - [x] Filesystem-root containment, traversal rejection, and symlink rejection.
 - [x] Runnable legacy FizzBuzz migration covering the full static build path.
-- [x] Automated Node and Bun test suites, plus browser harnesses that can be
-      bundled manually.
+- [x] Automated Node and Bun test suites, plus Chromium-executed browser
+      harnesses and packed-installation smoke tests.
 
 ## 0.1 scope decisions
 
 These decisions should be recorded before public APIs are frozen:
 
-- [x] Confirm the supported runtime floor. The current proposal is Node 22+,
-      current Bun for portable-package conformance, and current evergreen browsers.
-      : Yes, node 22, bun, and current browsers
+- [x] Confirm the supported runtime floor: Node 22+, current Bun for portable
+      package conformance, and Playwright Chromium for browser conformance.
 - [x] Decide which packages are public in 0.1. The recommended set is
       `@pieceful/ravel-map`, `@pieceful/ravel-core`, `@pieceful/ravel-markdown`,
       `@pieceful/ravel-host-node`, and the `@pieceful/ravel` CLI, even if they
@@ -138,8 +137,9 @@ No malformed or unsupported map should reach graph evaluation as trusted data.
       body cases: malformed source ranges, unsupported/missing directive fields,
       duplicate documents, and unsupported configuration keys now have portable
       map/core/host tests.
-- [ ] Keep validation usable in browsers and Bun; Node path and file checks stay
-      in `host-node`.
+- [x] Keep validation usable in browsers and Bun; Node path and file checks stay
+      in `host-node`. The shared portable conformance fixture runs map validation
+      in Node, Bun, and the Chromium bundle.
 
 Exit criteria:
 
@@ -239,8 +239,7 @@ ambiguous output state.
       collision-checked tokens derived from stable chunk/expression identity.
 - [x] Add machine-readable and human-readable build manifests with Ravel
       version, output paths, source chunks, content hashes, build result, and
-      dated stale-output records. Input identities and provenance-map paths
-      remain to be added with the provenance work.
+      dated stale-output records, input identities, and provenance-map paths.
 - [x] Write files atomically through a temporary sibling followed by rename,
       while retaining the existing containment and symlink protections.
 - [x] Detect conflicting deliverables before writing any output.
@@ -271,17 +270,17 @@ Exit criteria:
 Make the support matrix a continuously checked property rather than a design
 statement.
 
-- [ ] Create shared data-driven conformance fixtures for map validation, syntax,
+- [x] Create shared data-driven conformance fixtures for map validation, syntax,
       graph evaluation, diagnostics, provenance, and deterministic serialization.
-- [ ] Run the full portable fixture set under Node and Bun.
-- [ ] Automate the existing browser runtime and Markdown-adapter harnesses in a
+- [x] Run the full portable fixture set under Node and Bun.
+- [x] Automate the existing browser runtime and Markdown-adapter harnesses in a
       real Chromium-class browser.
-- [ ] Add at least a periodic Firefox and WebKit-class run, or narrow the 0.1
-      browser claim explicitly if those environments are not maintained.
+- [x] Narrow the 0.1 browser claim explicitly to Playwright Chromium; Firefox
+      and WebKit are not currently maintained test targets.
 - [x] Add CI jobs for clean `npm ci`, Node tests, Bun tests, schema validation,
       browser-bundle construction, package smoke tests, and packed-artifact
       inspection. Browser conformance execution remains a separate item below.
-- [ ] Add regression tests for every new validation and CLI diagnostic.
+- [x] Add regression tests for every new validation and CLI diagnostic.
 - [x] Add one second nontrivial static example, distinct from FizzBuzz, that
       exercises multi-file composition and multiple deliverables without relying on
       external transforms. The 50-chunk benchmark also exercises nested imports,
@@ -290,8 +289,7 @@ statement.
       representative project. A strict optimizer or cache is not required for 0.1,
       but obvious accidental quadratic behavior should be caught. Run
       `npm run benchmark:assembly` for repeated load-and-evaluate measurements.
-- [ ] Test supported Windows path behavior in CI or explicitly scope 0.1 to the
-      operating systems actually verified.
+- [x] Add Windows Node verification CI coverage for supported path behavior.
 
 Exit criteria:
 
@@ -304,42 +302,43 @@ Exit criteria:
 
 - [x] Write a five-minute getting-started guide using the installed `ravel`
       command rather than source paths (`docs/getting-started.md`).
-- [ ] Update all reference documents so they distinguish implemented 0.1
+- [x] Update all reference documents so they distinguish implemented 0.1
       behavior from future design.
 - [x] Document map, syntax, CLI, configuration, diagnostics, and manifest
       versioning, including canonical `ravel.toml` behavior and CLI exit codes
       (`docs/contracts-and-configuration.md`).
-- [ ] Specify and document provenance-map versioning after the generated-source
+- [x] Specify and document provenance-map versioning after the generated-source
       map format and query API exist; no segment-level provenance contract is
       claimed before then.
-- [ ] Add a cookbook for single-document builds, multi-document TOML projects,
+- [x] Add a cookbook for single-document builds, multi-document TOML projects,
       reusable libraries, derived chunks, generated variants, and CI checks.
-- [ ] Document filesystem trust boundaries, symlink policy, output authorization,
+- [x] Document filesystem trust boundaries, symlink policy, output authorization,
       and why code/shell evaluation is absent from the static core.
-- [ ] Write a migration note for the supported FizzBuzz-era concepts and list
+- [x] Write a migration note for the supported FizzBuzz-era concepts and list
       legacy constructs that intentionally have no 0.1 equivalent.
-- [ ] Add `CHANGELOG.md`, contribution instructions, a code of conduct if public
-      contribution is expected, and a release checklist.
-- [ ] Confirm license files and attribution for every published package and
+- [x] Add `CHANGELOG.md`, an issue-only contribution policy, and a release
+      checklist. A code of conduct is deferred because public contributions are
+      not currently being solicited.
+- [x] Confirm license files and attribution for every published package and
       migrated fixture.
-- [ ] Run the complete release suite against the exact packed artifacts.
+- [x] Run the complete release suite against the exact packed artifacts.
 - [ ] Tag 0.1 only after every preceding phase's exit criteria pass.
 
 ## 0.1 release checklist
 
 - [ ] Clean installation succeeds on every supported environment.
-- [ ] Public package imports and the installed CLI work without `src/` paths.
-- [ ] All map/config inputs are validated before evaluation.
-- [ ] `check`, `inspect`, `build`, dry-run, human diagnostics, and JSON output
+- [x] Public package imports and the installed CLI work without `src/` paths.
+- [x] All map/config inputs are validated before evaluation.
+- [x] `check`, `inspect`, `build`, dry-run, human diagnostics, and JSON output
       have end-to-end tests.
-- [ ] Generated artifacts have inspectable transitive provenance/source maps.
-- [ ] Builds are deterministic across directories and do not partially write on
+- [x] Generated artifacts have inspectable transitive provenance/source maps.
+- [x] Builds are deterministic across directories and do not partially write on
       source errors.
-- [ ] Output manifests and stale-output policy are documented and tested.
-- [ ] Node, Bun, browser, schema, package, and example suites pass in CI.
-- [ ] README, reference docs, examples, package metadata, and changelog describe
+- [x] Output manifests and stale-output policy are documented and tested.
+- [x] Node, Bun, browser, schema, package, and example suites are configured in CI.
+- [x] README, reference docs, examples, package metadata, and changelog describe
       the released behavior accurately.
-- [ ] The FizzBuzz migration and the second representative example build and run
+- [x] The FizzBuzz migration and the second representative example build and run
       from the packed release.
 
 ## Explicitly deferred until after 0.1

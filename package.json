@@ -5,10 +5,20 @@
   "description": "A source-mapped literate programming engine for weaving and unraveling programs.",
   "license": "MIT",
   "author": "James Taylor",
-  "repository": { "type": "git", "url": "git+https://github.com/jostylr/ravel.git" },
-  "bugs": { "url": "https://github.com/jostylr/ravel/issues" },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jostylr/ravel.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jostylr/ravel/issues"
+  },
   "homepage": "https://github.com/jostylr/ravel#readme",
-  "keywords": ["literate-programming", "document-composition", "code-generation", "weaving"],
+  "keywords": [
+    "literate-programming",
+    "document-composition",
+    "code-generation",
+    "weaving"
+  ],
   "type": "module",
   "engines": {
     "node": ">=22"
@@ -24,9 +34,11 @@
     "benchmark:assembly": "node examples/benchmark/benchmark-build.mjs",
     "validate:schema": "node scripts/validate-map-example.mjs",
     "build:browser-test": "esbuild browser-test/source/markdown-adapter-entry.mjs --bundle --format=esm --platform=browser --outfile=browser-test/generated/markdown-adapter.mjs",
+    "test:browser": "npm run build:browser-test && node scripts/browser-conformance.mjs",
     "test:pack": "node scripts/packed-smoke.mjs"
   },
   "devDependencies": {
-    "esbuild": "^0.28.1"
+    "esbuild": "^0.28.1",
+    "playwright": "^1.61.1"
   }
 }

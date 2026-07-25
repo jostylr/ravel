@@ -91,5 +91,6 @@ completed transformed graph and deliverables map.
 - `emit` metadata must be a static JSON object and emitted IDs are globally unique;
 - only `in` and `out` directives have host behavior;
 - maps currently load from local files in the Node host;
-- source-range line/column precision is based on the chunk source range supplied
-  by the adapter; a future Markdown adapter will provide exact body offsets.
+- Markdown body ranges and generated provenance maps preserve exact UTF-16
+  offsets for direct source text and substitutions; transforms that alter text
+  are represented as intentionally coarse attribution.

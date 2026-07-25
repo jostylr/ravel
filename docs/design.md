@@ -45,8 +45,8 @@ format adapters or filesystem hosts responsible for the feature.
 | explorer (proposed) | portable focused graph projections, provenance/change UI, and host protocol | Node filesystem, VS Code APIs |
 | vscode (proposed) | VS Code webview host, source synchronization, preview overlays, and WorkspaceEdit | compiler internals bypassing public package contracts |
 
-Future packages include notebook, lsp, trace, and format adapters such as
-asciidoc. The proposed Explorer and its VS Code integration are specified in
+Potential post-0.1 packages include notebook, LSP, trace, and format adapters
+such as AsciiDoc. The proposed Explorer and its VS Code integration are specified in
 [the Explorer design](explorer-design.md).
 
 ## Runtime support
@@ -58,8 +58,8 @@ Node-only capabilities live in host-node; the CLI is consequently Node-only.
 
 | Runtime | Supported packages | Intended role |
 | --- | --- | --- |
-| Modern browser | map, core, browser-safe adapters, notebook/trace | Rix/editor and web embedding |
-| Bun | map, core, browser-safe adapters, compatible host packages | fast local development and scripting |
+| Modern browser | map, core, Markdown adapter | web embedding and editor hosts |
+| Bun | map, core, Markdown adapter | portable conformance and scripting |
 | Node 22+ | all portable packages plus host-node and cli | CLI builds and filesystem effects |
 
 Portable code must not import node-prefixed modules, use process or Buffer,
@@ -91,8 +91,8 @@ needed. Any exception requires a host adapter.
 4. Add a Node host and CLI to inspect maps, print graph/diagnostics, and plan a
    write artifact. Writing remains opt-in.
 5. Add new map/syntax fixtures and selected historical Litpro fixtures.
-6. Run the same conformance fixtures through Node, Bun, and a browser harness
-   before declaring an API portable.
+6. Run portable regression coverage through Node, Bun, and the Chromium browser
+   harness before declaring an API portable.
 
 The first proof of concept is now implemented: an `in` directive recursively
 loads and joins Ravel Maps, the core parses references and pipelines, `emit`
