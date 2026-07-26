@@ -20,6 +20,21 @@ Markdown, JSON Ravel Maps, or editor-produced maps
         deliverables, diagnostics, provenance, trace
 ```
 
+## Documentation
+
+The guides, language reference, API reference, configuration reference, and
+examples live at [ravel.jostylr.com](https://ravel.jostylr.com/).
+
+## Published packages
+
+| Package | Purpose |
+| --- | --- |
+| [@pieceful/ravel](https://www.npmjs.com/package/@pieceful/ravel) | Node.js CLI for checking, inspecting, and building Ravel projects. |
+| [@pieceful/ravel-core](https://www.npmjs.com/package/@pieceful/ravel-core) | Portable chunk parser, graph evaluator, diagnostics, and provenance engine. |
+| [@pieceful/ravel-map](https://www.npmjs.com/package/@pieceful/ravel-map) | Versioned Ravel Map schema, validation, and diagnostic contract. |
+| [@pieceful/ravel-markdown](https://www.npmjs.com/package/@pieceful/ravel-markdown) | Portable adapter that extracts Ravel Maps from Markdown fences and directives. |
+| [@pieceful/ravel-host-node](https://www.npmjs.com/package/@pieceful/ravel-host-node) | Node filesystem host for project loading, safe artifact writes, manifests, and backups. |
+
 The implemented vertical slice is intentionally safe and deterministic in
 spirit: parsing and graph evaluation do not evaluate document JavaScript or
 shell commands, and the Node host confines declared inputs and outputs to an
@@ -280,27 +295,3 @@ Issues with a small reproduction are welcome at
 [jostylr/ravel](https://github.com/jostylr/ravel/issues). Ravel is not currently
 soliciting external contributions or operating a formal contributor program;
 that policy may change after the 0.1 release.
-
-## Documentation
-
-- [Ravel 0.1 implementation plan](TODO.md)
-- [Ravel Explorer implementation plan](EXPLORER-TODO.md)
-- [Live browser playground](https://ravel.jostylr.com/playground/)
-- [Ravel Explorer design](documentation/explorer-design.md)
-- [Five-minute installed CLI guide](documentation/getting-started.md)
-- [0.1 contracts and TOML configuration](documentation/contracts-and-configuration.md)
-- [Generated-output provenance maps](documentation/provenance-maps.md)
-- [Public JavaScript API](documentation/public-api.md)
-- [Cookbook](documentation/cookbook.md)
-- [Filesystem safety and trust boundaries](documentation/filesystem-safety.md)
-- [Migration from FizzBuzz-era Ravel](documentation/migration-from-legacy.md)
-- [Release checklist](documentation/release-checklist.md)
-- [Design plan](documentation/design.md)
-- [History and predecessor projects](documentation/history.md)
-- [Ravel Map schema guide](documentation/ravel-map-schema.md)
-- [Machine-readable Ravel Map schema](schemas/ravel-map.schema.json)
-- [Embedded chunk syntax](documentation/chunk-syntax.md)
-- [Pipes and directives](documentation/pipes-and-directives.md)
-- [Markdown fenced-block profile](documentation/markdown-fences.md)
-- [Proof of concept](documentation/proof-of-concept.md)
-- [Runtime support and testing policy](documentation/runtime-support.md)

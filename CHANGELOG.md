@@ -3,7 +3,19 @@
 All notable user-facing changes are recorded here. Ravel follows semantic
 versioning for its published packages and versioned public contracts.
 
-## 0.1.0 — unreleased
+## 0.1.1 — unreleased
+
+### Documentation
+
+- Added package-specific npm READMEs for the CLI, core engine, map contract,
+  Markdown adapter, and Node host, each linking to ravel.jostylr.com.
+- Added published-package links and one-sentence descriptions near the top of
+  the repository README, and replaced its long local documentation list with a
+  direct link to the documentation site.
+- Updated package homepages to the Ravel documentation site and verify that
+  every public package tarball contains its README.
+
+## 0.1.0
 
 ### Added
 

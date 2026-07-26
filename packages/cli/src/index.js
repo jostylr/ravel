@@ -13,7 +13,7 @@ import { fileURLToPath } from "node:url";
 const EXIT_SOURCE = 1;
 const EXIT_USAGE = 2;
 const EXIT_INTERNAL = 3;
-const RAVEL_VERSION = "0.1.0";
+const RAVEL_VERSION = "0.1.1";
 const valueOptions = new Set([
   "--config",
   "--out-dir",

@@ -49,9 +49,9 @@ When the checks and publication have succeeded, create an annotated release tag
 from the verified commit:
 
 ```sh
-git tag -a v0.1.0 -m "Ravel 0.1.0"
-git push origin v0.1.0
+git tag -a v0.1.1 -m "Ravel 0.1.1"
+git push origin v0.1.1
 ```
 
-Then create the GitHub release using the matching `v0.1.0` tag and the
+Then create the GitHub release using the matching `v0.1.1` tag and the
 highlights in `CHANGELOG.md`.

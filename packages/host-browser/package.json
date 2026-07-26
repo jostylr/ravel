@@ -1,6 +1,6 @@
 {
   "name": "@pieceful/ravel-host-browser",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "type": "module",
   "sideEffects": false,
@@ -35,8 +35,8 @@
     "LICENSE"
   ],
   "dependencies": {
-    "@pieceful/ravel-core": "0.1.0",
-    "@pieceful/ravel-map": "0.1.0",
-    "@pieceful/ravel-markdown": "0.1.0"
+    "@pieceful/ravel-core": "0.1.1",
+    "@pieceful/ravel-map": "0.1.1",
+    "@pieceful/ravel-markdown": "0.1.1"
   }
 }
