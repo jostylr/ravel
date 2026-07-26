@@ -1,8 +1,10 @@
 # Ravel Explorer implementation plan
 
-This is the working backlog for the design in
-[`documentation/explorer-design.md`](documentation/explorer-design.md). Explorer is a post-0.1
-track and does not block the static Ravel 0.1 release.
+This is the detailed working backlog for Workstream E of the
+[Ravel 0.2 implementation plan](TODO-0.2.md) and the design in
+[`documentation/explorer-design.md`](documentation/explorer-design.md).
+Milestones 0 through 6 are release-binding for 0.2. Milestone 7 is exploratory
+work beyond 0.2.
 
 ## Outcome
 

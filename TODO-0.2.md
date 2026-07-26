@@ -25,6 +25,15 @@ interpreters or compilers implemented in WebAssembly. Those providers are not
 required for 0.2, but a provider conformance fixture must prove that core does
 not depend on JavaScript syntax, JavaScript objects, or QuickJS APIs.
 
+Ravel 0.2 also ships the first Ravel Explorer: a portable, bounded graph and
+provenance interface embedded in a VS Code webview beside the normal source
+editor. It links source, dependencies, transforms, traces, and generated output;
+previews source and structured transform edits through in-memory overlays; and
+applies accepted changes through normal VS Code undo and redo. The detailed
+design and backlog are in the
+[Explorer design](documentation/explorer-design.md) and
+[Explorer implementation plan](EXPLORER-TODO.md).
+
 ## Decisions already made
 
 - [ ] Record the following decisions in the public execution design:
@@ -77,6 +86,8 @@ not depend on JavaScript syntax, JavaScript objects, or QuickJS APIs.
 | `@pieceful/ravel-host-node` | Resolve approved resources, persistent caches, CLI policy, and authorized output directives | Expose ambient Node APIs inside an executor |
 | `@pieceful/ravel-host-browser` | Supply in-memory resources and browser worker integration | Claim a filesystem or process capability |
 | `@pieceful/ravel-js-live` | JavaScript analysis and QuickJS/Wasm execution; portable runtime plus optional Node-specific module preparation | Become a required dependency of core |
+| `@pieceful/ravel-explorer` | Portable bounded graph projections, provenance/change lenses, Cytoscape/ELK UI, and versioned host protocol | Access files, import VS Code, execute transforms, or write source |
+| `@pieceful/ravel-vscode` | VS Code webview host, project loading, source synchronization, overlay previews, diagnostics, and `WorkspaceEdit` | Make the webview authoritative or expose unrestricted workspace capabilities |
 
 The workspace directory for the first provider should be `packages/js-live/`
 with the published name `@pieceful/ravel-js-live`. If Node-only module
@@ -591,6 +602,131 @@ Exit criteria:
 - MyST renders a visible, cross-referenceable chunk while emitting that same
   map.
 
+## Workstream E: Explorer and VS Code integration
+
+The complete task breakdown is maintained in the
+[Explorer implementation plan](EXPLORER-TODO.md). Milestones 0 through 6 of
+that plan are release-binding for 0.2. The experimental Composer milestone is
+deferred beyond 0.2.
+
+### E1. Establish the portable Explorer contract and browser UI
+
+- [ ] Add `@pieceful/ravel-explorer` as a portable ESM workspace package.
+- [ ] Define and runtime-validate versioned snapshot, query, diff, edit, and
+      host-message contracts.
+- [ ] Project the public `RavelProgram` into deterministic, bounded document,
+      chunk, transform, deliverable, provenance, trace, diagnostic, and change
+      views.
+- [ ] Implement focused ancestor, descendant, dependency-closure, path-between,
+      search, grouping, folding, and aggregated boundary-edge queries.
+- [ ] Render focused snapshots with Cytoscape.js and ELK, including compound
+      groups, semantic zoom, minimap, keyboard controls, and a synchronized
+      list/table view.
+- [ ] Keep complete-project indexing separate from the visible graph and report
+      truncation explicitly.
+- [ ] Add deterministic fixtures and browser tests for greeting, proof of
+      concept, FizzBuzz, and generated scale graphs.
+
+Exit criteria:
+
+- FizzBuzz produces a deterministic bounded Explorer snapshot and can be
+  navigated in the browser harness without rendering the entire program.
+- Folding preserves crossing-edge kinds and counts, and focused navigation is
+  keyboard accessible.
+
+### E2. Embed Explorer beside the normal VS Code editor
+
+- [ ] Add the initially private `@pieceful/ravel-vscode` extension package and
+      register `Ravel: Open Explorer`.
+- [ ] Discover direct inputs and `ravel.toml` projects from the active editor,
+      with explicit selection when discovery is ambiguous.
+- [ ] Open a content-security-policy-restricted webview beside the ordinary
+      Markdown or Ravel Map editor.
+- [ ] Load authoritative project state through `host-node`, validate every
+      webview message, and send only bounded Explorer projections.
+- [ ] Synchronize graph selection with exact source reveal and editor selection
+      without feedback loops.
+- [ ] Publish diagnostics through VS Code and support progress, cancellation,
+      output logging, and workspace-state perspective restoration.
+- [ ] Add integration tests for project discovery, source reveal, selection,
+      reload, cancellation, malformed messages, and changing documents.
+
+Exit criteria:
+
+- Selecting a graph entity reveals its exact source in the normal editor, and
+  selecting source focuses the corresponding graph context.
+- The webview has no unrestricted filesystem, command, shell, network, or
+  transform capability.
+
+### E3. Connect provenance, generated output, and trace
+
+- [ ] Add read-only generated-output, derivation, provenance, and trace lenses.
+- [ ] Map generated selections through `explainGeneratedOffset` and map source
+      selections back to every generated occurrence.
+- [ ] Expose stable parsed reference, pipeline, compose, alias, and emit
+      introspection needed by the derivation view.
+- [ ] Retain exact source ranges for individual definition-pipeline transforms
+      and arguments across all 0.2 source adapters.
+- [ ] Distinguish exact and coarse provenance visually and in available editing
+      actions.
+- [ ] Page or summarize large output, trace, and provenance data instead of
+      embedding it in every snapshot.
+
+Exit criteria:
+
+- Selecting any meaningful FizzBuzz output region reveals the best source
+  range, dependency path, and derivation chain.
+- Coarse execution or transform provenance is never presented as exact
+  character correspondence.
+
+### E4. Preview and apply source-shaped edits
+
+- [ ] Add a Node-host overlay abstraction so dirty project documents are
+      evaluated before disk contents without writing artifacts.
+- [ ] Debounce and cancel superseded previews while keeping the last valid
+      snapshot visible when a candidate has diagnostics.
+- [ ] Diff candidate and accepted revisions across nodes, edges, chunk values,
+      outputs, provenance, traces, and diagnostics.
+- [ ] Add source, graph, output, provenance, and diagnostic change views.
+- [ ] Define and validate edit proposals with base revisions and document
+      versions.
+- [ ] Preview transform-argument changes, transform insertion/removal/reordering,
+      authored reference changes, and exact `pipe`/`pass` changes.
+- [ ] Show the proposed source rewrite and apply accepted changes as one
+      undoable VS Code `WorkspaceEdit`.
+- [ ] Reject stale, overlapping, out-of-project, coarse, or ambiguous edit
+      proposals with a specific explanation.
+- [ ] Prove that preview creates no deliverables, manifests, provenance
+      sidecars, backups, or stale-output mutations.
+
+Exit criteria:
+
+- An unsaved FizzBuzz source edit updates the focused graph and output diff.
+- A structured transform edit can be previewed, applied to canonical source,
+  and undone normally in VS Code.
+
+### E5. Add outline navigation and large-project hardening
+
+- [ ] Add Markdown outline grouping as navigational metadata without changing
+      chunk identity or dependency semantics.
+- [ ] Add named perspectives, complete-project search indexes, paged aggregate
+      queries, and stable layout adjustments.
+- [ ] Add 1k, 10k, and 50k entity fixtures and set performance budgets for
+      initial view, search, focus, layout, expansion, and preview.
+- [ ] Profile host and webview memory independently and test cancellation under
+      rapid edits.
+- [ ] Complete keyboard, screen-reader, reduced-motion, workspace-trust,
+      message-protocol, URI-normalization, and source-rendering audits.
+- [ ] Test supported desktop platforms, remote workspaces, and multi-root
+      workspaces.
+
+Exit criteria:
+
+- A 50k-entity underlying program remains searchable and produces responsive,
+  bounded focused views without transporting or rendering the complete graph.
+- Outline folding remains visibly and semantically distinct from the dependency
+  graph.
+
 ## 0.2 release checklist
 
 - [ ] The 0.1 static composition and build suites remain passing and do not
@@ -623,6 +759,16 @@ Exit criteria:
       an include from the virtual filesystem without host filesystem access.
 - [ ] Cancellation, stale state, diagnostics, trace, and cache inspection work
       through public APIs.
+- [ ] `@pieceful/ravel-explorer` renders deterministic bounded graph,
+      provenance, trace, and change views without Node or VS Code dependencies.
+- [ ] `@pieceful/ravel-vscode` links Explorer selection bidirectionally with the
+      normal source editor and restores workspace perspectives.
+- [ ] Generated-output selections reveal their source and derivation while
+      exact and coarse provenance remain visibly distinct.
+- [ ] Dirty-buffer and structured transform edits preview without artifact
+      writes, apply through one `WorkspaceEdit`, and participate in undo/redo.
+- [ ] Focused Explorer views remain responsive against the 50k-entity scale
+      fixture without transporting or rendering the complete graph.
 - [ ] Documentation explains current guarantees, limitations, provider
       authoring, and the path to a future RiX provider.
 - [ ] Clean installation, Node tests, browser tests, schema checks, and packed
@@ -641,3 +787,4 @@ Exit criteria:
 - Character-precise provenance through arbitrary execution.
 - Streaming, Arrow, shared-memory, or other non-JSON live values.
 - Distributed or remote execution.
+- Direct-manipulation Composer mode and arbitrary visual graph rewiring.

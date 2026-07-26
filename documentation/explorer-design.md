@@ -2,9 +2,10 @@
 
 ## Status
 
-This document proposes a post-0.1 Explorer track. It does not expand the Ravel
-0.1 release gate. The implementation backlog is in
-[`../EXPLORER-TODO.md`](../EXPLORER-TODO.md).
+This document specifies Workstream E of the
+[Ravel 0.2 implementation plan](../TODO-0.2.md). Milestones 0 through 6 in the
+[`Explorer backlog`](../EXPLORER-TODO.md) are release-binding for 0.2; the
+experimental Composer milestone is deferred beyond 0.2.
 
 ## Product statement
 
