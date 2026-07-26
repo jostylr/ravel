@@ -363,8 +363,7 @@ kbd {
   color: var(--red);
 }
 
-.language-badge,
-.count-badge {
+.language-badge {
   border: 1px solid var(--line);
   border-radius: 99px;
   color: var(--muted);
@@ -424,12 +423,6 @@ kbd {
   height: 2px;
   background: var(--green-bright);
   content: "";
-}
-
-.count-badge {
-  margin-left: 5px;
-  padding: 2px 5px;
-  color: var(--green-bright);
 }
 
 .result-actions {
@@ -585,9 +578,18 @@ kbd {
 }
 
 .provenance-intro strong {
+  display: block;
   font-family: Georgia, serif;
   font-size: 16px;
   font-weight: 500;
+}
+
+.provenance-summary {
+  display: block;
+  margin-top: 6px;
+  color: var(--green-bright);
+  font-family: "SFMono-Regular", "Cascadia Code", monospace;
+  font-size: 9px;
 }
 
 .provenance-intro p {

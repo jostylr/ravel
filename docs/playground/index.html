@@ -63,10 +63,7 @@
           <header class="panel-header result-header">
             <div class="view-tabs" role="tablist" aria-label="Result view">
               <button id="output-tab" role="tab" aria-selected="true" aria-controls="output-view" type="button">Output</button>
-              <button id="provenance-tab" role="tab" aria-selected="false" aria-controls="provenance-view" type="button">
-                Provenance
-                <span id="segment-count" class="count-badge">0 ranges</span>
-              </button>
+              <button id="provenance-tab" role="tab" aria-selected="false" aria-controls="provenance-view" type="button">Provenance</button>
             </div>
             <div class="result-actions">
               <label class="deliverable-field" for="deliverable-select">
@@ -95,6 +92,7 @@
               <div>
                 <span class="panel-kicker">Source map</span>
                 <strong>Click a colored range to trace it.</strong>
+                <small id="provenance-summary" class="provenance-summary">No map loaded</small>
               </div>
               <p>Exact ranges preserve character offsets; coarse ranges identify their originating span.</p>
             </div>

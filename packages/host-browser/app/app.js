@@ -18,7 +18,7 @@ const elements = {
   artifactName: document.querySelector("#artifact-name"),
   artifactSize: document.querySelector("#artifact-size"),
   outputCode: document.querySelector("#output-code"),
-  segmentCount: document.querySelector("#segment-count"),
+  provenanceSummary: document.querySelector("#provenance-summary"),
   mappedOutput: document.querySelector("#mapped-output"),
   provenanceLegend: document.querySelector("#provenance-legend"),
   segmentDetail: document.querySelector("#segment-detail"),
@@ -259,10 +259,12 @@ const renderProvenance = () => {
     fragment.append(document.createTextNode(currentDeliverable.value.slice(cursor)));
   }
   elements.mappedOutput.replaceChildren(fragment);
-  elements.segmentCount.textContent = `${segments.length} ${segments.length === 1 ? "range" : "ranges"}`;
   elements.rawMapJson.textContent = JSON.stringify(map, null, 2);
 
   const chunks = [...new Set(segments.map((segment) => segment.chunk).filter(Boolean))];
+  const segmentLabel = segments.length === 1 ? "map segment" : "map segments";
+  const chunkLabel = chunks.length === 1 ? "source chunk" : "source chunks";
+  elements.provenanceSummary.textContent = `${segments.length} ${segmentLabel} across ${chunks.length} ${chunkLabel}`;
   elements.provenanceLegend.replaceChildren(...chunks.map((chunk) => {
     const item = document.createElement("span");
     const dot = document.createElement("i");

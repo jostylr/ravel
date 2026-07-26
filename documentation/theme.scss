@@ -42,8 +42,11 @@ $border-color: #d4d2c8;
 
 .ravel-hero {
   display: block;
-  margin-top: -1px;
-  padding: clamp(1.5rem, 4vw, 4rem) max(1.5rem, calc((100vw - 1320px) / 2)) clamp(2.5rem, 5vw, 5rem);
+  box-sizing: border-box;
+  width: min(calc(100% - 3rem), 1000px);
+  margin: 2rem auto 0;
+  padding: 1.25rem 1.25rem 2.5rem;
+  border-radius: 1rem;
   color: #e8efe9;
   background:
     radial-gradient(circle at 78% 20%, rgba(77, 177, 137, 0.2), transparent 28rem),
@@ -52,7 +55,7 @@ $border-color: #d4d2c8;
 
 .hero-graphic {
   display: block;
-  width: min(100%, 1200px);
+  width: 100%;
   height: auto;
   aspect-ratio: 40 / 21;
   margin: 0 auto;
@@ -71,8 +74,8 @@ $border-color: #d4d2c8;
   gap: 3rem;
   align-items: flex-end;
   justify-content: space-between;
-  width: min(100%, 1200px);
-  margin: clamp(1.75rem, 3vw, 3rem) auto 0;
+  width: 100%;
+  margin: 2rem auto 0;
 }
 
 .hero-summary {
@@ -220,6 +223,8 @@ $border-color: #d4d2c8;
 
 @media (max-width: 520px) {
   .ravel-hero {
-    padding-top: 1rem;
+    width: calc(100% - 1rem);
+    margin-top: 0.5rem;
+    padding: 0.5rem 0.5rem 1.5rem;
   }
 }
