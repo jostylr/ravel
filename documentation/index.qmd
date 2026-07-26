@@ -4,39 +4,33 @@ pagetitle: "Ravel — source-mapped literate programming"
 description: "Assemble named code pieces into artifacts while retaining a source-linked dependency graph."
 page-layout: full
 toc: false
-title-block-banner: false
+body-classes: ravel-landing
 ---
 
 ::: {.ravel-hero}
-::: {.ravel-hero-copy}
-<p class="hero-eyebrow">Literate programming, with receipts</p>
+<h1 class="visually-hidden">Ravel — weave the story, keep the thread</h1>
+<img class="hero-graphic" src="og.png" alt="Ravel. Weave the story. Keep the thread. Source threads connect a literate document to generated code.">
 
-# Weave the story.<br><em>Keep the thread.</em>
-
+::: {.hero-support}
+::: {.hero-summary}
 Ravel assembles named code pieces into finished artifacts while preserving the
 dependency graph and provenance that explain exactly where every generated
 range came from.
+
+<p class="hero-note">Static by design · Browser-safe core · Source-linked diagnostics</p>
+:::
 
 ::: {.hero-actions}
 [Open the live playground](playground/){.btn .btn-primary .btn-lg}
 [Get started](getting-started.md){.btn .btn-outline-light .btn-lg}
 :::
-
-<p class="hero-note">Static by design · Browser-safe core · Source-linked diagnostics</p>
-:::
-
-::: {.ravel-hero-map}
-<div class="map-label">fizzbuzz.md</div>
-<div class="map-thread thread-a"><span>program:main.js</span><i></i><strong>dist/fizzbuzz.js</strong></div>
-<div class="map-thread thread-b"><span>format-output.js</span><i></i><strong>lines 5–7</strong></div>
-<div class="map-thread thread-c"><span>program:helpers.js</span><i></i><strong>lines 9–13</strong></div>
-<div class="map-caption"><span></span> exact source range</div>
 :::
 :::
 
 ::: {.feature-strip}
 ::: {.feature}
 <span>01</span>
+
 ### Write in narrative order
 
 Name fenced code chunks where they make sense in the explanation. Assembly
@@ -45,6 +39,7 @@ order stays explicit and independent.
 
 ::: {.feature}
 <span>02</span>
+
 ### Generate deterministically
 
 The portable graph evaluator composes, transforms, and emits artifacts without
@@ -53,6 +48,7 @@ executing document JavaScript or shell commands.
 
 ::: {.feature}
 <span>03</span>
+
 ### Trace every range
 
 Versioned provenance maps connect generated offsets back to exact or honestly

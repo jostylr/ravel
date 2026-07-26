@@ -496,7 +496,7 @@
     "href": "index.html",
     "title": "Ravel",
     "section": "",
-    "text": "Literate programming, with receipts\n\n\n\nRavel assembles named code pieces into finished artifacts while preserving the dependency graph and provenance that explain exactly where every generated range came from.\n\nOpen the live playground Get started\n\n\nStatic by design · Browser-safe core · Source-linked diagnostics\n\n\n\n\n\nfizzbuzz.md\n\n\nprogram:main.jsdist/fizzbuzz.js\n\n\nformat-output.jslines 5–7\n\n\nprogram:helpers.jslines 9–13\n\n\n exact source range"
+    "text": "Ravel assembles named code pieces into finished artifacts while preserving the dependency graph and provenance that explain exactly where every generated range came from.\n\nStatic by design · Browser-safe core · Source-linked diagnostics\n\n\n\nOpen the live playground Get started"
   },
   {
     "objectID": "index.html#small-surface.-explicit-composition.",

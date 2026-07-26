@@ -53,6 +53,7 @@ const editorTheme = EditorView.theme({
   },
   ".cm-activeLine, .cm-activeLineGutter": { backgroundColor: "#152823" },
   ".cm-selectionBackground, ::selection": { backgroundColor: "#285447 !important" },
+  ".cm-line span": { color: "#72ddb7" },
   ".cm-focused": { outline: "none" }
 }, { dark: true });
 
@@ -258,7 +259,7 @@ const renderProvenance = () => {
     fragment.append(document.createTextNode(currentDeliverable.value.slice(cursor)));
   }
   elements.mappedOutput.replaceChildren(fragment);
-  elements.segmentCount.textContent = String(segments.length);
+  elements.segmentCount.textContent = `${segments.length} ${segments.length === 1 ? "range" : "ranges"}`;
   elements.rawMapJson.textContent = JSON.stringify(map, null, 2);
 
   const chunks = [...new Set(segments.map((segment) => segment.chunk).filter(Boolean))];
@@ -357,7 +358,7 @@ elements.copyButton.addEventListener("click", async () => {
   }
 });
 document.addEventListener("keydown", (event) => {
-  if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
+  if (event.ctrlKey && event.key === "Enter") {
     event.preventDefault();
     render();
   }
