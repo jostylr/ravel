@@ -27,6 +27,10 @@ There are two syntaxes, with a stable JSON boundary between them.
 The core never needs to know whether a chunk came from a heading, a fence, an
 AsciiDoc listing, or a Rix visual block.
 
+The proposed source-format conventions, including modern and legacy Markdown,
+Quarto, AsciiDoc, HTML, Org, noweb, and MyST, are specified in the
+[markup adapter design](markup-adapters-design.md).
+
 An `emit` step in chunk syntax is a controlled graph-expansion macro. It creates
 an immutable derived chunk definition from the preceding reference/pipeline;
 it is expanded before graph resolution and is not an I/O effect. This gives

@@ -8,6 +8,13 @@ executable, the core builds a language-neutral execution plan, a registered
 language provider evaluates it, and the host decides what to do with the
 returned value.
 
+Ravel 0.2 also broadens the source-format boundary. It must ship the modern
+Markdown, full LitPro Markdown, Quarto, AsciiDoc, HTML, Org, noweb, and MyST
+adapters specified in the
+[markup adapter design](documentation/markup-adapters-design.md). All adapters
+produce equivalent source-mapped Ravel Maps, support definition pipelines
+after chunk names, and remain effect-free while parsing.
+
 The first public provider is `@pieceful/ravel-js-live`. It runs ordinary
 JavaScript in QuickJS compiled to WebAssembly. The provider accepts immutable
 JSON inputs and returns exactly one JSON-compatible default export. It has no
@@ -65,6 +72,8 @@ not depend on JavaScript syntax, JavaScript objects, or QuickJS APIs.
 | `@pieceful/ravel-map` | Versioned execution metadata, JSON-value, resource, limit, and result contracts | Import an executor or host |
 | `@pieceful/ravel-core` | Language-neutral analysis, execution graph, scheduling, state, caching keys, diagnostics, trace, and directive planning | Parse JavaScript, import QuickJS, or access files |
 | `@pieceful/ravel-markdown` | Map `.run`, language, block identity, and execution attributes to Ravel Map metadata with exact ranges | Execute a fence or select a provider |
+| Source adapter packages | Map modern/legacy Markdown, AsciiDoc, HTML, Org, noweb, and MyST source into equivalent Ravel Maps and surface/source maps | Resolve the graph, execute code, perform directives, or depend on host authority |
+| Quarto integration | Run the Markdown adapter before executable-cell processing and decorate rendered output with chunk captions and graph links | Become a second parser, resolver, or execution engine |
 | `@pieceful/ravel-host-node` | Resolve approved resources, persistent caches, CLI policy, and authorized output directives | Expose ambient Node APIs inside an executor |
 | `@pieceful/ravel-host-browser` | Supply in-memory resources and browser worker integration | Claim a filesystem or process capability |
 | `@pieceful/ravel-js-live` | JavaScript analysis and QuickJS/Wasm execution; portable runtime plus optional Node-specific module preparation | Become a required dependency of core |
@@ -431,10 +440,169 @@ Exit criteria:
 - [ ] Add all new public packages and subpath exports to release packing,
       licensing, provenance, and publication checks.
 
+## Workstream D: source-format adapters
+
+The syntax and behavior in this workstream are defined in the
+[markup adapter design](documentation/markup-adapters-design.md). The checklist
+below makes that design release-binding for 0.2.
+
+### D1. Finalize the shared adapter contract
+
+- [ ] Replace format-specific compiler assumptions with one adapter contract
+      that emits a versioned Ravel Map plus definition, fragment, reference,
+      directive, and rendered-anchor surfaces.
+- [ ] Give every emitted semantic item an exact URI and source range. Where a
+      host parser provides only block starts, pair its AST with a lossless
+      scanner rather than weakening the Ravel diagnostic contract.
+- [ ] Parse definition and use-site pipelines through the shared core syntax
+      parser. An adapter identifies the range and spelling; it does not
+      implement a private pipe language.
+- [ ] Specify that a definition pipeline runs once after all fragments of a
+      chunk have been concatenated. Reject conflicting pipelines and pipelines
+      attached to later fragments where the format does not define that
+      behavior.
+- [ ] Preserve per-fragment language metadata and diagnose incompatible
+      concatenation consistently across formats.
+- [ ] Add adapter capability declarations for headings, named blocks,
+      repeated fragments, includes, native cross-references, executable blocks,
+      rendered anchors, and exact source-map quality.
+- [ ] Ensure parsing only produces maps, diagnostics, and effect plans. No
+      adapter may read undeclared files, execute a cell, run a directive, or
+      mutate an output document during parsing.
+- [ ] Build adapter-independent conformance fixtures whose normalized Ravel
+      Maps are identical across source formats.
+
+Exit criteria:
+
+- One shared fixture produces the same normalized chunks, references,
+  pipelines, directives, diagnostics, and provenance edges through every 0.2
+  adapter.
+- Core and host packages contain no format-specific parsing branches.
+
+### D2. Complete modern and full-LitPro Markdown
+
+- [ ] Extend `@pieceful/ravel-markdown` so heading-owned and named-fence chunks
+      coexist. A named fence owns only itself and does not replace the current
+      ambient heading; later unnamed fences continue contributing to that
+      heading chunk.
+- [ ] Preserve the language/info string on every unnamed heading-owned fence.
+      Infer a chunk language only when its nonempty fragment languages agree.
+- [ ] Allow a definition pipeline after a heading name or on the first unnamed
+      fence. Apply it once after all heading-owned fragments concatenate and
+      reject pipelines on later unnamed fragments.
+- [ ] Support compact CommonMark and attributed Pandoc/Quarto spellings for
+      named chunks, append fragments, display names, stable IDs, languages, and
+      pipelines.
+- [ ] Add the independent `markdown-litpro` adapter with H1-H4 peer chunks, H5
+      children, H6 grandchildren, slash and colon paths, relative references,
+      repeated definitions, minor blocks, link directives, delayed
+      substitutions, legacy comments, and fence/indented-code concatenation.
+- [ ] Implement the `litpro-2017`, `pieceful-2020`, and `litpro-plus`
+      dialects, plus `legacy`, `flat`, and `none` heading-level modes.
+- [ ] Import the historical H5/H6, repeated-heading, minor-block, pipeline,
+      load/save, templating, and path-resolution fixtures. Label every fixture
+      with the historical dialect it proves.
+- [ ] Keep unsafe legacy directives as planned effects. Exact structural
+      compatibility must not imply ambient shell, network, eval, or filesystem
+      authority.
+
+Exit criteria:
+
+- A modern fixture can place a named fence between two unnamed fences and
+  retain both unnamed fragments under the heading chunk.
+- The curated historical LitPro corpus produces the expected chunk structure
+  and generated text under its declared dialect.
+
+### D3. Implement the Quarto integration
+
+- [ ] Accept `.qmd` through the selected Markdown adapter rather than defining
+      a Quarto-specific Ravel Map dialect.
+- [ ] Use native `lst-*` labels and `lst-cap` captions for the no-extension
+      baseline so named chunks are visible and cross-referenceable.
+- [ ] Add a pre-execution build bridge that weaves a temporary `.qmd` tree
+      before Jupyter or Knitr sees executable cells. Never overwrite authored
+      source.
+- [ ] Compose source maps through temporary `.qmd` files and include woven
+      content, adapter configuration, and transform/provider versions in
+      Quarto freeze/cache inputs.
+- [ ] Add a render bridge that generates chunk captions, `uses`, `used by`,
+      definition links, and a chunk/dependency index from the resolved graph.
+- [ ] Prevent Quarto execution and Ravel execution from both claiming the same
+      cell. Filters and executed output may not declare new chunks after graph
+      validation.
+- [ ] Add HTML and PDF golden renders plus an executable-cell failure mapped
+      back through the temporary source to the authored definition/reference.
+
+Exit criteria:
+
+- Static and executable Quarto examples show visible chunk names and working
+  graph navigation, and executable code is woven before the native engine runs.
+
+### D4. Implement AsciiDoc and HTML
+
+- [ ] Implement AsciiDoc section-owned and attributed-block forms using native
+      section IDs, block titles, source languages, roles, custom attributes,
+      cross-references, and `lp` directive macros.
+- [ ] Support compact section-name pipelines and `lp-pipe` block attributes.
+- [ ] Enable Asciidoctor source mapping and pair its block AST with lossless
+      rescanning for metadata, block ends, literal bodies, inline references,
+      pipelines, and included-file URIs.
+- [ ] Implement HTML section and figure forms using semantic elements,
+      `data-lp-*` metadata, visible headings/captions, `pre > code` fragments,
+      native anchors, and explicit directive links.
+- [ ] Parse HTML without scripting, ignore runtime DOM mutation, and preserve
+      source-to-value mappings while decoding character entities in code.
+- [ ] Add include/entity/Unicode/nesting fixtures and prove that neither
+      adapter parses rendered HTML as a substitute for source structure.
+
+Exit criteria:
+
+- Equivalent AsciiDoc and HTML fixtures produce the shared conformance Ravel
+  Map with exact source-linked diagnostics and no renderer execution.
+
+### D5. Implement Org, noweb, and MyST
+
+- [ ] Implement Org `#+NAME`, `:noweb-ref` aggregation, `#+LP_NAME`,
+      `#+LP_PIPE`, source languages, exact block bodies, and both Org-noweb and
+      underscore-quote reference policies.
+- [ ] Preserve Babel header arguments, results, sessions, cache, execution, and
+      tangling requests as metadata/effect plans. Require an explicit owner so
+      Babel and Ravel cannot both execute or tangle the same block.
+- [ ] Support `<<name | pipeline>>` only under the configured extended Org
+      reference policy and emit a portability diagnostic because unmodified
+      Babel treats the pipe as part of the block ID.
+- [ ] Implement a small lossless noweb scanner for documentation chunks,
+      `<<name>>=` definitions, repeated definitions, `<<name>>` references,
+      `@` terminators, exact offsets, and configured/inferred languages.
+- [ ] Implement strict `noweb` and extended `noweb-plus` dialects. In
+      `noweb-plus`, split definition and reference names at the first unescaped
+      pipe; also support the classic-compatible Pieceful pipeline pragma.
+- [ ] Implement the MyST `{piece}` directive with name-and-pipeline argument,
+      language, caption, label, code body, cross-reference, and notebook-cell
+      mapping.
+- [ ] Add native-tool compatibility fixtures showing which sources remain
+      consumable by Org Babel, classic noweb, and a MyST renderer without a
+      Ravel extension.
+
+Exit criteria:
+
+- Org and noweb repeated fragments, references, and pipelines normalize to the
+  same Ravel Map as the Markdown fixture.
+- MyST renders a visible, cross-referenceable chunk while emitting that same
+  map.
+
 ## 0.2 release checklist
 
 - [ ] The 0.1 static composition and build suites remain passing and do not
       execute `.run` blocks implicitly.
+- [ ] Modern Markdown, full LitPro Markdown, Quarto, AsciiDoc, HTML, Org,
+      noweb, and MyST adapters pass the shared source-map and normalized-map
+      conformance suite.
+- [ ] Definition pipelines after chunk names behave identically across all 0.2
+      adapters and run once after fragment concatenation.
+- [ ] The historical LitPro fixture subset passes under its declared dialect,
+      including H1-H4 peers, H5/H6 paths, repeated headings, minor blocks, and
+      legacy directives.
 - [ ] Core plans and schedules execution through a language-neutral provider
       contract proven by a non-JavaScript conformance provider.
 - [ ] Markdown recognizes `js`/`javascript` fences with `.run` without changing

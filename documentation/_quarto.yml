@@ -70,6 +70,7 @@ website:
       - section: "Design and history"
         contents:
           - design.md
+          - markup-adapters-design.md
           - proof-of-concept.md
           - explorer-design.md
           - history.md
