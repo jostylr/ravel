@@ -1,0 +1,475 @@
+# Ravel 0.2 implementation plan
+
+## Release definition
+
+Ravel 0.2 adds portable, capability-limited execution without making JavaScript
+or QuickJS part of the core language. A source adapter marks a chunk as
+executable, the core builds a language-neutral execution plan, a registered
+language provider evaluates it, and the host decides what to do with the
+returned value.
+
+The first public provider is `@pieceful/ravel-js-live`. It runs ordinary
+JavaScript in QuickJS compiled to WebAssembly. The provider accepts immutable
+JSON inputs and returns exactly one JSON-compatible default export. It has no
+ambient filesystem, network, process, console, or host-write capability.
+
+The 0.2 architecture must also admit later providers such as RiX and other
+interpreters or compilers implemented in WebAssembly. Those providers are not
+required for 0.2, but a provider conformance fixture must prove that core does
+not depend on JavaScript syntax, JavaScript objects, or QuickJS APIs.
+
+## Decisions already made
+
+- [ ] Record the following decisions in the public execution design:
+  - Executable Markdown fences retain their real language, such as `js` or
+    `javascript`, and opt into execution with the `.run` class.
+  - `.run` is adapter metadata. Parsing a document never executes the block.
+  - JavaScript execution uses standard module syntax and requires exactly one
+    top-level `export default` as the final statement.
+  - The default export may be any JSON value. Empty strings, empty arrays,
+    empty objects, `false`, `0`, and `null` are valid results.
+  - A missing export, `undefined`, a function, a symbol, a bigint, a non-finite
+    number, a cycle, or another non-JSON value is an execution error.
+  - Live code cannot write files, emit display values, log through a host
+    console, or commit effects. Ravel directives and hosts consume the returned
+    value and decide whether to display, transform, or write it.
+  - Incoming values are copied into the execution realm and deeply frozen.
+    No live object identity crosses between chunks, runs, or the host.
+  - Source composition and value dependencies remain distinct: an
+    underscore-quoted reference composes source before execution, while a
+    provider-supported value reference such as JavaScript `ch("name")`
+    consumes a completed live result.
+  - Dynamic dependency and resource names are rejected in 0.2. The graph must
+    be known before execution.
+- [ ] Decide whether `.run` implies `.ravel` for an explicitly named fence.
+      The proposed canonical form is:
+
+      ````markdown
+      ```js {.run #process-data}
+      const parsed = ch("parsed-csv");
+      export default parsed.rows;
+      ```
+      ````
+
+- [ ] Decide and document how an `out` directive selects and encodes a live
+      result. The proposed policy is `text` for a string result and explicit
+      `json` encoding for any JSON value; the executor never writes either.
+- [ ] Keep the synchronous 0.1 static-composition API intact. Add an asynchronous
+      execution stage rather than making every existing `transformGraph` caller
+      asynchronous.
+
+## Package boundaries
+
+| Package | 0.2 responsibility | Must not do |
+| --- | --- | --- |
+| `@pieceful/ravel-map` | Versioned execution metadata, JSON-value, resource, limit, and result contracts | Import an executor or host |
+| `@pieceful/ravel-core` | Language-neutral analysis, execution graph, scheduling, state, caching keys, diagnostics, trace, and directive planning | Parse JavaScript, import QuickJS, or access files |
+| `@pieceful/ravel-markdown` | Map `.run`, language, block identity, and execution attributes to Ravel Map metadata with exact ranges | Execute a fence or select a provider |
+| `@pieceful/ravel-host-node` | Resolve approved resources, persistent caches, CLI policy, and authorized output directives | Expose ambient Node APIs inside an executor |
+| `@pieceful/ravel-host-browser` | Supply in-memory resources and browser worker integration | Claim a filesystem or process capability |
+| `@pieceful/ravel-js-live` | JavaScript analysis and QuickJS/Wasm execution; portable runtime plus optional Node-specific module preparation | Become a required dependency of core |
+
+The workspace directory for the first provider should be `packages/js-live/`
+with the published name `@pieceful/ravel-js-live`. If Node-only module
+preparation is included in this package, expose it through an explicit
+`@pieceful/ravel-js-live/node` subpath so the main entry remains browser-safe.
+
+## Workstream A: language-neutral core and host support
+
+### A1. Specify the execution contracts
+
+- [ ] Add a `RavelValue` contract covering `null`, booleans, finite numbers,
+      strings, arrays, and string-keyed records recursively.
+- [ ] Specify an `ExecutionProvider` interface with stable provider ID,
+      provider version, accepted language IDs/aliases, analysis, execution,
+      cancellation, and supported-feature declarations.
+- [ ] Keep language analysis provider-owned. An analysis result reports static
+      value dependencies, source dependencies, resource requests, module
+      requests, the export contract, diagnostics, and exact source ranges.
+- [ ] Define an `ExecutionRequest` containing only composed source, immutable
+      inputs, a virtual resource snapshot, limits, source identity, run ID,
+      provider configuration, and `AbortSignal`.
+- [ ] Define an `ExecutionResult` that distinguishes success from failure and
+      carries the exported `RavelValue`, serialized bytes, diagnostics, timing,
+      provider/engine versions, and coarse dependency provenance.
+- [ ] Represent “no export” independently from valid falsy values. Never use
+      truthiness to determine whether an execution produced a value.
+- [ ] Define stable diagnostic families for provider absence, unsupported
+      language, malformed execution metadata, dynamic dependency, missing
+      input/resource, cancellation, timeout, memory/stack limit, provider
+      failure, missing export, and non-serializable export.
+- [ ] Add a provider conformance suite using a fake non-JavaScript provider.
+      It must pass without importing `@pieceful/ravel-js-live`.
+
+Exit criteria:
+
+- Core can plan and run a small graph through a test provider without knowing
+  the provider's source language.
+- The public contracts are documented and have checked `.d.ts` declarations.
+
+### A2. Extend maps and Markdown without executing
+
+- [ ] Define execution metadata in the Ravel Map contract, preferably as an
+      optional, backward-compatible addition to chunk metadata unless a map
+      version change is justified.
+- [ ] Extend the Markdown fence parser to recognize `.run` while preserving the
+      first language token for ordinary syntax highlighting.
+- [ ] Require a stable chunk identity for an executable fence. Report a
+      source-linked adapter diagnostic when `.run` appears without one.
+- [ ] Preserve the complete fence body and exact ranges for the run marker,
+      language, identity, dependency declarations, and resource declarations.
+- [ ] Confirm that unmarked `js` fences remain ordinary static chunks or
+      examples according to the existing Markdown mode; language alone never
+      opts into execution.
+- [ ] Add Markdown fixtures for `js` and `javascript`, valid and invalid `.run`
+      placement, greedy fragments, source composition, and ordinary non-running
+      examples.
+- [ ] Keep `.run` portable across Markdown, future section-profile Markdown,
+      editor-produced maps, and other adapters. It must not encode QuickJS in
+      adapter output.
+
+Exit criteria:
+
+- Markdown-to-map conversion exposes a complete execution declaration but
+  performs no analysis or evaluation.
+- Existing 0.1 Markdown fixtures remain byte-for-byte compatible where their
+  source does not use `.run`.
+
+### A3. Build the execution graph and scheduler
+
+- [ ] Add an explicit post-composition execution-planning phase. Source
+      substitutions settle before provider analysis; value dependencies settle
+      before provider execution.
+- [ ] Detect cycles spanning static source composition and live-value
+      dependencies, with the shortest useful source-linked path.
+- [ ] Topologically schedule ready executions with bounded concurrency and
+      cancellation through `AbortSignal`.
+- [ ] Represent run state as `pending`, `running`, `succeeded`, `failed`,
+      `cancelled`, or `stale`, without relying on notebook source order.
+- [ ] Make automatic/reactive execution a host policy. Core exposes invalidated
+      nodes and a deterministic plan; it does not silently rerun effectful host
+      directives.
+- [ ] Copy and deep-freeze every input in the provider realm. Add conformance
+      tests proving that a consumer cannot mutate its producer or a sibling
+      consumer.
+- [ ] Preserve a canonical serialized representation of each successful result
+      so fan-out stringifies once and parses once per consumer.
+- [ ] Attach coarse provenance from a live result to its executable fence,
+      source-composed helpers, value dependencies, resources, and provider
+      version. Do not invent character-level mappings for arbitrary execution.
+- [ ] Add trace events for analysis, waiting, execution, cache hit/miss,
+      serialization, cancellation, and failure.
+
+Exit criteria:
+
+- A multi-block fixture executes in dependency order, reports stale downstream
+  results after an edit, rejects a mixed cycle, and cancels a long-running fake
+  provider cleanly.
+
+### A4. Define resources and a virtual filesystem contract
+
+- [ ] Define a portable immutable resource snapshot: normalized virtual path,
+      bytes or text, media type, content hash, and optional deterministic
+      metadata.
+- [ ] Use canonical POSIX-style virtual paths regardless of host platform.
+      Reject absolute paths, traversal, duplicate normalized paths, symlinks,
+      devices, and aliases with ambiguous casing policy.
+- [ ] Separate read-only project resources from an optional quota-limited
+      scratch filesystem. Scratch writes are ephemeral and never write through
+      to the host.
+- [ ] Specify quotas for entry count, individual file size, total bytes, and
+      scratch growth, plus cancellation and deterministic error behavior.
+- [ ] Normalize or omit time, permission, owner, inode, and real-path metadata
+      so a transform cannot acquire nondeterministic host details.
+- [ ] Let a provider analyze static resource requests. For JavaScript,
+      `load("cool.csv")` may be convenient syntax, but Ravel resolves the
+      literal request before execution and the sandbox sees only the prepared
+      snapshot.
+- [ ] Add host-node resource preparation below an explicit root, reusing the
+      existing containment and symlink policy.
+- [ ] Add host-browser preparation from caller-supplied in-memory resources.
+- [ ] Define how resources participate in cache keys through their content
+      hashes rather than host paths or timestamps.
+
+Exit criteria:
+
+- The same resource fixture produces the same execution request and hash on
+  Node and in Chromium.
+- No executor-facing interface contains a native file descriptor, absolute
+  host path, Node `fs` object, or write-through callback.
+
+### A5. Connect results to directives and hosts
+
+- [ ] Extend directive planning so a live result can be selected without giving
+      the executor an output capability.
+- [ ] Require explicit output encoding: raw text accepts only strings; JSON
+      accepts any `RavelValue`; future encodings are registered transforms.
+- [ ] Keep build writes in host-node with the existing dry-run, containment,
+      atomic commit, manifest, cleanup, and backup behavior.
+- [ ] Add inspect/JSON views for execution plans, provider selection, input and
+      resource hashes, result summaries, diagnostics, trace, and cache state.
+- [ ] Decide whether 0.2 exposes a new `ravel run` command or extends
+      `inspect`/`build` with an explicit execution flag. No existing command
+      should execute `.run` blocks merely because it parsed them.
+- [ ] Ensure `check` can analyze and validate executable blocks without running
+      them, unless an explicit validation mode requires provider compilation.
+
+Exit criteria:
+
+- A directive writes an exported string or explicitly JSON-encoded array
+  through host-node, while the same executor package remains unable to write a
+  host file directly.
+
+## Workstream B: `@pieceful/ravel-js-live`
+
+### B1. Establish the QuickJS/Wasm runtime
+
+- [ ] Create `packages/js-live/` with package metadata, exports, declarations,
+      license, README, packed-installation smoke coverage, and no dependency
+      from core back to it.
+- [ ] Select and pin an exact QuickJS/Wasm distribution and record its engine,
+      wrapper, Wasm variant, and build versions in every run and cache key.
+- [ ] Reuse the compiled WebAssembly module, but create a fresh execution realm
+      for each run by default.
+- [ ] Run QuickJS inside a dedicated browser worker and a Node worker or
+      replaceable process boundary. The host must be able to terminate the
+      outer worker if the engine interrupt fails.
+- [ ] Configure memory, stack, execution-time, output-size, and pending-job
+      limits. Connect core cancellation to both the QuickJS interrupt handler
+      and outer worker termination.
+- [ ] Do not install QuickJS `std`/`os`, a general module loader, timers,
+      network APIs, Node globals, `console`, or host object references.
+- [ ] Marshal inputs and outputs as serialized data rather than exposing live
+      QuickJS handles to core or hosts.
+
+Exit criteria:
+
+- The packed provider runs the same minimal JavaScript block in Node and
+  Chromium and is absent from the dependency trees of map, core, and Markdown.
+
+### B2. Implement the JavaScript live profile
+
+- [ ] Register the language aliases `js` and `javascript`; keep provider
+      selection explicit and diagnose ambiguous registrations.
+- [ ] Parse executable source as an ECMAScript module and reject host imports,
+      dynamic imports, top-level side-effect channels, and unsupported syntax
+      before execution.
+- [ ] Require exactly one final top-level `export default`. Accept every valid
+      JSON value, including `""`, `[]`, `{}`, `false`, `0`, and `null`.
+- [ ] Validate the export deeply before it leaves QuickJS. Reject `undefined`,
+      functions, symbols, bigints, non-finite numbers, cycles, accessors,
+      and unsupported prototypes instead of silently coercing them. Decide
+      whether `Proxy` is disabled in the live profile or handled by a
+      time-limited serialization rule.
+- [ ] Implement static analysis for literal `ch("chunk-reference")` calls and
+      reject computed dependency names that cannot be planned. A literal call
+      in a conditional branch is still a declared dependency.
+- [ ] Reserve the injected `ch` and `load` bindings against shadowing or
+      reassignment, and reject dynamic code generation in the live profile when
+      it could hide dependencies or resource requests from analysis.
+- [ ] Inject `ch` as a read-only lookup over deep-frozen copies of resolved
+      values. It must not expose promises, provider handles, or host objects.
+- [ ] Implement literal `load("virtual/path")` as a lookup over the prepared
+      immutable resource snapshot, not as filesystem access.
+- [ ] Preserve source locations through any wrapper or module transformation so
+      QuickJS syntax/runtime errors point back to the Markdown fence.
+- [ ] Add tests for empty/falsy exports, missing and misplaced exports,
+      mutation attempts, serialization failures, dependency cycles, missing
+      resources, infinite loops, memory exhaustion, and attempted access to
+      `process`, `require`, `fetch`, imports, and host globals.
+
+Exit criteria:
+
+- The documented CSV load, parse, process, and JSON-result example runs through
+  QuickJS/Wasm with immutable inputs and no host effect capability.
+
+### B3. Reusable JavaScript helpers and code caching
+
+- [ ] Continue to support underscore-quoted source composition for small helper
+      functions. The composed module is analyzed and compiled after all source
+      dependencies settle.
+- [ ] Do not permit functions as live results and do not cache live closures
+      across runs.
+- [ ] Cache composed source, validation/analysis, and result JSON using the
+      core cache-key contract.
+- [ ] Reuse the Wasm module and consider an in-memory compiled-module cache only
+      after measuring source compilation. Key it by exact engine build, provider
+      version, source hash, and execution profile.
+- [ ] Never load QuickJS bytecode supplied by a document, dependency, cache from
+      another engine version, or other untrusted source. Persistent bytecode
+      caching is deferred unless its trust and invalidation model is reviewed.
+- [ ] Provide trusted virtual modules for reusable libraries only through a
+      registry prepared by the host. Arbitrary package or path imports remain
+      unavailable.
+- [ ] Benchmark repeated runs with unchanged code and changing inputs to decide
+      whether compiled-code caching produces a material improvement over result
+      caching and ordinary recompilation.
+
+Exit criteria:
+
+- Repeated unchanged runs hit the result cache; changed-input runs create fresh
+  function objects; no test can observe state from a preceding realm.
+
+### B4. Run approved transform modules in QuickJS
+
+- [ ] Define a transform-module manifest: registered transform name, package
+      and exact version, entry/export, input/output kinds, provider, purity,
+      deterministic options, required virtual modules, resource needs, limits,
+      and content hash.
+- [ ] Treat configuration as the authority. A document may request a registered
+      transform name but may not install a package, choose an arbitrary module
+      path, or expand capabilities.
+- [ ] Add a Node-only preparation step that bundles an approved JavaScript
+      package and its JavaScript dependencies into a QuickJS-compatible module.
+      Reject native addons, unresolved dynamic imports, unsupported Node
+      built-ins, worker/process creation, and install-time code.
+- [ ] Decide whether the bundler belongs in the
+      `@pieceful/ravel-js-live/node` subpath or in host-node. Keep its output a
+      provider-neutral registered-module artifact where practical.
+- [ ] Route external transform execution through the asynchronous provider
+      contract while preserving existing synchronous built-in transforms.
+- [ ] Require transform modules to return a JSON value or text. They receive no
+      direct Ravel graph, host, filesystem, network, output, or cache object.
+- [ ] Give every transform invocation a fresh realm by default. If a pooled
+      realm is later offered for trusted transforms, make it an explicit host
+      policy and exclude it from reproducible mode.
+- [ ] Record module bundle hash, package versions, resources, limits, duration,
+      and outcome in trace and cache keys.
+- [ ] Return coarse transform provenance unless the registered transform
+      implements a separately specified source-map result protocol.
+
+Exit criteria:
+
+- A fixture transform packaged like an npm module runs in QuickJS without Node
+  authority and returns the same value in repeated clean runs.
+
+### B5. Add Node-style virtual filesystem compatibility
+
+- [ ] Supply Node-style shims only to registered transform modules whose
+      manifests request them. Ordinary `.run` JavaScript receives `ch`, `load`,
+      and standard language intrinsics, not `fs` or `path`.
+- [ ] Implement engine-specific shims over the portable virtual filesystem for
+      the smallest useful subset of `node:path`, `node:fs`, and process-like
+      path configuration.
+- [ ] Start read-only with path normalization, `readFile`/`readFileSync`,
+      `exists`/`existsSync`, limited `stat`, directory listing, `cwd`, and
+      deterministic error codes. Add scratch writes only for a demonstrated
+      transform requirement.
+- [ ] Map both `fs` and `node:fs`, and both `path` and `node:path`, during the
+      trusted bundling step. Do not emulate unrelated Node globals merely for
+      compatibility.
+- [ ] Ensure `realpath`, symlinks, permissions, environment variables, home
+      directories, temporary host directories, subprocesses, and network
+      loading cannot reveal or reach the host.
+- [ ] If scratch writes are enabled, constrain them to a separate virtual root,
+      enforce quotas, discard them after the invocation, and expose their
+      contents only through an explicit returned value.
+- [ ] Add a Pug transform fixture for basic rendering.
+- [ ] Add a second Pug fixture using `include` or `extends` from the virtual
+      filesystem, with all templates supplied as declared Ravel resources.
+- [ ] Document unsupported Node-module categories: native addons, shell tools,
+      arbitrary dynamic `require`, runtime package discovery, worker threads,
+      and modules whose correctness depends on host OS metadata.
+
+Exit criteria:
+
+- Pug renders a template and a virtual include without observing or modifying
+  the host filesystem.
+- Attempted path traversal, undeclared reads, host writes, network access, and
+  subprocess execution fail with stable diagnostics.
+
+## Workstream C: caching, performance, and release integration
+
+### C1. Cache safely
+
+- [ ] Define result cache keys from provider and engine versions, composed
+      source, declared inputs, resource and module hashes, limits, transform
+      configuration, and relevant Ravel contract versions.
+- [ ] Serialize a successful producer once and retain its bytes/hash. Parse one
+      immutable copy per consumer rather than stringify/parse twice per edge.
+- [ ] Never cache failures as successful results. Decide short-lived diagnostic
+      caching separately.
+- [ ] Never cache or reuse live function objects, closures, realms, host
+      handles, mutable module state, or scratch files.
+- [ ] Invalidate downstream results and expose stale state when source, inputs,
+      resources, provider version, module bundle, or limits change.
+- [ ] Make persistent caches inspectable and safely disposable. Cache absence
+      must affect performance only, never correctness.
+
+### C2. Establish performance budgets
+
+- [ ] Add fixtures around approximately 100 KB, 1 MB, and 10 MB JSON values,
+      covering a linear chain and one-to-many fan-out.
+- [ ] Measure Wasm initialization, realm creation, source analysis, QuickJS
+      compilation, function recreation, input parsing/freezing, execution,
+      export validation/stringification, worker transfer, and cache lookup
+      separately.
+- [ ] Benchmark helper-heavy modules to determine whether function/module
+      compilation needs a 0.2 cache. Do not optimize live closures.
+- [ ] Record peak memory as well as duration; JSON and worker boundaries can
+      temporarily hold multiple copies.
+- [ ] Set a regression budget only after collecting Node and Chromium
+      baselines. Document that very large table workloads may require a future
+      immutable binary/Arrow value type rather than JSON.
+
+### C3. Complete product integration
+
+- [ ] Add a complete Markdown example with `.run` JavaScript fences, source
+      composition, `ch` dependencies, `load` from a declared resource, string
+      and structured exports, and directive-controlled output.
+- [ ] Add the sandboxed Pug transform example with a virtual include.
+- [ ] Add Node and Chromium end-to-end coverage and packed-tarball smoke tests.
+      Run Bun conformance for the provider if its selected QuickJS/Wasm package
+      supports the same contract reliably; core conformance remains mandatory.
+- [ ] Document the threat model and accurately describe the implementation as
+      capability-limited and defense-in-depth rather than absolutely safe.
+- [ ] Document provider authoring so a future RiX or Wasm-backed language can
+      implement analysis, execution, serialization, limits, diagnostics, and
+      conformance without depending on JavaScript.
+- [ ] Update README, public API, Markdown fences, runtime support, filesystem
+      safety, transform guidance, examples, and changelog for 0.2.
+- [ ] Add all new public packages and subpath exports to release packing,
+      licensing, provenance, and publication checks.
+
+## 0.2 release checklist
+
+- [ ] The 0.1 static composition and build suites remain passing and do not
+      execute `.run` blocks implicitly.
+- [ ] Core plans and schedules execution through a language-neutral provider
+      contract proven by a non-JavaScript conformance provider.
+- [ ] Markdown recognizes `js`/`javascript` fences with `.run` without changing
+      their highlighting language.
+- [ ] `@pieceful/ravel-js-live` runs QuickJS in WebAssembly behind a terminable
+      worker boundary in Node and Chromium.
+- [ ] JavaScript blocks require one final `export default` and correctly retain
+      empty and falsy JSON values.
+- [ ] Inputs and resources are copied, immutable, content-hashed, and unable to
+      expose host paths or objects.
+- [ ] No live block or transform can directly write host files; directives and
+      hosts remain the only output authority.
+- [ ] Time, memory, stack, output, resource, and scratch quotas have regression
+      coverage.
+- [ ] Result caching is deterministic and no live function, closure, or realm
+      state survives a run.
+- [ ] An approved npm-style transform module runs in QuickJS, and Pug resolves
+      an include from the virtual filesystem without host filesystem access.
+- [ ] Cancellation, stale state, diagnostics, trace, and cache inspection work
+      through public APIs.
+- [ ] Documentation explains current guarantees, limitations, provider
+      authoring, and the path to a future RiX provider.
+- [ ] Clean installation, Node tests, browser tests, schema checks, and packed
+      installation tests pass for the exact release artifacts.
+
+## Explicitly deferred beyond 0.2
+
+- A public RiX provider or additional production language providers.
+- Arbitrary npm installation or execution requested by a document.
+- Native Node addons and subprocess-backed transforms.
+- General Node compatibility inside QuickJS.
+- Network access from live code or transform modules.
+- Direct host filesystem access from an executor.
+- Persistent user-supplied QuickJS bytecode caches.
+- Cross-run live closures, stateful notebook globals, or shared mutable realms.
+- Character-precise provenance through arbitrary execution.
+- Streaming, Arrow, shared-memory, or other non-JSON live values.
+- Distributed or remote execution.

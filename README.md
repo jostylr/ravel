@@ -69,6 +69,9 @@ writing, and execution of the generated JavaScript.
 The remaining 0.1 work is release verification and publication, rather than a
 new language feature. See [the Ravel 0.1 plan](TODO.md) and the
 [release checklist](documentation/release-checklist.md) for the release gate.
+The language-neutral live-execution contract, QuickJS/Wasm provider, and
+sandboxed transform-module work are planned separately in the
+[Ravel 0.2 implementation plan](TODO-0.2.md).
 
 Try the complete portable pipeline in the
 [live browser playground](https://ravel.jostylr.com/playground/): edit a
