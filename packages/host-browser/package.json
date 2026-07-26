@@ -1,8 +1,10 @@
 {
   "name": "@pieceful/ravel-host-browser",
   "version": "0.1.0",
+  "private": true,
   "type": "module",
-  "description": "In-memory browser host and live playground for Ravel.",
+  "sideEffects": false,
+  "description": "Portable in-memory Markdown host for the Ravel graph engine.",
   "license": "MIT",
   "author": "James Taylor",
   "repository": {
@@ -21,11 +23,9 @@
     "ravel",
     "literate-programming",
     "browser",
-    "codemirror"
+    "markdown",
+    "provenance"
   ],
-  "publishConfig": {
-    "access": "public"
-  },
   "exports": {
     ".": "./src/index.js"
   },

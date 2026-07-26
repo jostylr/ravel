@@ -1,18 +1,13 @@
 import type {
+  Deliverable,
   DeliverableProvenanceMap,
   Diagnostic,
   RavelProgram,
   RavelMap
 } from "@pieceful/ravel-core";
 
-export interface BrowserDeliverable {
-  name: string;
-  from: string;
-  value: string;
-  segments: unknown[];
-  dependencies: string[];
+export interface BrowserDeliverable extends Deliverable {
   provenance: unknown[];
-  source: unknown;
   provenanceMap: DeliverableProvenanceMap;
 }
 

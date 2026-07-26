@@ -59,18 +59,6 @@ This Node-only package performs scoped filesystem input and artifact work.
 Expected input/configuration failures throw `RavelInputError` with portable
 diagnostics. Filesystem failures remain ordinary host errors.
 
-## `@pieceful/ravel-host-browser`
-
-This portable, in-memory host is the boundary used by the live playground.
-
-- `renderMarkdownDocument(source, { uri?, document?, mode?, transforms? })`
-  runs the Markdown adapter, Ravel Map validation, graph transformation, and
-  deliverable provenance construction as one non-throwing operation.
-- The result contains `{ map, program, deliverables, diagnostics, ok }`. Each
-  deliverable includes its version-1 `provenanceMap`.
-- The host has no filesystem, process, network, loading, or artifact-writing
-  capability. Callers own the source string and any copy/paste interface.
-
 ## `@pieceful/ravel`
 
 This package is the installed `ravel` executable. Its programmatic import is

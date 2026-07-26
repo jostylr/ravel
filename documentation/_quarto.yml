@@ -3,10 +3,11 @@ project:
   output-dir: _site
   resources:
     - .nojekyll
+    - CNAME
 
 website:
   title: "Ravel"
-  site-url: "https://jostylr.github.io/ravel/"
+  site-url: "https://ravel.jostylr.com/"
   description: "A source-mapped literate programming engine for weaving and unraveling programs."
   repo-url: "https://github.com/jostylr/ravel"
   repo-actions: [issue]

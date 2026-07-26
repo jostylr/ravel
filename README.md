@@ -56,7 +56,7 @@ new language feature. See [the Ravel 0.1 plan](TODO.md) and the
 [release checklist](documentation/release-checklist.md) for the release gate.
 
 Try the complete portable pipeline in the
-[live browser playground](https://jostylr.github.io/ravel/playground/): edit a
+[live browser playground](https://ravel.jostylr.com/playground/): edit a
 single-file FizzBuzz document, render its generated artifact, and navigate its
 source provenance without uploading or saving files.
 
@@ -231,7 +231,7 @@ packages/
   core/       portable chunk syntax, graph evaluation, diagnostics, provenance
   markdown/   portable Markdown fenced-block adapter
   host-node/  scoped filesystem input, TOML builds, and artifact writing
-  host-browser/in-memory document rendering and live CodeMirror playground
+  host-browser/private in-memory adapter and live CodeMirror playground
   cli/        development command-line entry point
   map/        Ravel Map public metadata and structural validation
   explorer/   proposed portable graph, provenance, and change explorer
@@ -285,7 +285,7 @@ that policy may change after the 0.1 release.
 
 - [Ravel 0.1 implementation plan](TODO.md)
 - [Ravel Explorer implementation plan](EXPLORER-TODO.md)
-- [Live browser playground](https://jostylr.github.io/ravel/playground/)
+- [Live browser playground](https://ravel.jostylr.com/playground/)
 - [Ravel Explorer design](documentation/explorer-design.md)
 - [Five-minute installed CLI guide](documentation/getting-started.md)
 - [0.1 contracts and TOML configuration](documentation/contracts-and-configuration.md)

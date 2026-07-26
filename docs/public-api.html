@@ -74,14 +74,14 @@ ul.task-list li input[type="checkbox"] {
 
 <meta property="og:title" content="Ravel">
 <meta property="og:description" content="A source-mapped literate programming engine for weaving and unraveling programs.">
-<meta property="og:image" content="https://jostylr.github.io/ravel/og.png">
+<meta property="og:image" content="https://ravel.jostylr.com/og.png">
 <meta property="og:site_name" content="Ravel">
 <meta property="og:locale" content="en_US">
 <meta property="og:image:height" content="630">
 <meta property="og:image:width" content="1200">
 <meta name="twitter:title" content="Ravel">
 <meta name="twitter:description" content="A source-mapped literate programming engine for weaving and unraveling programs.">
-<meta name="twitter:image" content="https://jostylr.github.io/ravel/og.png">
+<meta name="twitter:image" content="https://ravel.jostylr.com/og.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image-height" content="630">
 <meta name="twitter:image-width" content="1200">
@@ -353,7 +353,6 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#piecefulravel-markdown" id="toc-piecefulravel-markdown" class="nav-link" data-scroll-target="#piecefulravel-markdown"><code>@pieceful/ravel-markdown</code></a></li>
   <li><a href="#piecefulravel-core" id="toc-piecefulravel-core" class="nav-link" data-scroll-target="#piecefulravel-core"><code>@pieceful/ravel-core</code></a></li>
   <li><a href="#piecefulravel-host-node" id="toc-piecefulravel-host-node" class="nav-link" data-scroll-target="#piecefulravel-host-node"><code>@pieceful/ravel-host-node</code></a></li>
-  <li><a href="#piecefulravel-host-browser" id="toc-piecefulravel-host-browser" class="nav-link" data-scroll-target="#piecefulravel-host-browser"><code>@pieceful/ravel-host-browser</code></a></li>
   <li><a href="#piecefulravel" id="toc-piecefulravel" class="nav-link" data-scroll-target="#piecefulravel"><code>@pieceful/ravel</code></a></li>
   </ul></li>
   </ul>
@@ -407,15 +406,6 @@ ul.task-list li input[type="checkbox"] {
 <li><code>cleanManagedArtifacts</code>, <code>refreshStaleArtifacts</code>, <code>planOutputBackup</code>, and <code>createOutputBackup</code> implement the safe managed-output lifecycle.</li>
 </ul>
 <p>Expected input/configuration failures throw <code>RavelInputError</code> with portable diagnostics. Filesystem failures remain ordinary host errors.</p>
-</section>
-<section id="piecefulravel-host-browser" class="level2">
-<h2 class="anchored" data-anchor-id="piecefulravel-host-browser"><code>@pieceful/ravel-host-browser</code></h2>
-<p>This portable, in-memory host is the boundary used by the live playground.</p>
-<ul>
-<li><code>renderMarkdownDocument(source, { uri?, document?, mode?, transforms? })</code> runs the Markdown adapter, Ravel Map validation, graph transformation, and deliverable provenance construction as one non-throwing operation.</li>
-<li>The result contains <code>{ map, program, deliverables, diagnostics, ok }</code>. Each deliverable includes its version-1 <code>provenanceMap</code>.</li>
-<li>The host has no filesystem, process, network, loading, or artifact-writing capability. Callers own the source string and any copy/paste interface.</li>
-</ul>
 </section>
 <section id="piecefulravel" class="level2">
 <h2 class="anchored" data-anchor-id="piecefulravel"><code>@pieceful/ravel</code></h2>
@@ -499,7 +489,7 @@ ul.task-list li input[type="checkbox"] {
     }
       var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
       var mailtoRegex = new RegExp(/^mailto:/);
-        var filterRegex = new RegExp("https:\/\/jostylr\.github\.io\/ravel\/");
+        var filterRegex = new RegExp("https:\/\/ravel\.jostylr\.com\/");
       var isInternal = (href) => {
           return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
       }

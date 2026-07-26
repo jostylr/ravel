@@ -1,1 +1,1 @@
-Sitemap: https://jostylr.github.io/ravel/sitemap.xml
+Sitemap: https://ravel.jostylr.com/sitemap.xml

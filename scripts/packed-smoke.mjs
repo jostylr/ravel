@@ -1,6 +1,13 @@
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import {
+  mkdir,
+  mkdtemp,
+  readFile,
+  readdir,
+  rm,
+  writeFile
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -46,11 +53,27 @@ const minimalMap = {
 const expectedPackages = new Set([
   "@pieceful/ravel",
   "@pieceful/ravel-core",
-  "@pieceful/ravel-host-browser",
   "@pieceful/ravel-host-node",
   "@pieceful/ravel-map",
   "@pieceful/ravel-markdown"
 ]);
+
+const publicWorkspacePaths = [];
+for (const entry of await readdir(join(root, "packages"), {
+  withFileTypes: true
+})) {
+  if (!entry.isDirectory()) {
+    continue;
+  }
+  const workspacePath = join("packages", entry.name);
+  const manifest = JSON.parse(
+    await readFile(join(root, workspacePath, "package.json"), "utf8")
+  );
+  if (!manifest.private) {
+    publicWorkspacePaths.push(workspacePath);
+  }
+}
+publicWorkspacePaths.sort();
 
 const archiveContents = async (path) => (await run("tar", ["-tzf", path])).stdout.split(/\r?\n/).filter(Boolean);
 
@@ -63,7 +86,15 @@ try {
   await mkdir(npmLogsDirectory);
   await mkdir(npmCacheDirectory);
   const packed = JSON.parse((await npm([
-    "pack", "--workspaces", "--pack-destination", archives, "--ignore-scripts", "--json"
+    "pack",
+    ...publicWorkspacePaths.flatMap((workspacePath) => [
+      "--workspace",
+      workspacePath
+    ]),
+    "--pack-destination",
+    archives,
+    "--ignore-scripts",
+    "--json"
   ], { cwd: root })).stdout);
   assert.deepEqual(new Set(packed.map((entry) => entry.name)), expectedPackages);
 
@@ -87,7 +118,6 @@ try {
 
   await run(process.execPath, ["--input-type=module", "--eval", [
     'await import("@pieceful/ravel-core");',
-    'await import("@pieceful/ravel-host-browser");',
     'await import("@pieceful/ravel-markdown");',
     'await import("@pieceful/ravel-host-node");',
     'const map = await import("@pieceful/ravel-map");',
