@@ -2,7 +2,7 @@ import { fromMarkdown } from "mdast-util-from-markdown";
 import { parse as parseYaml } from "yaml";
 
 const componentPattern = /^[a-z][a-z0-9-]*$/;
-const controlClasses = new Set(["ravel", "no-ravel", "greedy", "end"]);
+const controlClasses = new Set(["ravel", "no-ravel", "greedy", "end", "run"]);
 
 const diagnostic = (code, message, source) => ({
   code,
@@ -465,7 +465,11 @@ const newChunk = (identity, body, attributes, language, diagnostics) => {
     tags,
     data: {}
   };
-  if (attributes.values.pipe) metadata.data.ravel = { definitionPipe: attributes.values.pipe };
+  const ravel = {};
+  if (attributes.values.pipe) ravel.definitionPipe = attributes.values.pipe;
+  if (attributes.classes.includes("run")) ravel.run = true;
+  if (attributes.values.provider) ravel.provider = attributes.values.provider;
+  if (Object.keys(ravel).length) metadata.data.ravel = ravel;
   return {
     id: formatId(identity),
     identity,
@@ -525,7 +529,8 @@ export const markdownToMap = (text, options = {}) => {
     diagnostics.push(...attributes.diagnostics);
     const classes = new Set(attributes.classes);
     const excluded = classes.has("no-ravel");
-    const explicit = attributes.id !== null || classes.has("ravel") || Object.hasOwn(attributes.values, "chunk");
+    const explicit = attributes.id !== null || classes.has("ravel") || classes.has("run") ||
+      Object.hasOwn(attributes.values, "chunk");
     const continuation = !excluded && attributes.id === null && !classes.has("ravel") &&
       !classes.has("greedy") && !classes.has("end") && Object.keys(attributes.values).length === 0 &&
       !node.meta?.trim();
@@ -543,6 +548,10 @@ export const markdownToMap = (text, options = {}) => {
     }
     if (activeGreedy) activeGreedy = null;
 
+    if (excluded && classes.has("run")) {
+      diagnostics.push(diagnostic("RM103", ".run cannot be combined with .no-ravel.", block.fenceSource));
+      continue;
+    }
     if (excluded) continue;
     if (!explicit) {
       if (mode === "primary") {
@@ -555,7 +564,15 @@ export const markdownToMap = (text, options = {}) => {
       continue;
     }
     if (attributes.id === null && !Object.hasOwn(attributes.values, "chunk")) {
-      diagnostics.push(diagnostic("RM103", "A .ravel fence requires #chunk or chunk=name.", block.fenceSource));
+      diagnostics.push(diagnostic(
+        "RM103",
+        (classes.has("run") ? "A .run fence" : "A .ravel fence") + " requires #chunk or chunk=name.",
+        block.fenceSource
+      ));
+      continue;
+    }
+    if (classes.has("run") && !node.lang) {
+      diagnostics.push(diagnostic("RM103", "A .run fence requires a language.", block.fenceSource));
       continue;
     }
     if (classes.has("greedy") && !classes.has("ravel")) {

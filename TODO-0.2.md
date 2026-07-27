@@ -36,7 +36,7 @@ design and backlog are in the
 
 ## Decisions already made
 
-- [ ] Record the following decisions in the public execution design:
+- [x] Record the following decisions in the public execution design:
   - Executable Markdown fences retain their real language, such as `js` or
     `javascript`, and opt into execution with the `.run` class.
   - `.run` is adapter metadata. Parsing a document never executes the block.
@@ -57,7 +57,7 @@ design and backlog are in the
     consumes a completed live result.
   - Dynamic dependency and resource names are rejected in 0.2. The graph must
     be known before execution.
-- [ ] Decide whether `.run` implies `.ravel` for an explicitly named fence.
+- [x] Decide whether `.run` implies `.ravel` for an explicitly named fence.
       The proposed canonical form is:
 
       ````markdown
@@ -70,7 +70,7 @@ design and backlog are in the
 - [ ] Decide and document how an `out` directive selects and encodes a live
       result. The proposed policy is `text` for a string result and explicit
       `json` encoding for any JSON value; the executor never writes either.
-- [ ] Keep the synchronous 0.1 static-composition API intact. Add an asynchronous
+- [x] Keep the synchronous 0.1 static-composition API intact. Add an asynchronous
       execution stage rather than making every existing `transformGraph` caller
       asynchronous.
 
@@ -98,7 +98,7 @@ preparation is included in this package, expose it through an explicit
 
 ### A1. Specify the execution contracts
 
-- [ ] Add a `RavelValue` contract covering `null`, booleans, finite numbers,
+- [x] Add a `RavelValue` contract covering `null`, booleans, finite numbers,
       strings, arrays, and string-keyed records recursively.
 - [ ] Specify an `ExecutionProvider` interface with stable provider ID,
       provider version, accepted language IDs/aliases, analysis, execution,
@@ -112,13 +112,13 @@ preparation is included in this package, expose it through an explicit
 - [ ] Define an `ExecutionResult` that distinguishes success from failure and
       carries the exported `RavelValue`, serialized bytes, diagnostics, timing,
       provider/engine versions, and coarse dependency provenance.
-- [ ] Represent “no export” independently from valid falsy values. Never use
+- [x] Represent “no export” independently from valid falsy values. Never use
       truthiness to determine whether an execution produced a value.
 - [ ] Define stable diagnostic families for provider absence, unsupported
       language, malformed execution metadata, dynamic dependency, missing
       input/resource, cancellation, timeout, memory/stack limit, provider
       failure, missing export, and non-serializable export.
-- [ ] Add a provider conformance suite using a fake non-JavaScript provider.
+- [x] Add a provider conformance suite using a fake non-JavaScript provider.
       It must pass without importing `@pieceful/ravel-js-live`.
 
 Exit criteria:
@@ -129,22 +129,22 @@ Exit criteria:
 
 ### A2. Extend maps and Markdown without executing
 
-- [ ] Define execution metadata in the Ravel Map contract, preferably as an
+- [x] Define execution metadata in the Ravel Map contract, preferably as an
       optional, backward-compatible addition to chunk metadata unless a map
       version change is justified.
-- [ ] Extend the Markdown fence parser to recognize `.run` while preserving the
+- [x] Extend the Markdown fence parser to recognize `.run` while preserving the
       first language token for ordinary syntax highlighting.
-- [ ] Require a stable chunk identity for an executable fence. Report a
+- [x] Require a stable chunk identity for an executable fence. Report a
       source-linked adapter diagnostic when `.run` appears without one.
 - [ ] Preserve the complete fence body and exact ranges for the run marker,
       language, identity, dependency declarations, and resource declarations.
-- [ ] Confirm that unmarked `js` fences remain ordinary static chunks or
+- [x] Confirm that unmarked `js` fences remain ordinary static chunks or
       examples according to the existing Markdown mode; language alone never
       opts into execution.
 - [ ] Add Markdown fixtures for `js` and `javascript`, valid and invalid `.run`
       placement, greedy fragments, source composition, and ordinary non-running
       examples.
-- [ ] Keep `.run` portable across Markdown, future section-profile Markdown,
+- [x] Keep `.run` portable across Markdown, future section-profile Markdown,
       editor-produced maps, and other adapters. It must not encode QuickJS in
       adapter output.
 
@@ -157,7 +157,7 @@ Exit criteria:
 
 ### A3. Build the execution graph and scheduler
 
-- [ ] Add an explicit post-composition execution-planning phase. Source
+- [x] Add an explicit post-composition execution-planning phase. Source
       substitutions settle before provider analysis; value dependencies settle
       before provider execution.
 - [ ] Detect cycles spanning static source composition and live-value
@@ -169,10 +169,10 @@ Exit criteria:
 - [ ] Make automatic/reactive execution a host policy. Core exposes invalidated
       nodes and a deterministic plan; it does not silently rerun effectful host
       directives.
-- [ ] Copy and deep-freeze every input in the provider realm. Add conformance
+- [x] Copy and deep-freeze every input in the provider realm. Add conformance
       tests proving that a consumer cannot mutate its producer or a sibling
       consumer.
-- [ ] Preserve a canonical serialized representation of each successful result
+- [x] Preserve a canonical serialized representation of each successful result
       so fan-out stringifies once and parses once per consumer.
 - [ ] Attach coarse provenance from a live result to its executable fence,
       source-composed helpers, value dependencies, resources, and provider
@@ -244,12 +244,12 @@ Exit criteria:
 
 ### B1. Establish the QuickJS/Wasm runtime
 
-- [ ] Create `packages/js-live/` with package metadata, exports, declarations,
+- [x] Create `packages/js-live/` with package metadata, exports, declarations,
       license, README, packed-installation smoke coverage, and no dependency
       from core back to it.
 - [ ] Select and pin an exact QuickJS/Wasm distribution and record its engine,
       wrapper, Wasm variant, and build versions in every run and cache key.
-- [ ] Reuse the compiled WebAssembly module, but create a fresh execution realm
+- [x] Reuse the compiled WebAssembly module, but create a fresh execution realm
       for each run by default.
 - [ ] Run QuickJS inside a dedicated browser worker and a Node worker or
       replaceable process boundary. The host must be able to terminate the
@@ -257,9 +257,9 @@ Exit criteria:
 - [ ] Configure memory, stack, execution-time, output-size, and pending-job
       limits. Connect core cancellation to both the QuickJS interrupt handler
       and outer worker termination.
-- [ ] Do not install QuickJS `std`/`os`, a general module loader, timers,
+- [x] Do not install QuickJS `std`/`os`, a general module loader, timers,
       network APIs, Node globals, `console`, or host object references.
-- [ ] Marshal inputs and outputs as serialized data rather than exposing live
+- [x] Marshal inputs and outputs as serialized data rather than exposing live
       QuickJS handles to core or hosts.
 
 Exit criteria:
@@ -269,27 +269,27 @@ Exit criteria:
 
 ### B2. Implement the JavaScript live profile
 
-- [ ] Register the language aliases `js` and `javascript`; keep provider
+- [x] Register the language aliases `js` and `javascript`; keep provider
       selection explicit and diagnose ambiguous registrations.
-- [ ] Parse executable source as an ECMAScript module and reject host imports,
+- [x] Parse executable source as an ECMAScript module and reject host imports,
       dynamic imports, top-level side-effect channels, and unsupported syntax
       before execution.
-- [ ] Require exactly one final top-level `export default`. Accept every valid
+- [x] Require exactly one final top-level `export default`. Accept every valid
       JSON value, including `""`, `[]`, `{}`, `false`, `0`, and `null`.
 - [ ] Validate the export deeply before it leaves QuickJS. Reject `undefined`,
       functions, symbols, bigints, non-finite numbers, cycles, accessors,
       and unsupported prototypes instead of silently coercing them. Decide
       whether `Proxy` is disabled in the live profile or handled by a
       time-limited serialization rule.
-- [ ] Implement static analysis for literal `ch("chunk-reference")` calls and
+- [x] Implement static analysis for literal `ch("chunk-reference")` calls and
       reject computed dependency names that cannot be planned. A literal call
       in a conditional branch is still a declared dependency.
-- [ ] Reserve the injected `ch` and `load` bindings against shadowing or
+- [x] Reserve the injected `ch` and `load` bindings against shadowing or
       reassignment, and reject dynamic code generation in the live profile when
       it could hide dependencies or resource requests from analysis.
-- [ ] Inject `ch` as a read-only lookup over deep-frozen copies of resolved
+- [x] Inject `ch` as a read-only lookup over deep-frozen copies of resolved
       values. It must not expose promises, provider handles, or host objects.
-- [ ] Implement literal `load("virtual/path")` as a lookup over the prepared
+- [x] Implement literal `load("virtual/path")` as a lookup over the prepared
       immutable resource snapshot, not as filesystem access.
 - [ ] Preserve source locations through any wrapper or module transformation so
       QuickJS syntax/runtime errors point back to the Markdown fence.
@@ -308,7 +308,7 @@ Exit criteria:
 - [ ] Continue to support underscore-quoted source composition for small helper
       functions. The composed module is analyzed and compiled after all source
       dependencies settle.
-- [ ] Do not permit functions as live results and do not cache live closures
+- [x] Do not permit functions as live results and do not cache live closures
       across runs.
 - [ ] Cache composed source, validation/analysis, and result JSON using the
       core cache-key contract.

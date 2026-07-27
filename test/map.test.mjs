@@ -55,3 +55,31 @@ test("map validation rejects reversed ranges and unsupported directive shapes", 
   assert.ok(diagnostics.some((diagnostic) => diagnostic.message.includes("valid source range")));
   assert.ok(diagnostics.some((diagnostic) => diagnostic.message.includes("is required for an out directive")));
 });
+
+test("map validation accepts boolean run metadata and rejects other run values", () => {
+  const point = { line: 0, column: 0, offset: 0 };
+  const base = {
+    version: 1,
+    document: { id: "live", uri: "live.json", format: "ravel-map-v1" },
+    chunks: [{
+      id: "live::main.js",
+      identity: { document: "live", chunk: "main", minor: null, type: "js" },
+      body: "export default null;",
+      metadata: { language: "js", data: { ravel: { run: true } } },
+      source: { uri: "live.json", range: { start: point, end: point } }
+    }]
+  };
+  assert.deepEqual(validateRavelMap(base), []);
+
+  const invalid = structuredClone(base);
+  invalid.chunks[0].metadata.data.ravel.run = "yes";
+  assert.ok(validateRavelMap(invalid).some((entry) =>
+    entry.message.includes("metadata.data.ravel.run must be a boolean")
+  ));
+
+  invalid.chunks[0].metadata.data.ravel.run = true;
+  invalid.chunks[0].metadata.data.ravel.provider = "";
+  assert.ok(validateRavelMap(invalid).some((entry) =>
+    entry.message.includes("metadata.data.ravel.provider must be a non-empty string")
+  ));
+});

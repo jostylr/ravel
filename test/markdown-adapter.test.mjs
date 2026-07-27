@@ -38,6 +38,29 @@ test("primary Markdown mode requires explicit Ravel classification", () => {
   assert.equal(diagnostics[0].code, "RM103");
 });
 
+test(".run marks a named fence as executable without changing its language or tags", () => {
+  const { map, diagnostics } = markdownToMap(
+    "```js {.run #analysis .browser provider=quickjs-wasm}\nexport default \"\";\n```\n",
+    { uri: "live.md", document: "live", mode: "primary" }
+  );
+  assert.deepEqual(diagnostics, []);
+  assert.equal(map.chunks[0].metadata.language, "js");
+  assert.deepEqual(map.chunks[0].metadata.tags, ["browser"]);
+  assert.deepEqual(map.chunks[0].metadata.data.ravel, {
+    run: true,
+    provider: "quickjs-wasm"
+  });
+});
+
+test(".run requires a stable identity", () => {
+  const unnamed = markdownToMap("```js {.run}\nexport default 1;\n```\n", {
+    uri: "live.md",
+    document: "live",
+    mode: "primary"
+  });
+  assert.match(unnamed.diagnostics[0].message, /\.run fence.*#chunk/);
+});
+
 test("ravel fences translate directives into portable staged composition IR", () => {
   const text = "```text {.ravel #source}\n  value  \n```\n\n```ravel\ncreate(\"program:stage.js\", compose(\n  _\"source.text\",\n  pass(trim(), emit(\"observed.js\")),\n  pipe(trim(), emit(\"min.js\"), indent(2))\n))\nalias(\"public.js\", _\"program:stage.js\")\nout(\"dist/stage.js\", _\"program:stage.js\")\n```\n";
   const { map, diagnostics } = markdownToMap(text, { uri: "guide.md", document: "guide", mode: "primary" });

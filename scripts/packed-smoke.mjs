@@ -54,6 +54,7 @@ const expectedPackages = new Set([
   "@pieceful/ravel",
   "@pieceful/ravel-core",
   "@pieceful/ravel-host-node",
+  "@pieceful/ravel-js-live",
   "@pieceful/ravel-map",
   "@pieceful/ravel-markdown"
 ]);
@@ -118,12 +119,21 @@ try {
   await writeFile(join(sandbox, "smoke.ravel-map.json"), packageFile(minimalMap));
 
   await run(process.execPath, ["--input-type=module", "--eval", [
-    'await import("@pieceful/ravel-core");',
+    'const core = await import("@pieceful/ravel-core");',
+    'const live = await import("@pieceful/ravel-js-live");',
     'await import("@pieceful/ravel-markdown");',
     'await import("@pieceful/ravel-host-node");',
     'const map = await import("@pieceful/ravel-map");',
     'await import("@pieceful/ravel");',
-    'if (map.RAVEL_MAP_SCHEMA.$id !== map.RAVEL_MAP_SCHEMA_ID) process.exit(1);'
+    'if (map.RAVEL_MAP_SCHEMA.$id !== map.RAVEL_MAP_SCHEMA_ID) process.exit(1);',
+    'const point = { line: 0, column: 0, offset: 0 };',
+    'const outcome = await live.javascriptLiveProvider.execute({',
+    'id: "smoke::live.js", runId: "pack", language: "js",',
+    'source: "export default { packed: true };",',
+    'sourceLocation: { uri: "smoke.md", range: { start: point, end: point } },',
+    'inputs: {}, resources: {}, analysis: {}, limits: {}',
+    '});',
+    'if (!outcome.ok || core.serializeRavelValue(JSON.parse(outcome.serialized)) !== "{\\"packed\\":true}") process.exit(1);'
   ].join(" ")], { cwd: sandbox });
 
   const binary = join(sandbox, "node_modules", ".bin", process.platform === "win32" ? "ravel.cmd" : "ravel");

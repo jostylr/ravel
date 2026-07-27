@@ -29,6 +29,13 @@ Use this package at adapter, editor, and host boundaries.
 - `combineMaps(maps)` constructs the pre-transform graph.
 - `transformGraph(graph, { transforms? })` evaluates that graph and returns the
   program, deliverables, diagnostics, dependencies, and trace.
+- `planLiveExecutions(program, { providers })` performs the language-neutral
+  analysis and dependency-planning stage for chunks marked executable.
+- `executeLiveProgram(program, { providers, resources?, limits?, signal? })`
+  executes that plan asynchronously and returns portable values, canonical
+  serialization, statuses, and diagnostics.
+- `ravelValueIssue`, `serializeRavelValue`, and `cloneRavelValue` implement the
+  recursive data boundary shared by execution providers.
 - `createDeliverableProvenanceMap(deliverable)` and
   `createBuildProvenanceMap(program)` construct version-1 sidecar and aggregate
   generated-output maps.
@@ -44,6 +51,18 @@ Use this package at adapter, editor, and host boundaries.
 The `@pieceful/ravel-core/directives` entry point exposes constructors for the
 portable directive IR. Custom transforms are functions that receive a string
 value and return a string; a failed or non-string result becomes a diagnostic.
+
+## `@pieceful/ravel-js-live` (0.2 development)
+
+- `javascriptLiveProvider` is the shared QuickJS/WebAssembly provider for `js`
+  and `javascript`.
+- `createJavaScriptLiveProvider(options?)` creates a provider with configured
+  memory, stack, and execution-time limits.
+
+The provider parses modules before execution, accepts one final
+`export default`, and exposes only literal `ch("...")` and `load("...")`
+lookups over immutable copied data. See [Live execution](live-execution.md) for
+the profile and current security boundary.
 
 ## `@pieceful/ravel-host-node`
 

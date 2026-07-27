@@ -57,6 +57,7 @@ website:
       - section: "Language"
         contents:
           - markdown-fences.md
+          - live-execution.md
           - chunk-syntax.md
           - pipes-and-directives.md
       - section: "Reference"

@@ -13,9 +13,11 @@ It is native ESM and deliberately has no filesystem, process, shell, or network
 capabilities. Pair it with an adapter such as `@pieceful/ravel-markdown` and a
 host that supplies any I/O you need.
 
-The documented public functions include `combineMaps`, `transformGraph`, and
-the generated/source provenance query helpers. Requires Node.js 22 or newer
-when used in Node.
+The documented public functions include `combineMaps`, `transformGraph`, the
+generated/source provenance query helpers, and the 0.2-development
+`planLiveExecutions` / `executeLiveProgram` provider boundary. Core selects and
+schedules providers but does not import a language runtime. Requires Node.js 22
+or newer when used in Node.
 
 See the [Ravel documentation](https://ravel.jostylr.com/) for the public API,
 Ravel Map contract, chunk syntax, and provenance format.

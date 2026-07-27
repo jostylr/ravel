@@ -3,6 +3,19 @@
 All notable user-facing changes are recorded here. Ravel follows semantic
 versioning for its published packages and versioned public contracts.
 
+## 0.2.0 — in development
+
+### Added
+
+- Added portable `.run` metadata and stable-identity validation to the Markdown
+  adapter without executing during parsing.
+- Added language-neutral live planning, provider selection, dependency
+  resolution, execution, diagnostics, and recursive JSON-value serialization
+  to core.
+- Added the initial `@pieceful/ravel-js-live` QuickJS/WebAssembly provider with
+  one final default export, literal `ch`/`load` analysis, immutable copied
+  inputs, and memory, stack, and time limits.
+
 ## 0.1.1 — unreleased
 
 ### Documentation

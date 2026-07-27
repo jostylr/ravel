@@ -177,6 +177,15 @@ const validateMetadata = (value, path, report) => {
   if (value.language !== undefined && typeof value.language !== "string") report(path + ".language", "must be a string when present.");
   if (value.tags !== undefined && (!Array.isArray(value.tags) || value.tags.some((tag) => typeof tag !== "string"))) report(path + ".tags", "must be an array of strings when present.");
   if (value.data !== undefined && !isObject(value.data)) report(path + ".data", "must be an object when present.");
+  const ravel = value.data?.ravel;
+  if (ravel !== undefined && !isObject(ravel)) {
+    report(path + ".data.ravel", "must be an object when present.");
+  } else if (ravel?.run !== undefined && typeof ravel.run !== "boolean") {
+    report(path + ".data.ravel.run", "must be a boolean when present.");
+  } else if (ravel?.provider !== undefined &&
+      (typeof ravel.provider !== "string" || !ravel.provider)) {
+    report(path + ".data.ravel.provider", "must be a non-empty string when present.");
+  }
 };
 
 export class RavelMapValidationError extends Error {

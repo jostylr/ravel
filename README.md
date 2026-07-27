@@ -74,6 +74,13 @@ transform-module work, and the source-linked Explorer with VS Code integration
 are planned in the
 [Ravel 0.2 implementation plan](TODO-0.2.md).
 
+The first 0.2 live-code vertical slice is now under development. Named
+Markdown fences can opt in with `.run`; portable core planning resolves
+`ch("chunk")` value dependencies and `load("resource")` snapshots; and the new
+`@pieceful/ravel-js-live` workspace package evaluates one final JSON-compatible
+`export default` in a fresh, limited QuickJS/Wasm runtime. See the
+[live-execution design and current safety boundary](documentation/live-execution.md).
+
 Try the complete portable pipeline in the
 [live browser playground](https://ravel.jostylr.com/playground/): edit a
 single-file FizzBuzz document, render its generated artifact, and navigate its

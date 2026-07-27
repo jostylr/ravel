@@ -1,6 +1,13 @@
 const componentPattern = /^[a-z][a-z0-9-]*$/;
 
 export { directiveKinds, compose, append, newline, pipe, pass, createDirective, aliasDirective } from "./directives.js";
+export {
+  cloneRavelValue,
+  executeLiveProgram,
+  planLiveExecutions,
+  ravelValueIssue,
+  serializeRavelValue
+} from "./live.js";
 
 const clone = (value) => JSON.parse(JSON.stringify(value));
 
@@ -1295,6 +1302,7 @@ export const transformGraph = (pretransform, options = {}) => {
       value: value.text,
       segments: value.segments,
       metadata: definition.metadata,
+      source: definition.source,
       dependencies: [...owner.dependencies].sort(),
       // References retain authored source order, which is deterministic and is
       // more useful for explaining a chunk than lexical target order.

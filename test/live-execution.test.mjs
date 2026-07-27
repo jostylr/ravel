@@ -1,0 +1,283 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+import {
+  combineMaps,
+  executeLiveProgram,
+  planLiveExecutions,
+  transformGraph
+} from "@pieceful/ravel-core";
+import { javascriptLiveProvider } from "@pieceful/ravel-js-live";
+import { validateRavelMap } from "@pieceful/ravel-map";
+import { markdownToMap } from "@pieceful/ravel-markdown";
+
+const liveProgram = (source, document = "live") => {
+  const adapted = markdownToMap(source, {
+    uri: document + ".md",
+    document,
+    mode: "primary"
+  });
+  assert.deepEqual(adapted.diagnostics, []);
+  assert.deepEqual(validateRavelMap(adapted.map), []);
+  const program = transformGraph(combineMaps([adapted.map]));
+  assert.deepEqual(program.diagnostics, []);
+  return { map: adapted.map, program };
+};
+
+test("Markdown .run metadata drives QuickJS execution with immutable dependencies and resources", async () => {
+  const source = [
+    "```js {.run #source}",
+    "export default [1, 2];",
+    "```",
+    "",
+    "```javascript {.run #process}",
+    "const input = ch(\"source\");",
+    "const csv = load(\"cool.csv\");",
+    "export default {",
+    "  rows: input.map((value) => value * 2),",
+    "  csv,",
+    "  empty: \"\"",
+    "};",
+    "```",
+    ""
+  ].join("\n");
+  const { map, program } = liveProgram(source);
+
+  assert.equal(map.chunks[0].metadata.data.ravel.run, true);
+  assert.equal(map.chunks[0].metadata.language, "js");
+  assert.deepEqual(map.chunks[0].metadata.tags, []);
+
+  const plan = planLiveExecutions(program, { providers: [javascriptLiveProvider] });
+  assert.equal(plan.ok, true);
+  assert.deepEqual(
+    plan.nodes["live::process.javascript"].dependencies.map(({ reference, id }) => ({ reference, id })),
+    [{ reference: "source", id: "live::source.js" }]
+  );
+
+  const result = await executeLiveProgram(program, {
+    providers: [javascriptLiveProvider],
+    resources: { "cool.csv": "a,b\n1,2\n" }
+  });
+  assert.equal(result.ok, true);
+  assert.deepEqual(result.executions["live::source.js"].value, [1, 2]);
+  assert.deepEqual(result.executions["live::process.javascript"].value, {
+    rows: [2, 4],
+    csv: "a,b\n1,2\n",
+    empty: ""
+  });
+});
+
+test("valid empty and falsy JavaScript exports remain distinct from a missing export", async () => {
+  const cases = [
+    ["empty-string", "\"\"", ""],
+    ["empty-array", "[]", []],
+    ["empty-object", "{}", {}],
+    ["false-value", "false", false],
+    ["zero-value", "0", 0],
+    ["null-value", "null", null]
+  ];
+  for (const [name, expression, expected] of cases) {
+    const { program } = liveProgram([
+      "```js {.run #" + name + "}",
+      "export default " + expression + ";",
+      "```",
+      ""
+    ].join("\n"), name);
+    const result = await executeLiveProgram(program, { providers: [javascriptLiveProvider] });
+    assert.equal(result.ok, true, name);
+    assert.deepEqual(result.executions[name + "::" + name + ".js"].value, expected);
+  }
+
+  const { program } = liveProgram([
+    "```js {.run #missing}",
+    "const value = 1;",
+    "```",
+    ""
+  ].join("\n"), "missing");
+  const missing = await executeLiveProgram(program, { providers: [javascriptLiveProvider] });
+  assert.equal(missing.ok, false);
+  assert.ok(missing.diagnostics.some((entry) => entry.code === "RJL101"));
+});
+
+test("live inputs are frozen copies and mutation cannot alter the producer", async () => {
+  const { program } = liveProgram([
+    "```js {.run #source}",
+    "export default { rows: [1, 2] };",
+    "```",
+    "",
+    "```js {.run #mutator}",
+    "const input = ch(\"source\");",
+    "input.rows.push(3);",
+    "export default input;",
+    "```",
+    ""
+  ].join("\n"), "immutability");
+
+  const result = await executeLiveProgram(program, { providers: [javascriptLiveProvider] });
+  assert.equal(result.ok, false);
+  assert.deepEqual(result.executions["immutability::source.js"].value, { rows: [1, 2] });
+  assert.equal(result.executions["immutability::mutator.js"].status, "failed");
+  assert.ok(result.diagnostics.some((entry) => entry.code === "RJL110"));
+});
+
+test("core execution planning remains language-neutral", async () => {
+  const point = { line: 0, column: 0, offset: 0 };
+  const source = { uri: "sample.rix", range: { start: point, end: point } };
+  const program = {
+    version: 1,
+    documents: [{ id: "sample", uri: "sample.rix", format: "test" }],
+    chunks: {
+      "sample::value.rix": {
+        id: "sample::value.rix",
+        identity: { document: "sample", chunk: "value", minor: null, type: "rix" },
+        value: "answer",
+        metadata: { language: "rix", data: { ravel: { run: true } } },
+        source,
+        dependencies: [],
+        references: [],
+        provenance: []
+      }
+    },
+    deliverables: {},
+    diagnostics: [],
+    trace: { chunks: {} }
+  };
+  const provider = {
+    id: "test-rix",
+    version: "1",
+    languages: ["rix"],
+    analyze: () => ({ dependencies: [], resources: [], diagnostics: [] }),
+    execute: () => ({ ok: true, hasExport: true, value: { answer: 42 } })
+  };
+
+  const result = await executeLiveProgram(program, { providers: [provider] });
+  assert.equal(result.ok, true);
+  assert.deepEqual(result.executions["sample::value.rix"].value, { answer: 42 });
+});
+
+test("live JavaScript rejects dynamic dependencies and respects execution deadlines", async () => {
+  const point = { line: 0, column: 0, offset: 0 };
+  const sourceLocation = { uri: "bad.js", range: { start: point, end: point } };
+  const dynamic = javascriptLiveProvider.analyze({
+    source: "const name = \"source.js\"; export default ch(name);",
+    sourceLocation
+  });
+  assert.ok(dynamic.diagnostics.some((entry) => entry.code === "RJL107"));
+
+  const timed = await javascriptLiveProvider.execute({
+    id: "bad::loop.js",
+    runId: "test",
+    language: "js",
+    source: "while (true) {} export default null;",
+    sourceLocation,
+    inputs: {},
+    resources: {},
+    analysis: { dependencies: [], resources: [], diagnostics: [] },
+    limits: { timeoutMs: 10 }
+  });
+  assert.equal(timed.ok, false);
+  assert.ok(timed.diagnostics.some((entry) => entry.code === "RJL120"));
+});
+
+test("Ravel values reject lossy JSON coercions", async () => {
+  const cases = [
+    ["undefined", "undefined"],
+    ["function", "() => 1"],
+    ["non-finite", "Infinity"],
+    ["cycle", "(() => { const value = {}; value.self = value; return value; })()"],
+    ["accessor", "Object.defineProperty({}, \"value\", { get() { return 1; }, enumerable: true })"],
+    ["symbol-key", "({ [Symbol(\"hidden\")]: 1 })"],
+    ["sparse-array", "new Array(1)"]
+  ];
+  for (const [name, expression] of cases) {
+    const { program } = liveProgram([
+      "```js {.run #" + name + "}",
+      "export default " + expression + ";",
+      "```",
+      ""
+    ].join("\n"), "invalid-" + name);
+    const result = await executeLiveProgram(program, { providers: [javascriptLiveProvider] });
+    assert.equal(result.ok, false, name);
+    assert.equal(result.executions["invalid-" + name + "::" + name + ".js"].status, "failed");
+    assert.ok(result.diagnostics.some((entry) => entry.code === "RJL110"), name);
+  }
+});
+
+test("the QuickJS realm exposes no ambient host capabilities", async () => {
+  const { program } = liveProgram([
+    "```js {.run #capabilities}",
+    "export default {",
+    "  process: typeof process,",
+    "  require: typeof require,",
+    "  fetch: typeof fetch,",
+    "  console: typeof console",
+    "};",
+    "```",
+    ""
+  ].join("\n"), "sandbox");
+  const result = await executeLiveProgram(program, { providers: [javascriptLiveProvider] });
+  assert.equal(result.ok, true);
+  assert.deepEqual(result.executions["sandbox::capabilities.js"].value, {
+    process: "undefined",
+    require: "undefined",
+    fetch: "undefined",
+    console: "undefined"
+  });
+
+  const sourceLocation = program.chunks["sandbox::capabilities.js"].source;
+  const imported = javascriptLiveProvider.analyze({
+    source: "import value from \"host\"; export default value;",
+    sourceLocation
+  });
+  assert.ok(imported.diagnostics.some((entry) => entry.code === "RJL104"));
+
+  const internals = javascriptLiveProvider.analyze({
+    source: "export default __ravelInputs;",
+    sourceLocation
+  });
+  assert.ok(internals.diagnostics.some((entry) => entry.code === "RJL103"));
+});
+
+test("each JavaScript execution receives a fresh realm", async () => {
+  const point = { line: 0, column: 0, offset: 0 };
+  const request = {
+    id: "realm::counter.js",
+    runId: "realm",
+    language: "js",
+    source: [
+      "globalThis.counter = (globalThis.counter ?? 0) + 1;",
+      "export default globalThis.counter;"
+    ].join("\n"),
+    sourceLocation: {
+      uri: "realm.md",
+      range: { start: point, end: point }
+    },
+    inputs: {},
+    resources: {},
+    analysis: { dependencies: [], resources: [], diagnostics: [] },
+    limits: {}
+  };
+  const first = await javascriptLiveProvider.execute(request);
+  const second = await javascriptLiveProvider.execute(request);
+  assert.equal(JSON.parse(first.serialized), 1);
+  assert.equal(JSON.parse(second.serialized), 1);
+});
+
+test("an untyped ch reference must identify exactly one local chunk", () => {
+  const { program } = liveProgram([
+    "```js {.run #source}",
+    "export default 1;",
+    "```",
+    "",
+    "```text {#source}",
+    "static",
+    "```",
+    "",
+    "```js {.run #consumer}",
+    "export default ch(\"source\");",
+    "```",
+    ""
+  ].join("\n"), "ambiguous");
+  const plan = planLiveExecutions(program, { providers: [javascriptLiveProvider] });
+  assert.equal(plan.ok, false);
+  assert.ok(plan.diagnostics.some((entry) => entry.code === "RL109"));
+});
