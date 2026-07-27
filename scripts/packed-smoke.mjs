@@ -121,6 +121,7 @@ try {
   await run(process.execPath, ["--input-type=module", "--eval", [
     'const core = await import("@pieceful/ravel-core");',
     'const live = await import("@pieceful/ravel-js-live");',
+    'const liveNode = await import("@pieceful/ravel-js-live/node");',
     'await import("@pieceful/ravel-markdown");',
     'await import("@pieceful/ravel-host-node");',
     'const map = await import("@pieceful/ravel-map");',
@@ -138,7 +139,11 @@ try {
     '});',
     'await provider.dispose();',
     'if (!outcome.ok) throw new Error(JSON.stringify(outcome));',
-    'if (core.serializeRavelValue(JSON.parse(outcome.serialized)) !== "{\\"packed\\":42}") process.exit(1);'
+    'if (core.serializeRavelValue(JSON.parse(outcome.serialized)) !== "{\\"packed\\":42}") process.exit(1);',
+    'const prepared = await liveNode.prepareJavaScriptModules([',
+    '{ specifier: "@ravel/acorn", from: "acorn" }',
+    '], { rootDirectory: process.cwd() });',
+    'if (!prepared["@ravel/acorn"].includes("parse")) process.exit(1);'
   ].join(" ")], { cwd: sandbox });
 
   const binary = join(sandbox, "node_modules", ".bin", process.platform === "win32" ? "ravel.cmd" : "ravel");

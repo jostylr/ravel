@@ -205,7 +205,7 @@ Exit criteria:
       `load("cool.csv")` may be convenient syntax, but Ravel resolves the
       literal request before execution and the sandbox sees only the prepared
       snapshot.
-- [ ] Add host-node resource preparation below an explicit root, reusing the
+- [x] Add host-node resource preparation below an explicit root, reusing the
       existing containment and symlink policy.
 - [ ] Add host-browser preparation from caller-supplied in-memory resources.
 - [ ] Define how resources participate in cache keys through their content
@@ -228,7 +228,7 @@ Exit criteria:
       atomic commit, manifest, cleanup, and backup behavior.
 - [ ] Add inspect/JSON views for execution plans, provider selection, input and
       resource hashes, result summaries, diagnostics, trace, and cache state.
-- [ ] Decide whether 0.2 exposes a new `ravel run` command or extends
+- [x] Decide whether 0.2 exposes a new `ravel run` command or extends
       `inspect`/`build` with an explicit execution flag. No existing command
       should execute `.run` blocks merely because it parsed them.
 - [ ] Ensure `check` can analyze and validate executable blocks without running
@@ -321,6 +321,10 @@ Exit criteria:
 - [x] Provide trusted virtual modules for reusable libraries only through a
       registry prepared by the host. Arbitrary package or path imports remain
       unavailable.
+- [x] Let a Node TOML project map an exact live import specifier to an
+      already-installed package export. Bundle it through the Node-only
+      `@pieceful/ravel-js-live/node` subpath and pass only immutable ESM source
+      to the provider; Ravel never installs the package.
 - [ ] Benchmark repeated runs with unchanged code and changing inputs to decide
       whether compiled-code caching produces a material improvement over result
       caching and ordinary recompilation.
@@ -343,9 +347,11 @@ Exit criteria:
       package and its JavaScript dependencies into a QuickJS-compatible module.
       Reject native addons, unresolved dynamic imports, unsupported Node
       built-ins, worker/process creation, and install-time code.
-- [ ] Decide whether the bundler belongs in the
+- [x] Decide whether the bundler belongs in the
       `@pieceful/ravel-js-live/node` subpath or in host-node. Keep its output a
       provider-neutral registered-module artifact where practical.
+      Package resolution is host authority, but QuickJS-compatible JavaScript
+      preparation belongs to the provider's explicit Node-only subpath.
 - [ ] Route external transform execution through the asynchronous provider
       contract while preserving existing synchronous built-in transforms.
 - [ ] Require transform modules to return a JSON value or text. They receive no
@@ -434,6 +440,9 @@ Exit criteria:
 
 ### C3. Complete product integration
 
+- [x] Add a runnable npm-module CSV example using TOML-declared modules and
+      resources, `load`, `ch`, QuickJS/Wasm workers, and the no-write
+      `ravel run` command.
 - [ ] Add a complete Markdown example with `.run` JavaScript fences, source
       composition, `ch` dependencies, `load` from a declared resource, string
       and structured exports, and directive-controlled output.

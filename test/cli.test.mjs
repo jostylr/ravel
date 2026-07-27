@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
-import { lstat, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
+import { lstat, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -27,6 +27,69 @@ test("CLI check accepts direct Markdown and TOML project inputs", async () => {
 
   const toml = await run(process.execPath, [cli, "check", "--config", "fixtures/markdown/ravel-web.toml"]);
   assert.match(toml.stdout, /Ravel check passed\./);
+});
+
+test("CLI run bundles an allowlisted installed module and reads only declared resources", async () => {
+  const sandbox = await mkdtemp(join(tmpdir(), "ravel-cli-live-"));
+  const packageDirectory = join(sandbox, "node_modules", "tiny-csv");
+  try {
+    await mkdir(packageDirectory, { recursive: true });
+    await writeFile(join(packageDirectory, "package.json"), JSON.stringify({
+      name: "tiny-csv",
+      version: "1.0.0",
+      type: "module",
+      exports: { "./sync": "./sync.js" }
+    }));
+    await writeFile(
+      join(packageDirectory, "sync.js"),
+      "export const parse = (text) => text.trim().split(/\\r?\\n/).map((line) => line.split(','));\n"
+    );
+    await writeFile(join(sandbox, "cool.csv"), "name,value\nalpha,1\n");
+    await writeFile(join(sandbox, "live.md"), [
+      "```js {.run #parse}",
+      'import { parse } from "@example/csv";',
+      'export default parse(load("cool.csv"));',
+      "```",
+      "",
+      "```js {.run #count}",
+      'export default ch("parse").length;',
+      "```",
+      ""
+    ].join("\n"));
+    await writeFile(join(sandbox, "ravel.toml"), [
+      "version = 1",
+      "",
+      "[[files]]",
+      'path = "live.md"',
+      'mode = "primary"',
+      "",
+      "[[live.modules]]",
+      'specifier = "@example/csv"',
+      'from = "tiny-csv/sync"',
+      "",
+      "[[live.resources]]",
+      'name = "cool.csv"',
+      'path = "cool.csv"',
+      ""
+    ].join("\n"));
+
+    const result = await run(process.execPath, [cli, "run", "--config", "ravel.toml", "--json"], { cwd: sandbox });
+    const summary = JSON.parse(result.stdout);
+    assert.equal(summary.ok, true);
+    assert.deepEqual(summary.executions["live::parse.js"].value, [
+      ["name", "value"],
+      ["alpha", "1"]
+    ]);
+    assert.equal(summary.executions["live::count.js"].value, 2);
+    assert.deepEqual((await readdir(sandbox)).sort(), [
+      "cool.csv",
+      "live.md",
+      "node_modules",
+      "ravel.toml"
+    ]);
+  } finally {
+    await rm(sandbox, { recursive: true, force: true });
+  }
 });
 
 test("CLI builds a canonical ravel.toml and honors its clean and backup policy", async () => {

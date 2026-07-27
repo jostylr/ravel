@@ -1,0 +1,11 @@
+{
+  "name": "ravel-live-modules-example",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "live": "node ../../packages/cli/src/index.js run --config ravel.toml"
+  },
+  "dependencies": {
+    "csv-parse": "7.0.1"
+  }
+}

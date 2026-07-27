@@ -24,7 +24,8 @@ for the format, derivation chains, query API, and current precision boundary.
 `ravel.toml` is the conventional project file. From its directory, a plain
 `ravel` is equivalent to `ravel build --config ravel.toml`. Other TOML names
 remain useful for alternate build paths and must be selected explicitly with
-`--config`.
+`--config`. The `[build]` table is required only when that configuration is
+used with `build`; a no-write `run` configuration may omit it.
 
 ```toml
 version = 1
@@ -43,6 +44,14 @@ mode = "primary"                 # opt-in (default) or primary
 [[outputs]]
 name = "dist/main.js"            # required output-relative path
 from = "guide::main.javascript"  # required canonical chunk address
+
+[[live.modules]]
+specifier = "@example/csv"       # exact import visible inside live code
+from = "csv-parse/browser/esm/sync" # installed package export to bundle
+
+[[live.resources]]
+name = "cool.csv"                # exact load("cool.csv") name
+path = "data/cool.csv"           # UTF-8 file below the project root
 ```
 
 All file, import, output, and backup paths are confined to the directory that
@@ -61,6 +70,7 @@ refuses to overwrite an existing archive.
 | --- | --- |
 | `ravel check <input>` | Validate and evaluate without writing artifacts. |
 | `ravel inspect <input>` | Show the completed program, `--chunks`, `--graph`, `--trace`, or a `--provenance <deliverable>` query. |
+| `ravel run <input>` | Execute only `.run` blocks through registered providers and print their exported values without writing artifacts. |
 | `ravel build <input>` | Build declared artifacts. TOML supplies `out_dir`; direct inputs require `--out-dir`. |
 | `ravel refresh <output-dir>` | Remove only stale managed outputs retained by a prior build. |
 
@@ -82,9 +92,10 @@ same diagnostic objects to standard error.
 | Prefix | Owner | Examples |
 | --- | --- | --- |
 | `RM` | Ravel Map and Markdown adapters | `RM101` fence syntax, `RM200` map shape, `RM201` unreadable/malformed JSON input |
-| `RC` | TOML configuration | `RC101` TOML parsing, `RC102` invalid config field/value |
+| `RC` | TOML configuration | `RC101` TOML parsing, `RC102` invalid config field/value, `RC103` unavailable resource |
 | `RH` | Node host input handling | `RH101` unsupported input, `RH102` incomplete import directive |
 | `RV` | Core graph evaluation | references, cycles, transforms, composition, and derived chunks |
+| `RJL` | QuickJS/Wasm JavaScript provider | analysis, runtime limits, worker failure, and module preparation |
 
 Codes describe stable user-visible failure classes. Exact prose may improve as
 long as the diagnosis and source location remain equivalent.

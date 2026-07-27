@@ -2,6 +2,7 @@
 import { cleanManagedArtifacts, createOutputBackup, loadBuildInput, planDeliverables, planOutputBackup, planStaleDeliverables, refreshStaleArtifacts, writeBuildArtifacts, writeGraph } from "@pieceful/ravel-host-node";
 import {
   createDeliverableProvenanceMap,
+  executeLiveProgram,
   explainGeneratedOffset,
   generatedRangesForSource,
   transformGraph
@@ -31,6 +32,8 @@ const usage = () => {
   console.error("       ravel                 # builds ./ravel.toml when it exists");
   console.error("       ravel build <map.json|document.md> --out-dir <directory> [--document <name>] [--mode <opt-in|primary>] [--graph <program.json>] [--backup [file.zip]] [--clean] [--dry-run] [--json]");
   console.error("       ravel build --config <run.toml> [--out-dir <directory>] [--graph <program.json>] [--backup [file.zip]] [--clean] [--dry-run] [--json]");
+  console.error("       ravel run <document.md> [--document <name>] [--mode <opt-in|primary>] [--json]");
+  console.error("       ravel run --config <run.toml> [--json]");
   console.error("       ravel inspect <map.json|document.md> [--config <run.toml>] [--document <name>] [--mode <opt-in|primary>] [--chunks|--graph|--trace] [--json]");
   console.error("       ravel inspect <input> --provenance <deliverable> [--generated-offset <offset> | --source-uri <uri> --source-offset <offset>] [--json]");
   console.error("       ravel refresh <output-directory> [--dry-run] [--json]");
@@ -280,6 +283,49 @@ const printRefreshResult = (result, json) => {
   for (const deliverable of result.removed) console.log("  " + deliverable.path + " ← " + (deliverable.from ?? "previous build"));
 };
 
+const printRunResult = (result, json) => {
+  const executions = Object.fromEntries(sortedEntries(result.executions).map(([id, execution]) => [
+    id,
+    {
+      status: execution.status,
+      ...(execution.status === "succeeded" ? { value: execution.value } : {}),
+      ...(execution.provider ? { provider: execution.provider } : {}),
+      ...(execution.durationMs !== undefined ? { durationMs: execution.durationMs } : {})
+    }
+  ]));
+  if (json) {
+    console.log(JSON.stringify({
+      ok: result.ok,
+      command: "run",
+      executions,
+      diagnostics: result.diagnostics
+    }, null, 2));
+    return;
+  }
+  console.log("Ravel ran " + Object.keys(executions).length + " live block" + (Object.keys(executions).length === 1 ? "" : "s") + ".");
+  for (const [id, execution] of Object.entries(executions)) {
+    const value = execution.status === "succeeded" ? " = " + JSON.stringify(execution.value, null, 2) : "";
+    console.log("  " + id + ": " + execution.status + value);
+  }
+};
+
+const runLiveProgram = async (program, loaded) => {
+  const { prepareJavaScriptModules } = await import("@pieceful/ravel-js-live/node");
+  const modules = await prepareJavaScriptModules(loaded.live?.modules ?? [], {
+    rootDirectory: loaded.rootDirectory
+  });
+  const { createJavaScriptLiveProvider } = await import("@pieceful/ravel-js-live");
+  const provider = createJavaScriptLiveProvider({ modules });
+  try {
+    return await executeLiveProgram(program, {
+      providers: [provider],
+      resources: loaded.live?.resources ?? {}
+    });
+  } finally {
+    await provider.dispose();
+  }
+};
+
 const invokedAsCli = (() => {
   if (!process.argv[1]) return false;
   try {
@@ -305,7 +351,7 @@ if (command === "--help" || command === "-h" || argumentsValue.includes("--help"
   const parsed = parseArguments(argumentsValue);
   const json = parsed.options?.["--json"] === true;
   const debug = parsed.options?.["--debug"] === true;
-  const supported = new Set(["build", "inspect", "check", "refresh"]);
+  const supported = new Set(["build", "run", "inspect", "check", "refresh"]);
   if (!supported.has(parsed.command) || parsed.error || !parsed.input) {
     if (parsed.error) console.error("ravel usage error: " + parsed.error);
     usage();
@@ -374,6 +420,14 @@ if (command === "--help" || command === "-h" || argumentsValue.includes("--help"
         else console.log("Ravel check passed.");
       } else if (parsed.command === "inspect") {
         printInspectResult(inspectProgram(program, parsed.options), json);
+      } else if (parsed.command === "run") {
+        const result = await runLiveProgram(program, loaded);
+        if (!result.ok) {
+          printDiagnostics(result.diagnostics, json);
+          process.exitCode = EXIT_SOURCE;
+        } else {
+          printRunResult(result, json);
+        }
       } else {
         const outputDirectory = parsed.options["--out-dir"] ?? loaded.outputDirectory;
         if (!outputDirectory) throw new Error("build requires --out-dir or build.out_dir in the TOML config.");

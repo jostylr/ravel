@@ -13,6 +13,11 @@ completed program, or use the higher-level `@pieceful/ravel` CLI. Inputs and
 outputs are contained beneath an explicit project root; path escapes and
 symlink traversal are rejected.
 
+Version-1 TOML projects may declare text `[[live.resources]]` and installed
+package exports in `[[live.modules]]`. The host validates and loads those
+declarations; provider-specific package preparation remains outside this
+general filesystem host.
+
 Requires Node.js 22 or newer. This package is intentionally Node-specific;
 browser and Bun hosts should supply their own I/O boundary around
 `@pieceful/ravel-core`.

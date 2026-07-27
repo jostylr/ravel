@@ -61,6 +61,20 @@ graph into one ESM source string and register that string under an approved
 specifier. Native addons, Node built-ins, dynamic imports, package resolution,
 and filesystem loading remain unavailable.
 
+Node hosts can bundle explicitly allowlisted, already-installed package exports
+without executing them:
+
+```js
+import { prepareJavaScriptModules } from "@pieceful/ravel-js-live/node";
+
+const modules = await prepareJavaScriptModules([
+  { specifier: "@ravel/csv", from: "csv-parse/browser/esm/sync" }
+], { rootDirectory: projectDirectory });
+```
+
+The `node` subpath is deliberately separate from the browser-safe provider
+entry. Ravel does not install packages or run package lifecycle scripts.
+
 Browser builds should emit `@pieceful/ravel-js-live/worker-browser` as a
 separate module-worker entry and place the release-sync
 `emscripten-module.wasm` asset beside that worker bundle. Supply the emitted

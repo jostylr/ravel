@@ -1,0 +1,13 @@
+version = 1
+
+[[files]]
+path = "live.md"
+mode = "primary"
+
+[[live.modules]]
+specifier = "@example/csv"
+from = "csv-parse/browser/esm/sync"
+
+[[live.resources]]
+name = "cool.csv"
+path = "cool.csv"

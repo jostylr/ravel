@@ -84,12 +84,44 @@ import { parseCsv } from "@ravel/csv";
 export default parseCsv(load("cool.csv"));
 ```
 
-An npm library must first be bundled by trusted host tooling into
-QuickJS-compatible ESM. The resulting source—not a package path or live host
-object—is copied to the worker once during provider configuration. Its imports
-can resolve only to other entries in the same registry. This is suitable for
-pure-JavaScript CSV libraries; packages requiring Node built-ins, native
+The Node CLI can prepare this registry from packages already installed in the
+project. Installation remains an ordinary, explicit project step; Ravel never
+runs npm or package lifecycle scripts. The TOML allowlists both the package
+export and the virtual name visible to live code:
+
+```toml
+[[live.modules]]
+specifier = "@example/csv"
+from = "csv-parse/browser/esm/sync"
+
+[[live.resources]]
+name = "cool.csv"
+path = "cool.csv"
+```
+
+```js
+import { parse } from "@example/csv";
+export default parse(load("cool.csv"), { columns: true });
+```
+
+Run the marked blocks explicitly:
+
+```sh
+npm install csv-parse
+ravel run --config ravel.toml
+```
+
+`ravel run` prints each successful export and performs no output writes. The
+CLI uses the Node-only `@pieceful/ravel-js-live/node` preparation entry to
+bundle each allowlisted package export into QuickJS-compatible ESM.
+The resulting source—not a package path or live host object—is copied to the
+worker once during provider configuration. The worker still cannot resolve
+another package or read `node_modules`. Pure JavaScript with browser-compatible
+exports is the intended profile; packages requiring Node built-ins, native
 addons, or filesystem access need the later transform-module/VFS layer.
+
+See the runnable [`examples/live-modules`](../examples/live-modules/README.md)
+project for a two-block CSV workflow using `load`, `ch`, and an npm module.
 
 ## Portable API
 

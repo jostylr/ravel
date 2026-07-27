@@ -34,6 +34,7 @@ examples live at [ravel.jostylr.com](https://ravel.jostylr.com/).
 | [@pieceful/ravel-map](https://www.npmjs.com/package/@pieceful/ravel-map) | Versioned Ravel Map schema, validation, and diagnostic contract. |
 | [@pieceful/ravel-markdown](https://www.npmjs.com/package/@pieceful/ravel-markdown) | Portable adapter that extracts Ravel Maps from Markdown fences and directives. |
 | [@pieceful/ravel-host-node](https://www.npmjs.com/package/@pieceful/ravel-host-node) | Node filesystem host for project loading, safe artifact writes, manifests, and backups. |
+| `@pieceful/ravel-js-live` (0.2 development) | Worker-backed QuickJS/Wasm provider plus Node-only preparation of allowlisted npm modules. |
 
 The implemented vertical slice is intentionally safe and deterministic in
 spirit: parsing and graph evaluation do not evaluate document JavaScript or
@@ -55,6 +56,8 @@ Ravel can currently:
 - define graph structure with `create`, `compose`, `alias`, `pipe`, and `pass`;
 - plan named outputs with `out` or TOML `[[outputs]]` entries;
 - inspect a completed graph or write deliverables through the Node CLI;
+- run explicitly marked JavaScript blocks through QuickJS/Wasm without giving
+  them Node or filesystem access;
 - report source-linked parsing, resolution, transform, and cycle diagnostics;
 - reject input/output path escapes and symbolic-link traversal;
 - run the current automated suites under Node and Bun;
@@ -168,6 +171,16 @@ Build and run the larger migration example:
 ```sh
 npm run ravel -- build --config examples/migration/ravel-fizzbuzz.toml
 node examples/migration/.ravel/runs/legacy-fizzbuzz-migration/dist/fizzbuzz.js
+```
+
+Run the live CSV example, which installs `csv-parse` in the example project,
+allowlists its browser-compatible sync export in TOML, and returns values
+without writing files:
+
+```sh
+cd examples/live-modules
+npm install
+npm run live
 ```
 
 Build the [50-chunk assembly benchmark](examples/benchmark/README.md) when you

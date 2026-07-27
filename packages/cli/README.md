@@ -10,12 +10,15 @@ npx ravel build ravel.toml
 ```
 
 Use `check` to validate without writing, `inspect` to view chunks, graph, trace,
-and provenance, and `build` to write declared deliverables and managed output
-metadata. `--clean`, `refresh`, `--dry-run`, and `--backup` make output lifecycle
-actions explicit and reviewable.
+and provenance, `run` to execute explicitly marked live blocks without writing,
+and `build` to write declared deliverables and managed output metadata.
+`--clean`, `refresh`, `--dry-run`, and `--backup` make output lifecycle actions
+explicit and reviewable.
 
-Requires Node.js 22 or newer. This is the Node-only host and CLI; it never
-executes JavaScript, shell commands, or network requests from source documents.
+Requires Node.js 22 or newer. Static commands never execute source JavaScript.
+The explicit `run` command uses the capability-limited
+`@pieceful/ravel-js-live` QuickJS/Wasm provider; it does not expose Node, shell,
+network, or filesystem access to a live block.
 
 See the [Ravel documentation](https://ravel.jostylr.com/) for installation,
 configuration, command reference, and examples.

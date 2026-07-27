@@ -69,6 +69,10 @@ immutable copied data, and resolves static imports only from the approved
 registry. See [Live execution](live-execution.md) for the profile and current
 security boundary.
 
+The Node-only `@pieceful/ravel-js-live/node` subpath exports
+`prepareJavaScriptModules`. It bundles installed package exports explicitly
+allowlisted by a host into the immutable ESM-source registry.
+
 ## `@pieceful/ravel-host-node`
 
 This Node-only package performs scoped filesystem input and artifact work.

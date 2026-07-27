@@ -5,6 +5,7 @@ import { join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { createBuildManifest, createOutputBackup, loadBuildInput, loadPretransformGraph, planDeliverables, planStaleDeliverables, RavelInputError, writeBuildArtifacts, writeBuildManifest, writeDeliverables } from "../packages/host-node/src/index.js";
+import { JavaScriptModulePreparationError, prepareJavaScriptModules } from "../packages/js-live/src/node.js";
 import { markdownToMap } from "../packages/markdown/src/index.js";
 import { combineMaps, transformGraph } from "../packages/core/src/index.js";
 import { markdownLike, pugLike } from "../test-support/phase-transforms.mjs";
@@ -87,6 +88,48 @@ test("Node host loads one TOML build run containing multiple Markdown files", as
   ]);
   assert.equal(program.deliverables["dist/main.js"].from, "handbook::main.javascript");
   assert.match(program.deliverables["dist/main.js"].value, /export const finish/);
+});
+
+test("JavaScript Node preparation bundles only allowlisted bare package exports", async () => {
+  const sandbox = await mkdtemp(join(tmpdir(), "ravel-live-modules-"));
+  const packageDirectory = join(sandbox, "node_modules", "fixture-module");
+  const source = {
+    uri: join(sandbox, "ravel.toml"),
+    range: {
+      start: { line: 0, column: 0, offset: 0 },
+      end: { line: 0, column: 0, offset: 0 }
+    }
+  };
+  try {
+    await mkdir(packageDirectory, { recursive: true });
+    await writeFile(join(packageDirectory, "package.json"), JSON.stringify({
+      name: "fixture-module",
+      version: "1.0.0",
+      type: "module",
+      exports: {
+        "./pure": "./pure.js",
+        "./host": "./host.js"
+      }
+    }));
+    await writeFile(join(packageDirectory, "pure.js"), "export const twice = (value) => value * 2;\n");
+    await writeFile(join(packageDirectory, "host.js"), 'import "node:fs"; export default true;\n');
+
+    const modules = await prepareJavaScriptModules([
+      { specifier: "@example/math", from: "fixture-module/pure", source }
+    ], { rootDirectory: sandbox });
+    assert.match(modules["@example/math"], /twice/);
+
+    await assert.rejects(
+      prepareJavaScriptModules([
+        { specifier: "@example/host", from: "fixture-module/host", source }
+      ], { rootDirectory: sandbox }),
+      (error) => error instanceof JavaScriptModulePreparationError &&
+        error.diagnostics[0].code === "RJL140" &&
+        /node:fs/.test(error.diagnostics[0].message)
+    );
+  } finally {
+    await rm(sandbox, { recursive: true, force: true });
+  }
 });
 
 test("Node host writes source locations relative to a build root", async () => {

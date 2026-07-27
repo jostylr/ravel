@@ -246,6 +246,55 @@ const reportUnknownKeys = (value, allowed, description, configPath) => {
   }
 };
 
+const loadLiveConfiguration = async (live, scope, configPath) => {
+  if (live === undefined) return undefined;
+  if (!live || typeof live !== "object" || Array.isArray(live)) {
+    throw inputError("RC102", "live must be a [live] table.", configPath);
+  }
+  reportUnknownKeys(live, new Set(["modules", "resources"]), "live", configPath);
+  if (live.modules !== undefined && !Array.isArray(live.modules)) {
+    throw inputError("RC102", "live.modules must contain [[live.modules]] entries.", configPath);
+  }
+  if (live.resources !== undefined && !Array.isArray(live.resources)) {
+    throw inputError("RC102", "live.resources must contain [[live.resources]] entries.", configPath);
+  }
+
+  const moduleSpecifiers = new Set();
+  const modules = (live.modules ?? []).map((entry, index) => {
+    const description = "live.modules[" + index + "]";
+    if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
+      throw inputError("RC102", description + " must be a table.", configPath);
+    }
+    reportUnknownKeys(entry, new Set(["specifier", "from"]), description, configPath);
+    const specifier = requireConfigString(entry.specifier, description + ".specifier", configPath);
+    const from = requireConfigString(entry.from, description + ".from", configPath);
+    if (moduleSpecifiers.has(specifier)) {
+      throw inputError("RC102", "Duplicate live module specifier: " + specifier, configPath);
+    }
+    moduleSpecifiers.add(specifier);
+    return { specifier, from, source: configSource(configPath) };
+  });
+
+  const resourceNames = new Set();
+  const resourceEntries = await Promise.all((live.resources ?? []).map(async (entry, index) => {
+    const description = "live.resources[" + index + "]";
+    if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
+      throw inputError("RC102", description + " must be a table.", configPath);
+    }
+    reportUnknownKeys(entry, new Set(["name", "path"]), description, configPath);
+    const name = requireConfigString(entry.name, description + ".name", configPath);
+    const path = requireConfigString(entry.path, description + ".path", configPath);
+    if (resourceNames.has(name)) {
+      throw inputError("RC102", "Duplicate live resource name: " + name, configPath);
+    }
+    resourceNames.add(name);
+    const absolutePath = await scope.path(path, description + ".path");
+    return [name, await readInputText(absolutePath, "live resource", "RC103")];
+  }));
+
+  return { modules, resources: Object.fromEntries(resourceEntries) };
+};
+
 export const loadTomlBuild = async (configPath) => {
   const absoluteConfig = resolve(configPath);
   const scope = await createInputScope(dirname(absoluteConfig));
@@ -257,28 +306,32 @@ export const loadTomlBuild = async (configPath) => {
     if (Array.isArray(error?.diagnostics)) throw error;
     throw inputError("RC101", "Invalid Ravel TOML config: " + (error?.message ?? String(error)), absoluteConfig);
   }
-  reportUnknownKeys(config, new Set(["version", "files", "build", "outputs"]), "config", absoluteConfig);
+  reportUnknownKeys(config, new Set(["version", "files", "build", "outputs", "live"]), "config", absoluteConfig);
   if (config.version !== 1) throw inputError("RC102", "version must be 1.", absoluteConfig);
   if (!Array.isArray(config.files) || config.files.length === 0) {
     throw inputError("RC102", "files must contain one or more [[files]] entries.", absoluteConfig);
   }
-  if (!config.build || typeof config.build !== "object") {
+  if (config.build !== undefined && (!config.build || typeof config.build !== "object" || Array.isArray(config.build))) {
     throw inputError("RC102", "build must be a [build] table.", absoluteConfig);
   }
-  reportUnknownKeys(config.build, new Set(["name", "out_dir", "clean", "backup"]), "build", absoluteConfig);
-  if (config.build.name !== undefined) requireConfigString(config.build.name, "build.name", absoluteConfig);
-  if (config.build.clean !== undefined && typeof config.build.clean !== "boolean") {
+  const build = config.build ?? {};
+  reportUnknownKeys(build, new Set(["name", "out_dir", "clean", "backup"]), "build", absoluteConfig);
+  if (build.name !== undefined) requireConfigString(build.name, "build.name", absoluteConfig);
+  if (build.clean !== undefined && typeof build.clean !== "boolean") {
     throw inputError("RC102", "build.clean must be true or false.", absoluteConfig);
   }
-  if (config.build.backup !== undefined && typeof config.build.backup !== "boolean" &&
-      (typeof config.build.backup !== "string" || config.build.backup.length === 0)) {
+  if (build.backup !== undefined && typeof build.backup !== "boolean" &&
+      (typeof build.backup !== "string" || build.backup.length === 0)) {
     throw inputError("RC102", "build.backup must be true, false, or a non-empty .zip path.", absoluteConfig);
   }
-  if (typeof config.build.backup === "string" && extname(config.build.backup).toLowerCase() !== ".zip") {
+  if (typeof build.backup === "string" && extname(build.backup).toLowerCase() !== ".zip") {
     throw inputError("RC102", "build.backup must name a .zip file.", absoluteConfig);
   }
-  const outDirectory = requireConfigString(config.build.out_dir, "build.out_dir", absoluteConfig);
+  const outDirectory = build.out_dir === undefined
+    ? undefined
+    : requireConfigString(build.out_dir, "build.out_dir", absoluteConfig);
   const baseDirectory = scope.root;
+  const live = await loadLiveConfiguration(config.live, scope, absoluteConfig);
   const results = await Promise.all(config.files.map(async (file, index) => {
     if (!file || typeof file !== "object") throw inputError("RC102", "files[" + index + "] must be a table.", absoluteConfig);
     reportUnknownKeys(file, new Set(["path", "document", "mode"]), "files[" + index + "]", absoluteConfig);
@@ -302,12 +355,13 @@ export const loadTomlBuild = async (configPath) => {
   }
   return {
     pretransform: relativizeSourceUris(pretransform, scope.root),
-    outputDirectory: await scope.path(outDirectory, "build.out_dir"),
+    ...(outDirectory === undefined ? {} : { outputDirectory: await scope.path(outDirectory, "build.out_dir") }),
     rootDirectory: scope.root,
     buildOptions: {
-      clean: config.build.clean === true,
-      backup: config.build.backup ?? false
-    }
+      clean: build.clean === true,
+      backup: build.backup ?? false
+    },
+    ...(live ? { live } : {})
   };
 };
 

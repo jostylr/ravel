@@ -29,6 +29,10 @@
   },
   "exports": {
     ".": "./src/index.js",
+    "./node": {
+      "types": "./src/node.d.ts",
+      "default": "./src/node.js"
+    },
     "./worker-browser": {
       "types": "./src/worker-browser.d.ts",
       "default": "./src/worker-browser.js"
@@ -43,6 +47,7 @@
   "dependencies": {
     "@jitl/quickjs-wasmfile-release-sync": "0.32.0",
     "acorn": "8.17.0",
+    "esbuild": "0.28.1",
     "quickjs-emscripten": "0.32.0"
   },
   "peerDependencies": {

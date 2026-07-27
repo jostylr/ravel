@@ -20,6 +20,7 @@
   "files": ["src", "README.md", "LICENSE"],
   "dependencies": {
     "@pieceful/ravel-core": "0.1.1",
-    "@pieceful/ravel-host-node": "0.1.1"
+    "@pieceful/ravel-host-node": "0.1.1",
+    "@pieceful/ravel-js-live": "0.1.1"
   }
 }
