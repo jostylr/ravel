@@ -53,9 +53,10 @@ const createDefaultWorker = async () => {
     return new Worker(new URL("./worker-node.js", import.meta.url), {
       type: "module",
       name: "ravel-quickjs",
-      execArgv: globalThis.process?.execArgv?.filter(
-        (argument) => !argument.startsWith("--input-type")
-      )
+      // Test runners, profilers, and `node --input-type` can inject flags that
+      // are invalid for file-backed workers. The sandbox worker needs none of
+      // the parent's Node execution flags.
+      execArgv: []
     });
   }
   if (typeof globalThis.Worker === "function") {
