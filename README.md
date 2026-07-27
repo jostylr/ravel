@@ -78,7 +78,9 @@ The first 0.2 live-code vertical slice is now under development. Named
 Markdown fences can opt in with `.run`; portable core planning resolves
 `ch("chunk")` value dependencies and `load("resource")` snapshots; and the new
 `@pieceful/ravel-js-live` workspace package evaluates one final JSON-compatible
-`export default` in a fresh, limited QuickJS/Wasm runtime. See the
+`export default` in a fresh, limited QuickJS/Wasm runtime behind a terminable
+worker. Hosts may register immutable ESM source under approved import names,
+without exposing npm or filesystem resolution. See the
 [live-execution design and current safety boundary](documentation/live-execution.md).
 
 Try the complete portable pipeline in the

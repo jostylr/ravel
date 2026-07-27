@@ -46,10 +46,11 @@ bigints, non-finite numbers, cycles, accessors, and class instances are errors.
 Functions may be defined and used during a run, but they cannot cross an
 execution boundary.
 
-The provider statically discovers literal `ch("...")` dependencies and
-`load("...")` resources. Computed names, imports, dynamic imports, and dynamic
-code generation are rejected. Values supplied by `ch` and `load` are serialized
-copies and are deeply frozen inside the QuickJS realm.
+The provider statically discovers literal `ch("...")` dependencies,
+`load("...")` resources, and static module imports. Computed names, dynamic
+imports, unapproved modules, and dynamic code generation are rejected. Values
+supplied by `ch` and `load` are serialized copies and are deeply frozen inside
+the QuickJS realm.
 
 ```js
 const csv = load("cool.csv");
@@ -59,6 +60,36 @@ export default rows;
 
 `load` reads only a resource snapshot supplied by the host. It is not a
 filesystem operation.
+
+## Importing helper modules
+
+Live blocks have no ambient npm, URL, or filesystem module resolver. A host
+creates a provider with an immutable registry of approved ESM source:
+
+```js
+const provider = createJavaScriptLiveProvider({
+  modules: {
+    "@ravel/csv": `
+      export const parseCsv = (text) =>
+        text.trim().split(/\\r?\\n/).map((line) => line.split(","));
+    `
+  }
+});
+```
+
+The block can then import that exact name:
+
+```js
+import { parseCsv } from "@ravel/csv";
+export default parseCsv(load("cool.csv"));
+```
+
+An npm library must first be bundled by trusted host tooling into
+QuickJS-compatible ESM. The resulting source—not a package path or live host
+object—is copied to the worker once during provider configuration. Its imports
+can resolve only to other entries in the same registry. This is suitable for
+pure-JavaScript CSV libraries; packages requiring Node built-ins, native
+addons, or filesystem access need the later transform-module/VFS layer.
 
 ## Portable API
 
@@ -83,12 +114,14 @@ an output.
 
 ## Current safety boundary
 
-The initial provider creates a fresh QuickJS runtime for every execution and
-sets memory, stack, and interrupt deadlines. It installs no Node globals,
-filesystem, network, timers, console, QuickJS `std`/`os`, or general module
-loader.
+The provider keeps a QuickJS Wasm module warm inside a dedicated Node or browser
+worker, while creating a fresh QuickJS runtime for every execution. It sets
+memory, stack, interrupt, and serialized-output limits. It installs no Node
+globals, filesystem, network, timers, console, or QuickJS `std`/`os`. Its
+module loader can return only pre-registered source strings.
 
-This is the first 0.2 vertical slice, not yet the complete hostile-code
-boundary. Execution still needs a terminable outer browser/Node worker,
-output-size and pending-job quotas, broader adversarial tests, and the planned
-read-only virtual filesystem for approved transform modules.
+Timeout, cancellation, worker errors, and a failed interrupt terminate the
+outer worker, and a subsequent run starts a replacement. Pending-job quotas,
+broader adversarial tests, and the planned read-only virtual filesystem for
+approved transform modules remain before this can claim a complete hostile-code
+security boundary.

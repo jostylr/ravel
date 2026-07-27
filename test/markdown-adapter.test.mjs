@@ -40,7 +40,7 @@ test("primary Markdown mode requires explicit Ravel classification", () => {
 
 test(".run marks a named fence as executable without changing its language or tags", () => {
   const { map, diagnostics } = markdownToMap(
-    "```js {.run #analysis .browser provider=quickjs-wasm}\nexport default \"\";\n```\n",
+    "```js {.run #analysis .browser provider=quickjs-wasm-worker}\nexport default \"\";\n```\n",
     { uri: "live.md", document: "live", mode: "primary" }
   );
   assert.deepEqual(diagnostics, []);
@@ -48,7 +48,7 @@ test(".run marks a named fence as executable without changing its language or ta
   assert.deepEqual(map.chunks[0].metadata.tags, ["browser"]);
   assert.deepEqual(map.chunks[0].metadata.data.ravel, {
     run: true,
-    provider: "quickjs-wasm"
+    provider: "quickjs-wasm-worker"
   });
 });
 

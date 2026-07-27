@@ -15,6 +15,12 @@ versioning for its published packages and versioned public contracts.
 - Added the initial `@pieceful/ravel-js-live` QuickJS/WebAssembly provider with
   one final default export, literal `ch`/`load` analysis, immutable copied
   inputs, and memory, stack, and time limits.
+- Moved QuickJS behind persistent, terminable Node and browser workers while
+  retaining a fresh QuickJS runtime per execution; cancellation and outer
+  deadlines replace failed workers.
+- Added a quota-limited immutable virtual-module registry so live blocks can
+  statically import host-approved QuickJS-compatible ESM without npm,
+  filesystem, URL, or dynamic module resolution.
 
 ## 0.1.1 — unreleased
 

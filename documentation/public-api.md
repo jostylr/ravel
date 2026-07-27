@@ -57,12 +57,17 @@ value and return a string; a failed or non-string result becomes a diagnostic.
 - `javascriptLiveProvider` is the shared QuickJS/WebAssembly provider for `js`
   and `javascript`.
 - `createJavaScriptLiveProvider(options?)` creates a provider with configured
-  memory, stack, and execution-time limits.
+  memory, stack, execution-time, output, worker, and approved-module limits.
+  `options.modules` maps exact import specifiers to immutable ESM source;
+  `options.workerFactory` integrates a host's emitted browser worker.
+- A provider keeps its Wasm module warm behind a terminable worker, creates a
+  fresh QuickJS runtime for each execution, and exposes `dispose()`.
 
 The provider parses modules before execution, accepts one final
-`export default`, and exposes only literal `ch("...")` and `load("...")`
-lookups over immutable copied data. See [Live execution](live-execution.md) for
-the profile and current security boundary.
+`export default`, exposes literal `ch("...")` and `load("...")` lookups over
+immutable copied data, and resolves static imports only from the approved
+registry. See [Live execution](live-execution.md) for the profile and current
+security boundary.
 
 ## `@pieceful/ravel-host-node`
 

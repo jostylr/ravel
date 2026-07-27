@@ -127,13 +127,18 @@ try {
     'await import("@pieceful/ravel");',
     'if (map.RAVEL_MAP_SCHEMA.$id !== map.RAVEL_MAP_SCHEMA_ID) process.exit(1);',
     'const point = { line: 0, column: 0, offset: 0 };',
-    'const outcome = await live.javascriptLiveProvider.execute({',
+    'const provider = live.createJavaScriptLiveProvider({ modules: {',
+    '"@ravel/math": "export const twice = (value) => value * 2;"',
+    '} });',
+    'const outcome = await provider.execute({',
     'id: "smoke::live.js", runId: "pack", language: "js",',
-    'source: "export default { packed: true };",',
+    'source: "import { twice } from \\"@ravel/math\\"; export default { packed: twice(21) };",',
     'sourceLocation: { uri: "smoke.md", range: { start: point, end: point } },',
     'inputs: {}, resources: {}, analysis: {}, limits: {}',
     '});',
-    'if (!outcome.ok || core.serializeRavelValue(JSON.parse(outcome.serialized)) !== "{\\"packed\\":true}") process.exit(1);'
+    'await provider.dispose();',
+    'if (!outcome.ok) throw new Error(JSON.stringify(outcome));',
+    'if (core.serializeRavelValue(JSON.parse(outcome.serialized)) !== "{\\"packed\\":42}") process.exit(1);'
   ].join(" ")], { cwd: sandbox });
 
   const binary = join(sandbox, "node_modules", ".bin", process.platform === "win32" ? "ravel.cmd" : "ravel");

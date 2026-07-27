@@ -18,6 +18,7 @@ export interface TransformCall { type?: "transform"; name: string; arguments?: u
 export interface LiveAnalysis {
   dependencies?: Array<string | { reference: string; source?: SourceLocation }>;
   resources?: Array<string | { name?: string; path?: string; source?: SourceLocation }>;
+  modules?: Array<string | { specifier: string; source?: SourceLocation }>;
   diagnostics?: Diagnostic[];
 }
 export interface LiveExecutionRequest {
@@ -46,6 +47,7 @@ export interface ExecutionProvider {
   languages: string[] | Set<string>;
   analyze?(request: Pick<LiveExecutionRequest, "id" | "language" | "source" | "sourceLocation">): LiveAnalysis;
   execute(request: LiveExecutionRequest): Promise<LiveExecutionOutcome> | LiveExecutionOutcome;
+  dispose?(): Promise<void> | void;
 }
 export interface LiveExecutionPlan {
   version: 1;
@@ -56,6 +58,7 @@ export interface LiveExecutionPlan {
     source: SourceLocation;
     dependencies: Array<{ reference: string; id: string; source: SourceLocation }>;
     resources: LiveAnalysis["resources"];
+    modules: LiveAnalysis["modules"];
     analysis: LiveAnalysis;
   }>;
   diagnostics: Diagnostic[];

@@ -6,7 +6,10 @@ import {
   planLiveExecutions,
   transformGraph
 } from "@pieceful/ravel-core";
-import { javascriptLiveProvider } from "@pieceful/ravel-js-live";
+import {
+  createJavaScriptLiveProvider,
+  javascriptLiveProvider
+} from "@pieceful/ravel-js-live";
 import { validateRavelMap } from "@pieceful/ravel-map";
 import { markdownToMap } from "@pieceful/ravel-markdown";
 
@@ -228,7 +231,7 @@ test("the QuickJS realm exposes no ambient host capabilities", async () => {
     source: "import value from \"host\"; export default value;",
     sourceLocation
   });
-  assert.ok(imported.diagnostics.some((entry) => entry.code === "RJL104"));
+  assert.ok(imported.diagnostics.some((entry) => entry.code === "RJL108"));
 
   const internals = javascriptLiveProvider.analyze({
     source: "export default __ravelInputs;",
@@ -280,4 +283,169 @@ test("an untyped ch reference must identify exactly one local chunk", () => {
   const plan = planLiveExecutions(program, { providers: [javascriptLiveProvider] });
   assert.equal(plan.ok, false);
   assert.ok(plan.diagnostics.some((entry) => entry.code === "RL109"));
+});
+
+test("approved virtual modules can provide a CSV parser without host access", async () => {
+  const provider = createJavaScriptLiveProvider({
+    modules: {
+      "@ravel/csv": [
+        "export const parseCsv = (text) =>",
+        "  text.trim().split(/\\r?\\n/).map((line) => line.split(\",\"));"
+      ].join("\n")
+    }
+  });
+  const { program } = liveProgram([
+    "```js {.run #parse}",
+    "import { parseCsv } from \"@ravel/csv\";",
+    "const csv = load(\"cool.csv\");",
+    "export default parseCsv(csv);",
+    "```",
+    ""
+  ].join("\n"), "modules");
+  const plan = planLiveExecutions(program, { providers: [provider] });
+  assert.deepEqual(
+    plan.nodes["modules::parse.js"].modules.map(({ specifier }) => specifier),
+    ["@ravel/csv"]
+  );
+  const result = await executeLiveProgram(program, {
+    providers: [provider],
+    resources: { "cool.csv": "name,value\nalpha,1\n" }
+  });
+  assert.equal(result.ok, true);
+  assert.deepEqual(result.executions["modules::parse.js"].value, [
+    ["name", "value"],
+    ["alpha", "1"]
+  ]);
+  await provider.dispose();
+});
+
+test("the host terminates and replaces an unresponsive worker", async () => {
+  let terminated = false;
+  let workersCreated = 0;
+  class HangingWorker extends EventTarget {
+    constructor() {
+      super();
+      setTimeout(() => this.dispatchEvent(new MessageEvent("message", {
+        data: { type: "ready" }
+      })), 0);
+    }
+
+    postMessage(message) {
+      if (message.type === "configure") {
+        setTimeout(() => this.dispatchEvent(new MessageEvent("message", {
+          data: { type: "configured" }
+        })), 0);
+      }
+    }
+
+    terminate() {
+      terminated = true;
+    }
+  }
+
+  const provider = createJavaScriptLiveProvider({
+    workerFactory: () => {
+      workersCreated += 1;
+      return new HangingWorker();
+    },
+    timeoutMs: 5,
+    workerTerminationGraceMs: 1
+  });
+  const point = { line: 0, column: 0, offset: 0 };
+  const outcome = await provider.execute({
+    id: "worker::hang.js",
+    runId: "worker",
+    language: "js",
+    source: "export default 1;",
+    sourceLocation: {
+      uri: "worker.md",
+      range: { start: point, end: point }
+    },
+    inputs: {},
+    resources: {},
+    analysis: { dependencies: [], resources: [], modules: [], diagnostics: [] },
+    limits: {}
+  });
+  assert.equal(outcome.ok, false);
+  assert.ok(outcome.diagnostics.some((entry) => entry.code === "RJL120"));
+  assert.equal(terminated, true);
+  const replacementOutcome = await provider.execute({
+    id: "worker::hang-again.js",
+    runId: "worker",
+    language: "js",
+    source: "export default 2;",
+    sourceLocation: {
+      uri: "worker.md",
+      range: { start: point, end: point }
+    },
+    inputs: {},
+    resources: {},
+    analysis: { dependencies: [], resources: [], modules: [], diagnostics: [] },
+    limits: {}
+  });
+  assert.equal(replacementOutcome.ok, false);
+  assert.equal(workersCreated, 2);
+  await provider.dispose();
+});
+
+test("cancellation terminates the outer worker and permits a later run", async () => {
+  const provider = createJavaScriptLiveProvider({ timeoutMs: 5000 });
+  const controller = new AbortController();
+  const point = { line: 0, column: 0, offset: 0 };
+  const sourceLocation = {
+    uri: "cancel.md",
+    range: { start: point, end: point }
+  };
+  const pending = provider.execute({
+    id: "cancel::loop.js",
+    runId: "cancel",
+    language: "js",
+    source: "while (true) {} export default null;",
+    sourceLocation,
+    inputs: {},
+    resources: {},
+    analysis: { dependencies: [], resources: [], modules: [], diagnostics: [] },
+    limits: {},
+    signal: controller.signal
+  });
+  setTimeout(() => controller.abort(), 5);
+  const cancelled = await pending;
+  assert.equal(cancelled.ok, false);
+  assert.ok(cancelled.diagnostics.some((entry) => entry.code === "RJL121"));
+
+  const recovered = await provider.execute({
+    id: "cancel::recovered.js",
+    runId: "cancel",
+    language: "js",
+    source: "export default \"recovered\";",
+    sourceLocation,
+    inputs: {},
+    resources: {},
+    analysis: { dependencies: [], resources: [], modules: [], diagnostics: [] },
+    limits: {}
+  });
+  assert.equal(JSON.parse(recovered.serialized), "recovered");
+  await provider.dispose();
+});
+
+test("serialized live output is quota limited inside the worker", async () => {
+  const provider = createJavaScriptLiveProvider({ outputBytes: 4 });
+  const point = { line: 0, column: 0, offset: 0 };
+  const outcome = await provider.execute({
+    id: "quota::output.js",
+    runId: "quota",
+    language: "js",
+    source: "export default \"too large\";",
+    sourceLocation: {
+      uri: "quota.md",
+      range: { start: point, end: point }
+    },
+    inputs: {},
+    resources: {},
+    analysis: { dependencies: [], resources: [], modules: [], diagnostics: [] },
+    limits: {}
+  });
+  assert.equal(outcome.ok, false);
+  assert.ok(outcome.diagnostics.some((entry) => entry.code === "RJL122"));
+  await provider.dispose();
 });

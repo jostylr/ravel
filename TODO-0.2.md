@@ -251,7 +251,7 @@ Exit criteria:
       wrapper, Wasm variant, and build versions in every run and cache key.
 - [x] Reuse the compiled WebAssembly module, but create a fresh execution realm
       for each run by default.
-- [ ] Run QuickJS inside a dedicated browser worker and a Node worker or
+- [x] Run QuickJS inside a dedicated browser worker and a Node worker or
       replaceable process boundary. The host must be able to terminate the
       outer worker if the engine interrupt fails.
 - [ ] Configure memory, stack, execution-time, output-size, and pending-job
@@ -318,7 +318,7 @@ Exit criteria:
 - [ ] Never load QuickJS bytecode supplied by a document, dependency, cache from
       another engine version, or other untrusted source. Persistent bytecode
       caching is deferred unless its trust and invalidation model is reviewed.
-- [ ] Provide trusted virtual modules for reusable libraries only through a
+- [x] Provide trusted virtual modules for reusable libraries only through a
       registry prepared by the host. Arbitrary package or path imports remain
       unavailable.
 - [ ] Benchmark repeated runs with unchanged code and changing inputs to decide
@@ -743,7 +743,7 @@ Exit criteria:
       contract proven by a non-JavaScript conformance provider.
 - [ ] Markdown recognizes `js`/`javascript` fences with `.run` without changing
       their highlighting language.
-- [ ] `@pieceful/ravel-js-live` runs QuickJS in WebAssembly behind a terminable
+- [x] `@pieceful/ravel-js-live` runs QuickJS in WebAssembly behind a terminable
       worker boundary in Node and Chromium.
 - [ ] JavaScript blocks require one final `export default` and correctly retain
       empty and falsy JSON values.

@@ -28,7 +28,11 @@
     "access": "public"
   },
   "exports": {
-    ".": "./src/index.js"
+    ".": "./src/index.js",
+    "./worker-browser": {
+      "types": "./src/worker-browser.d.ts",
+      "default": "./src/worker-browser.js"
+    }
   },
   "types": "./src/index.d.ts",
   "files": [
@@ -37,6 +41,7 @@
     "LICENSE"
   ],
   "dependencies": {
+    "@jitl/quickjs-wasmfile-release-sync": "0.32.0",
     "acorn": "8.17.0",
     "quickjs-emscripten": "0.32.0"
   },

@@ -10,7 +10,8 @@ const mimeTypes = {
   ".html": "text/html; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
   ".mjs": "text/javascript; charset=utf-8",
-  ".json": "application/json; charset=utf-8"
+  ".json": "application/json; charset=utf-8",
+  ".wasm": "application/wasm"
 };
 
 const withinRoot = (path) => path === root || path.startsWith(root + sep);
@@ -48,7 +49,8 @@ const close = () => new Promise((resolveClose, reject) => server.close((error) =
 
 const pages = [
   { path: "runtime-contract.html", selector: "html", attribute: "ravelTest" },
-  { path: "markdown-adapter.html", selector: "body", attribute: "ravelMarkdownTest" }
+  { path: "markdown-adapter.html", selector: "body", attribute: "ravelMarkdownTest" },
+  { path: "js-live.html", selector: "body", attribute: "ravelJsLiveTest" }
 ];
 
 const address = await listen();
@@ -63,7 +65,9 @@ try {
       if (message.type() === "error") browserErrors.push(message.text());
     });
 
-    await page.goto(`http://127.0.0.1:${address.port}/${expected.path}`, { waitUntil: "networkidle" });
+    await page.goto(`http://127.0.0.1:${address.port}/${expected.path}`, {
+      waitUntil: "domcontentloaded"
+    });
     await page.waitForFunction(({ selector, attribute }) => {
       const value = document.querySelector(selector)?.dataset[attribute];
       return value === "passed" || value === "failed";

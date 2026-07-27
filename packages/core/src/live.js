@@ -140,6 +140,7 @@ const resolveReference = (reference, owner, chunks) => {
 const normalizeAnalysis = (analysis) => ({
   dependencies: Array.isArray(analysis?.dependencies) ? analysis.dependencies : [],
   resources: Array.isArray(analysis?.resources) ? analysis.resources : [],
+  modules: Array.isArray(analysis?.modules) ? analysis.modules : [],
   diagnostics: Array.isArray(analysis?.diagnostics) ? analysis.diagnostics : []
 });
 
@@ -205,6 +206,7 @@ export const planLiveExecutions = (program, options = {}) => {
       source: chunk.source,
       dependencies,
       resources: analysis.resources,
+      modules: analysis.modules,
       analysis
     };
   }
