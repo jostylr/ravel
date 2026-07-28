@@ -48,6 +48,7 @@ Core provides these transforms. A host can register more, such as the
 | `dedent()` | Removes the smallest common indentation from nonempty lines. |
 | `replace(search, replacement)` | Replaces all literal occurrences. |
 | `quote-reference()` | Changes `_(quote)` starts into escaped literal text. |
+| `jsontext()` / `jsontext(key)` | Serializes a complete live result as compact JSON text, or selects one top-level key; selected strings become raw text. |
 
 `indent(n)` changes the value before it is placed into its caller, so it
 prefixes every nonempty line, including the first. Embedded substitutions also
@@ -73,6 +74,31 @@ _"source | surround(text('['), ch('source'))"
 
 Here a host-provided `surround` command receives the literal `"["` and the
 value of `source` as its two arguments.
+
+### Live-result text boundary
+
+Live-to-live `ch()` dependencies receive copied, deeply frozen data values, so
+arrays and objects remain JavaScript data inside live blocks. Ordinary Ravel
+pipes and directives remain text-based.
+
+A live block that exports a string can be referenced directly. Other exports
+must use `jsontext` as the first pipe command. With no argument, it serializes
+the complete value:
+
+```text
+_"summary.js | jsontext()"
+```
+
+With one string argument, it selects a top-level object key:
+
+```text
+_"summary.js | jsontext('report')"
+```
+
+If `report` is a string, the result is that raw string. If it is another JSON
+value, the result is compact JSON text. Missing keys and non-string live
+references without `jsontext` are errors. More elaborate object formatting
+belongs in the live block.
 
 ## Value-producing commands: `text` and `ch`
 

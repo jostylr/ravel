@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>public-api – Ravel</title>
+<title>live-execution – Ravel</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -22,6 +22,41 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */
   vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -171,7 +206,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./contracts-and-configuration.html">Reference</a></li><li class="breadcrumb-item"><a href="./public-api.html">Public JavaScript API</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./markdown-fences.html">Language</a></li><li class="breadcrumb-item"><a href="./live-execution.html">Live execution (0.2 development)</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -237,7 +272,7 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container">
-  <a href="./live-execution.html" class="sidebar-item-text sidebar-link">
+  <a href="./live-execution.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Live execution (0.2 development)</span></a>
   </div>
 </li>
@@ -272,7 +307,7 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container">
-  <a href="./public-api.html" class="sidebar-item-text sidebar-link active">
+  <a href="./public-api.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Public JavaScript API</span></a>
   </div>
 </li>
@@ -359,83 +394,102 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
 
   <ul>
-  <li><a href="#public-javascript-api" id="toc-public-javascript-api" class="nav-link active" data-scroll-target="#public-javascript-api">Public JavaScript API</a>
+  <li><a href="#live-execution-0.2-development" id="toc-live-execution-0.2-development" class="nav-link active" data-scroll-target="#live-execution-0.2-development">Live execution (0.2 development)</a>
   <ul class="collapse">
-  <li><a href="#piecefulravel-map" id="toc-piecefulravel-map" class="nav-link" data-scroll-target="#piecefulravel-map"><code>@pieceful/ravel-map</code></a></li>
-  <li><a href="#piecefulravel-markdown" id="toc-piecefulravel-markdown" class="nav-link" data-scroll-target="#piecefulravel-markdown"><code>@pieceful/ravel-markdown</code></a></li>
-  <li><a href="#piecefulravel-core" id="toc-piecefulravel-core" class="nav-link" data-scroll-target="#piecefulravel-core"><code>@pieceful/ravel-core</code></a></li>
-  <li><a href="#piecefulravel-js-live-0.2-development" id="toc-piecefulravel-js-live-0.2-development" class="nav-link" data-scroll-target="#piecefulravel-js-live-0.2-development"><code>@pieceful/ravel-js-live</code> (0.2 development)</a></li>
-  <li><a href="#piecefulravel-host-node" id="toc-piecefulravel-host-node" class="nav-link" data-scroll-target="#piecefulravel-host-node"><code>@pieceful/ravel-host-node</code></a></li>
-  <li><a href="#piecefulravel" id="toc-piecefulravel" class="nav-link" data-scroll-target="#piecefulravel"><code>@pieceful/ravel</code></a></li>
+  <li><a href="#executable-fences" id="toc-executable-fences" class="nav-link" data-scroll-target="#executable-fences">Executable fences</a></li>
+  <li><a href="#javascript-live-profile" id="toc-javascript-live-profile" class="nav-link" data-scroll-target="#javascript-live-profile">JavaScript live profile</a></li>
+  <li><a href="#importing-helper-modules" id="toc-importing-helper-modules" class="nav-link" data-scroll-target="#importing-helper-modules">Importing helper modules</a></li>
+  <li><a href="#portable-api" id="toc-portable-api" class="nav-link" data-scroll-target="#portable-api">Portable API</a></li>
+  <li><a href="#current-safety-boundary" id="toc-current-safety-boundary" class="nav-link" data-scroll-target="#current-safety-boundary">Current safety boundary</a></li>
   </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/jostylr/ravel/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
-<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./contracts-and-configuration.html">Reference</a></li><li class="breadcrumb-item"><a href="./public-api.html">Public JavaScript API</a></li></ol></nav></header>
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./markdown-fences.html">Language</a></li><li class="breadcrumb-item"><a href="./live-execution.html">Live execution (0.2 development)</a></li></ol></nav></header>
 
 
 
 
-<section id="public-javascript-api" class="level1">
-<h1>Public JavaScript API</h1>
-<p>Ravel 0.1 favors small, function-oriented packages. The exports described here are public contracts; internal object properties not described here may change within the 0.1 line. Each library package ships a handwritten <code>index.d.ts</code> file alongside its JavaScript entry point.</p>
-<section id="piecefulravel-map" class="level2">
-<h2 class="anchored" data-anchor-id="piecefulravel-map"><code>@pieceful/ravel-map</code></h2>
-<p>Use this package at adapter, editor, and host boundaries.</p>
-<ul>
-<li><code>validateRavelMap(map, { uri? })</code> returns diagnostics without throwing.</li>
-<li><code>assertRavelMap(map, { uri? })</code> returns a valid map or throws <code>RavelMapValidationError</code>, whose <code>diagnostics</code> property is portable data.</li>
-<li><code>RAVEL_MAP_VERSION</code>, <code>RAVEL_MAP_SCHEMA_ID</code>, and <code>RAVEL_MAP_SCHEMA</code> identify the version-1 interchange contract.</li>
-<li><code>@pieceful/ravel-map/schema</code> is the JSON Schema module.</li>
-</ul>
+<section id="live-execution-0.2-development" class="level1">
+<h1>Live execution (0.2 development)</h1>
+<p>Ravel’s live-execution stage runs after ordinary source composition. It is language-neutral: core plans value dependencies and resources, while a registered provider owns parsing and evaluation for a particular language. Parsing Markdown or constructing a Ravel Map never executes code.</p>
+<p>The initial provider is <code>@pieceful/ravel-js-live</code>, which evaluates <code>js</code> and <code>javascript</code> with QuickJS compiled to WebAssembly.</p>
+<section id="executable-fences" class="level2">
+<h2 class="anchored" data-anchor-id="executable-fences">Executable fences</h2>
+<p>Use the fence’s real language and add <code>.run</code> plus a stable chunk name:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="in">```js {.run #source}</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="im">default</span> [<span class="dv">1</span><span class="op">,</span> <span class="dv">2</span><span class="op">,</span> <span class="dv">3</span>]<span class="op">;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="in">```javascript {.run #double}</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="dt">const</span> values <span class="op">=</span> <span class="fu">ch</span><span class="op">(</span><span class="st">"source"</span><span class="op">);</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>export <span class="kw">default</span> values<span class="op">.</span><span class="fu">map</span><span class="op">((</span>value<span class="op">)</span> <span class="op">=&gt;</span> value <span class="op">*</span> <span class="dv">2</span><span class="op">);</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><code>.run</code> implies that the explicitly named fence is a Ravel chunk. The adapter stores <code>metadata.language</code> for highlighting and <code>metadata.data.ravel.run: true</code> for execution planning; it does not name QuickJS or any other provider. An unmarked JavaScript fence is not executable. When more than one provider accepts a language, <code>provider=provider-id</code> can select one explicitly on the fence.</p>
+<p>Within one document, <code>ch("source")</code> resolves an untyped name when exactly one chunk with that name exists. A typed reference such as <code>ch("source.js")</code> is also valid. Ambiguous or missing references are planning errors.</p>
 </section>
-<section id="piecefulravel-markdown" class="level2">
-<h2 class="anchored" data-anchor-id="piecefulravel-markdown"><code>@pieceful/ravel-markdown</code></h2>
-<ul>
-<li><code>markdownToMap(text, { uri?, document?, mode? })</code> converts the documented Markdown fenced profile to <code>{ map, diagnostics }</code>. <code>mode</code> is <code>"opt-in"</code> or <code>"primary"</code>.</li>
-</ul>
+<section id="javascript-live-profile" class="level2">
+<h2 class="anchored" data-anchor-id="javascript-live-profile">JavaScript live profile</h2>
+<p>A live JavaScript module must contain exactly one top-level <code>export default</code>, and it must be the final statement. Its value can be <code>null</code>, a boolean, a finite number, a string, an array, or a string-keyed plain object containing those values recursively. This includes <code>""</code>, <code>[]</code>, <code>{}</code>, <code>false</code>, and <code>0</code>.</p>
+<p>Missing exports and non-data values such as <code>undefined</code>, functions, symbols, bigints, non-finite numbers, cycles, accessors, and class instances are errors. Functions may be defined and used during a run, but they cannot cross an execution boundary.</p>
+<p>The provider statically discovers literal <code>ch("...")</code> dependencies, <code>load("...")</code> resources, and static module imports. Computed names, dynamic imports, unapproved modules, and dynamic code generation are rejected. Values supplied by <code>ch</code> and <code>load</code> are serialized copies and are deeply frozen inside the QuickJS realm.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> csv <span class="op">=</span> <span class="fu">load</span>(<span class="st">"cool.csv"</span>)<span class="op">;</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> rows <span class="op">=</span> csv<span class="op">.</span><span class="fu">trim</span>()<span class="op">.</span><span class="fu">split</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)<span class="op">.</span><span class="fu">map</span>((line) <span class="kw">=&gt;</span> line<span class="op">.</span><span class="fu">split</span>(<span class="st">","</span>))<span class="op">;</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="im">default</span> rows<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><code>load</code> reads only a resource snapshot supplied by the host. It is not a filesystem operation.</p>
 </section>
-<section id="piecefulravel-core" class="level2">
-<h2 class="anchored" data-anchor-id="piecefulravel-core"><code>@pieceful/ravel-core</code></h2>
-<ul>
-<li><code>parseChunkId</code> and <code>formatChunkId</code> convert canonical chunk identities.</li>
-<li><code>parseChunk</code> parses an individual chunk body into portable syntax data.</li>
-<li><code>combineMaps(maps)</code> constructs the pre-transform graph.</li>
-<li><code>transformGraph(graph, { transforms?, deferLiveResults?, liveResults? })</code> evaluates that graph and returns the program, deliverables, diagnostics, dependencies, and trace. Hosts use <code>deferLiveResults</code> before execution and pass the completed execution result as <code>liveResults</code> for ordinary text materialization.</li>
-<li><code>planLiveExecutions(program, { providers })</code> performs the language-neutral analysis and dependency-planning stage for chunks marked executable.</li>
-<li><code>executeLiveProgram(program, { providers, resources?, limits?, signal? })</code> executes that plan asynchronously and returns portable values, canonical serialization, statuses, and diagnostics.</li>
-<li><code>ravelValueIssue</code>, <code>serializeRavelValue</code>, and <code>cloneRavelValue</code> implement the recursive data boundary shared by execution providers.</li>
-<li><code>createDeliverableProvenanceMap(deliverable)</code> and <code>createBuildProvenanceMap(program)</code> construct version-1 sidecar and aggregate generated-output maps.</li>
-<li><code>sourceAtGeneratedOffset(map, offset)</code> and <code>generatedRangesForSource(map, uri, offset)</code> provide forward and reverse provenance lookup. Exact results include a corresponding offset; coarse results retain the best attributable range without claiming character identity.</li>
-<li><code>generatedRangesForSourceRange(map, uri, range)</code> maps a half-open source range, while <code>explainGeneratedOffset(program, deliverable, offset)</code> adds the definition, references, and dependency path.</li>
-<li><code>provenanceMapVersion</code> identifies the generated provenance contract.</li>
-</ul>
-<p>The <code>@pieceful/ravel-core/directives</code> entry point exposes constructors for the portable directive IR. Custom transforms are functions that receive a string value and return a string; a failed or non-string result becomes a diagnostic.</p>
+<section id="importing-helper-modules" class="level2">
+<h2 class="anchored" data-anchor-id="importing-helper-modules">Importing helper modules</h2>
+<p>Live blocks have no ambient npm, URL, or filesystem module resolver. A host creates a provider with an immutable registry of approved ESM source:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> provider <span class="op">=</span> <span class="fu">createJavaScriptLiveProvider</span>({</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">modules</span><span class="op">:</span> {</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"@ravel/csv"</span><span class="op">:</span> <span class="vs">`</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="vs">      export const parseCsv = (text) =&gt;</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="vs">        text.trim().split(/</span><span class="sc">\\</span><span class="vs">r?</span><span class="sc">\\</span><span class="vs">n/).map((line) =&gt; line.split(","));</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="vs">    `</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The block can then import that exact name:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { parseCsv } <span class="im">from</span> <span class="st">"@ravel/csv"</span><span class="op">;</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="im">default</span> <span class="fu">parseCsv</span>(<span class="fu">load</span>(<span class="st">"cool.csv"</span>))<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The Node CLI can prepare this registry from packages already installed in the project. Installation remains an ordinary, explicit project step; Ravel never runs npm or package lifecycle scripts. The TOML allowlists both the package export and the virtual name visible to live code:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[[live.modules]]</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="dt">specifier</span> <span class="op">=</span> <span class="st">"@example/csv"</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="dt">from</span> <span class="op">=</span> <span class="st">"csv-parse/browser/esm/sync"</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="kw">[[live.resources]]</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="dt">name</span> <span class="op">=</span> <span class="st">"cool.csv"</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="dt">path</span> <span class="op">=</span> <span class="st">"cool.csv"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { parse } <span class="im">from</span> <span class="st">"@example/csv"</span><span class="op">;</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="im">default</span> <span class="fu">parse</span>(<span class="fu">load</span>(<span class="st">"cool.csv"</span>)<span class="op">,</span> { <span class="dt">columns</span><span class="op">:</span> <span class="kw">true</span> })<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Run the marked blocks explicitly:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> install csv-parse</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="ex">ravel</span> run <span class="at">--config</span> ravel.toml</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><code>ravel run</code> prints each successful export and performs no output writes. The CLI uses the Node-only <code>@pieceful/ravel-js-live/node</code> preparation entry to bundle each allowlisted package export into QuickJS-compatible ESM. The resulting source—not a package path or live host object—is copied to the worker once during provider configuration. The worker still cannot resolve another package or read <code>node_modules</code>. Pure JavaScript with browser-compatible exports is the intended profile; packages requiring Node built-ins, native addons, or filesystem access need the later transform-module/VFS layer.</p>
+<p>See the runnable <a href="../examples/live-modules/README.md"><code>examples/live-modules</code></a> project for a two-block CSV workflow using <code>load</code>, <code>ch</code>, and an npm module.</p>
 </section>
-<section id="piecefulravel-js-live-0.2-development" class="level2">
-<h2 class="anchored" data-anchor-id="piecefulravel-js-live-0.2-development"><code>@pieceful/ravel-js-live</code> (0.2 development)</h2>
+<section id="portable-api" class="level2">
+<h2 class="anchored" data-anchor-id="portable-api">Portable API</h2>
+<p>Core exports two asynchronous-stage helpers without changing the synchronous 0.1 composition API:</p>
 <ul>
-<li><code>javascriptLiveProvider</code> is the shared QuickJS/WebAssembly provider for <code>js</code> and <code>javascript</code>.</li>
-<li><code>createJavaScriptLiveProvider(options?)</code> creates a provider with configured memory, stack, execution-time, output, worker, and approved-module limits. <code>options.modules</code> maps exact import specifiers to immutable ESM source; <code>options.workerFactory</code> integrates a host’s emitted browser worker.</li>
-<li>A provider keeps its Wasm module warm behind a terminable worker, creates a fresh QuickJS runtime for each execution, and exposes <code>dispose()</code>.</li>
+<li><code>planLiveExecutions(program, { providers })</code> selects providers, analyzes executable chunks, resolves dependencies, and diagnoses live cycles.</li>
+<li><code>executeLiveProgram(program, { providers, resources?, limits?, signal? })</code> evaluates the planned graph and returns per-chunk values, canonical serialized text, statuses, and diagnostics.</li>
 </ul>
-<p>The provider parses modules before execution, accepts one final <code>export default</code>, exposes literal <code>ch("...")</code> and <code>load("...")</code> lookups over immutable copied data, and resolves static imports only from the approved registry. See <a href="./live-execution.html">Live execution</a> for the profile and current security boundary.</p>
-<p>The Node-only <code>@pieceful/ravel-js-live/node</code> subpath exports <code>prepareJavaScriptModules</code>. It bundles installed package exports explicitly allowlisted by a host into the immutable ESM-source registry.</p>
-</section>
-<section id="piecefulravel-host-node" class="level2">
-<h2 class="anchored" data-anchor-id="piecefulravel-host-node"><code>@pieceful/ravel-host-node</code></h2>
-<p>This Node-only package performs scoped filesystem input and artifact work.</p>
+<p>Providers implement a stable ID, version, language aliases, <code>analyze(request)</code>, and <code>execute(request)</code>. A provider receives composed source, copied inputs, copied resources, limits, source identity, a run ID, and an optional <code>AbortSignal</code>. This boundary is intentionally independent of JavaScript so a future RiX or other WebAssembly-backed provider can use the same planner.</p>
+<p>Successful results are data; executors never write files. <code>ravel run</code> displays them without output effects. <code>ravel build</code> performs a second ordinary Ravel evaluation after live execution:</p>
 <ul>
-<li><code>loadBuildInput</code> and <code>loadTomlBuild</code> load direct files or version-1 TOML runs.</li>
-<li><code>planDeliverables</code>, <code>writeBuildArtifacts</code>, and <code>createBuildManifest</code> support managed artifact production. A managed build writes a <code>.ravelmap</code> sidecar for every deliverable and an aggregate <code>.ravelmap</code> bundle.</li>
-<li><code>cleanManagedArtifacts</code>, <code>refreshStaleArtifacts</code>, <code>planOutputBackup</code>, and <code>createOutputBackup</code> implement the safe managed-output lifecycle.</li>
+<li>a live string enters references, pipes, and <code>out</code> as raw text;</li>
+<li>a structured live object remains a copied object for <code>ch()</code> consumers;</li>
+<li>ordinary text processing begins with <code>jsontext()</code> to serialize the complete live value, or <code>jsontext("key")</code> to select one top-level object key;</li>
+<li>a selected string becomes raw text, while another selected JSON value becomes compact JSON text.</li>
 </ul>
-<p>Expected input/configuration failures throw <code>RavelInputError</code> with portable diagnostics. Filesystem failures remain ordinary host errors.</p>
+<p>Arrays and primitive non-string exports remain valid between live blocks and can cross into ordinary text processing through <code>jsontext()</code>. A live block should produce a formatted string when compact JSON is not the desired representation. Only the existing host output stage writes the result.</p>
 </section>
-<section id="piecefulravel" class="level2">
-<h2 class="anchored" data-anchor-id="piecefulravel"><code>@pieceful/ravel</code></h2>
-<p>This package is the installed <code>ravel</code> executable. Its programmatic import is side-effect free for package tooling, but it intentionally exposes no parallel JavaScript command API in 0.1; use the CLI contract instead.</p>
+<section id="current-safety-boundary" class="level2">
+<h2 class="anchored" data-anchor-id="current-safety-boundary">Current safety boundary</h2>
+<p>The provider keeps a QuickJS Wasm module warm inside a dedicated Node or browser worker, while creating a fresh QuickJS runtime for every execution. It sets memory, stack, interrupt, and serialized-output limits. It installs no Node globals, filesystem, network, timers, console, or QuickJS <code>std</code>/<code>os</code>. Its module loader can return only pre-registered source strings.</p>
+<p>Timeout, cancellation, worker errors, and a failed interrupt terminate the outer worker, and a subsequent run starts a replacement. Pending-job quotas, broader adversarial tests, and the planned read-only virtual filesystem for approved transform modules remain before this can claim a complete hostile-code security boundary.</p>
 
 
 </section>

@@ -140,9 +140,21 @@ copied resources, limits, source identity, a run ID, and an optional
 `AbortSignal`. This boundary is intentionally independent of JavaScript so a
 future RiX or other WebAssembly-backed provider can use the same planner.
 
-Successful results are data; they do not write files. A later host/directive
-stage may explicitly encode a string as text or a value as JSON and route it to
-an output.
+Successful results are data; executors never write files. `ravel run` displays
+them without output effects. `ravel build` performs a second ordinary Ravel
+evaluation after live execution:
+
+- a live string enters references, pipes, and `out` as raw text;
+- a structured live object remains a copied object for `ch()` consumers;
+- ordinary text processing begins with `jsontext()` to serialize the complete
+  live value, or `jsontext("key")` to select one top-level object key;
+- a selected string becomes raw text, while another selected JSON value becomes
+  compact JSON text.
+
+Arrays and primitive non-string exports remain valid between live blocks and
+can cross into ordinary text processing through `jsontext()`. A live block
+should produce a formatted string when compact JSON is not the desired
+representation. Only the existing host output stage writes the result.
 
 ## Current safety boundary
 

@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "live": "node ../../packages/cli/src/index.js run --config ravel.toml"
+    "live": "node ../../packages/cli/src/index.js run --config ravel.toml",
+    "build": "node ../../packages/cli/src/index.js build --config ravel.toml"
   },
   "dependencies": {
     "csv-parse": "7.0.1"

@@ -71,7 +71,7 @@ refuses to overwrite an existing archive.
 | `ravel check <input>` | Validate and evaluate without writing artifacts. |
 | `ravel inspect <input>` | Show the completed program, `--chunks`, `--graph`, `--trace`, or a `--provenance <deliverable>` query. |
 | `ravel run <input>` | Execute only `.run` blocks through registered providers and print their exported values without writing artifacts. |
-| `ravel build <input>` | Build declared artifacts. TOML supplies `out_dir`; direct inputs require `--out-dir`. |
+| `ravel build <input>` | Execute `.run` blocks, materialize permitted live-result text, and build declared artifacts. TOML supplies `out_dir`; direct inputs require `--out-dir`. |
 | `ravel refresh <output-dir>` | Remove only stale managed outputs retained by a prior build. |
 
 `--dry-run` previews build or refresh effects. `--json` emits machine-readable

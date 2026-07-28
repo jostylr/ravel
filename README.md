@@ -83,7 +83,10 @@ Markdown fences can opt in with `.run`; portable core planning resolves
 `@pieceful/ravel-js-live` workspace package evaluates one final JSON-compatible
 `export default` in a fresh, limited QuickJS/Wasm runtime behind a terminable
 worker. Hosts may register immutable ESM source under approved import names,
-without exposing npm or filesystem resolution. See the
+without exposing npm or filesystem resolution. Live-to-live dependencies keep
+copied data values; `build` materializes raw string exports, entire JSON values
+through `jsontext()`, or selected object keys through `jsontext("key")` before
+ordinary pipes and outputs. See the
 [live-execution design and current safety boundary](documentation/live-execution.md).
 
 Try the complete portable pipeline in the
@@ -181,6 +184,7 @@ without writing files:
 cd examples/live-modules
 npm install
 npm run live
+npm run build
 ```
 
 Build the [50-chunk assembly benchmark](examples/benchmark/README.md) when you

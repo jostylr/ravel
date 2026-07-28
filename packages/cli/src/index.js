@@ -326,6 +326,9 @@ const runLiveProgram = async (program, loaded) => {
   }
 };
 
+const hasLiveBlocks = (program) => Object.values(program.chunks ?? {})
+  .some((chunk) => chunk.metadata?.data?.ravel?.run === true);
+
 const invokedAsCli = (() => {
   if (!process.argv[1]) return false;
   try {
@@ -410,9 +413,27 @@ if (command === "--help" || command === "-h" || argumentsValue.includes("--help"
         document: parsed.options["--document"],
         mode: parsed.options["--mode"]
       });
-      const program = transformGraph(loaded.pretransform);
-      const errors = program.diagnostics.filter((entry) => entry.severity === "error");
-      if (errors.length) {
+      let program = transformGraph(loaded.pretransform, {
+        deferLiveResults: new Set(["build", "run", "check"]).has(parsed.command)
+      });
+      const initialErrors = program.diagnostics.filter((entry) => entry.severity === "error");
+      let liveFailure = null;
+      if (!initialErrors.length && parsed.command === "build" && hasLiveBlocks(program)) {
+        const liveResult = await runLiveProgram(program, loaded);
+        if (liveResult.ok) {
+          program = transformGraph(loaded.pretransform, { liveResults: liveResult });
+        } else {
+          liveFailure = liveResult;
+        }
+      }
+      const completedErrors = program.diagnostics.filter((entry) => entry.severity === "error");
+      if (initialErrors.length) {
+        printDiagnostics(program.diagnostics, json);
+        process.exitCode = EXIT_SOURCE;
+      } else if (liveFailure) {
+        printDiagnostics(liveFailure.diagnostics, json);
+        process.exitCode = EXIT_SOURCE;
+      } else if (completedErrors.length) {
         printDiagnostics(program.diagnostics, json);
         process.exitCode = EXIT_SOURCE;
       } else if (parsed.command === "check") {

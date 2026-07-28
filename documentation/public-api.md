@@ -27,8 +27,11 @@ Use this package at adapter, editor, and host boundaries.
 - `parseChunkId` and `formatChunkId` convert canonical chunk identities.
 - `parseChunk` parses an individual chunk body into portable syntax data.
 - `combineMaps(maps)` constructs the pre-transform graph.
-- `transformGraph(graph, { transforms? })` evaluates that graph and returns the
-  program, deliverables, diagnostics, dependencies, and trace.
+- `transformGraph(graph, { transforms?, deferLiveResults?, liveResults? })`
+  evaluates that graph and returns the program, deliverables, diagnostics,
+  dependencies, and trace. Hosts use `deferLiveResults` before execution and
+  pass the completed execution result as `liveResults` for ordinary text
+  materialization.
 - `planLiveExecutions(program, { providers })` performs the language-neutral
   analysis and dependency-planning stage for chunks marked executable.
 - `executeLiveProgram(program, { providers, resources?, limits?, signal? })`

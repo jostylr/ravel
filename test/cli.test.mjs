@@ -52,12 +52,29 @@ test("CLI run bundles an allowlisted installed module and reads only declared re
       "```",
       "",
       "```js {.run #count}",
-      'export default ch("parse").length;',
+      'const count = ch("parse").length;',
+      'export default { count, report: "rows=" + count };',
+      "```",
+      "",
+      "```text {.ravel #report}",
+      '_"count.js | jsontext(\'report\')"',
+      "```",
+      "",
+      "```json {.ravel #summary}",
+      '_"count.js | jsontext()"',
+      "```",
+      "",
+      "```ravel",
+      'out("report.txt", _"report.text")',
+      'out("summary.json", _"summary.json")',
       "```",
       ""
     ].join("\n"));
     await writeFile(join(sandbox, "ravel.toml"), [
       "version = 1",
+      "",
+      "[build]",
+      'out_dir = "build"',
       "",
       "[[files]]",
       'path = "live.md"',
@@ -80,13 +97,24 @@ test("CLI run bundles an allowlisted installed module and reads only declared re
       ["name", "value"],
       ["alpha", "1"]
     ]);
-    assert.equal(summary.executions["live::count.js"].value, 2);
+    assert.deepEqual(summary.executions["live::count.js"].value, {
+      count: 2,
+      report: "rows=2"
+    });
     assert.deepEqual((await readdir(sandbox)).sort(), [
       "cool.csv",
       "live.md",
       "node_modules",
       "ravel.toml"
     ]);
+
+    const built = await run(process.execPath, [cli, "build", "--config", "ravel.toml", "--json"], { cwd: sandbox });
+    assert.equal(JSON.parse(built.stdout).ok, true);
+    assert.equal(await readFile(join(sandbox, "build", "report.txt"), "utf8"), "rows=2\n");
+    assert.equal(
+      await readFile(join(sandbox, "build", "summary.json"), "utf8"),
+      '{"count":2,"report":"rows=2"}\n'
+    );
   } finally {
     await rm(sandbox, { recursive: true, force: true });
   }

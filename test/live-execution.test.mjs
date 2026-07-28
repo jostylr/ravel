@@ -319,6 +319,81 @@ test("approved virtual modules can provide a CSV parser without host access", as
   await provider.dispose();
 });
 
+test("ordinary Ravel processing consumes live strings and whole or selected JSON text", async () => {
+  const adapted = markdownToMap([
+    "```js {.run #raw}",
+    'export default "hello";',
+    "```",
+    "",
+    "```js {.run #structured}",
+    'export default { message: "world", details: { count: 2 } };',
+    "```",
+    "",
+    "```text {.ravel #selected}",
+    '_"structured.js | jsontext(\'message\')"',
+    "```",
+    "",
+    "```json {.ravel #details}",
+    '_"structured.js | jsontext(\'details\')"',
+    "```",
+    "",
+    "```json {.ravel #whole}",
+    '_"structured.js | jsontext()"',
+    "```",
+    "",
+    "```ravel",
+    'out("raw.txt", _"raw.js")',
+    'out("selected.txt", _"selected.text")',
+    'out("details.json", _"details.json")',
+    'out("whole.json", _"whole.json")',
+    "```",
+    ""
+  ].join("\n"), {
+    uri: "materialize.md",
+    document: "materialize",
+    mode: "primary"
+  });
+  assert.deepEqual(adapted.diagnostics, []);
+  const graph = combineMaps([adapted.map]);
+  const executable = transformGraph(graph, { deferLiveResults: true });
+  assert.deepEqual(executable.diagnostics, []);
+
+  const liveResult = await executeLiveProgram(executable, {
+    providers: [javascriptLiveProvider]
+  });
+  assert.equal(liveResult.ok, true);
+  assert.deepEqual(liveResult.executions["materialize::structured.js"].value, {
+    message: "world",
+    details: { count: 2 }
+  });
+
+  const completed = transformGraph(graph, { liveResults: liveResult });
+  assert.deepEqual(completed.diagnostics, []);
+  assert.equal(completed.deliverables["raw.txt"].value, "hello");
+  assert.equal(completed.deliverables["selected.txt"].value, "world\n");
+  assert.equal(completed.deliverables["details.json"].value, '{"count":2}\n');
+  assert.equal(
+    completed.deliverables["whole.json"].value,
+    '{"message":"world","details":{"count":2}}\n'
+  );
+
+  const invalid = transformGraph({
+    ...graph,
+    directives: [
+      ...graph.directives,
+      {
+        kind: "out",
+        name: "structured.json",
+        from: "materialize::structured.js",
+        source: graph.directives[0].source
+      }
+    ]
+  }, { liveResults: liveResult });
+  assert.ok(invalid.diagnostics.some((entry) =>
+    entry.code === "RV140" && /requires a live string/.test(entry.message)
+  ));
+});
+
 test("the host terminates and replaces an unresponsive worker", async () => {
   let terminated = false;
   let workersCreated = 0;

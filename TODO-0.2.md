@@ -67,9 +67,12 @@ design and backlog are in the
       ```
       ````
 
-- [ ] Decide and document how an `out` directive selects and encodes a live
-      result. The proposed policy is `text` for a string result and explicit
-      `json` encoding for any JSON value; the executor never writes either.
+- [x] Decide and document how ordinary processing selects a live result.
+      Strings flow as raw text. `jsontext()` serializes a complete JSON value;
+      `jsontext("key")` selects one top-level object value. A selected string
+      becomes raw text and another selected JSON value becomes compact JSON
+      text. More elaborate formatting belongs in the live block. The executor
+      never writes either.
 - [x] Keep the synchronous 0.1 static-composition API intact. Add an asynchronous
       execution stage rather than making every existing `transformGraph` caller
       asynchronous.
@@ -220,11 +223,11 @@ Exit criteria:
 
 ### A5. Connect results to directives and hosts
 
-- [ ] Extend directive planning so a live result can be selected without giving
+- [x] Extend directive planning so a live result can be selected without giving
       the executor an output capability.
-- [ ] Require explicit output encoding: raw text accepts only strings; JSON
-      accepts any `RavelValue`; future encodings are registered transforms.
-- [ ] Keep build writes in host-node with the existing dry-run, containment,
+- [x] Require the explicit `jsontext()` or `jsontext("key")` boundary for
+      non-string live results entering ordinary text pipes or directives.
+- [x] Keep build writes in host-node with the existing dry-run, containment,
       atomic commit, manifest, cleanup, and backup behavior.
 - [ ] Add inspect/JSON views for execution plans, provider selection, input and
       resource hashes, result summaries, diagnostics, trace, and cache state.
@@ -236,8 +239,8 @@ Exit criteria:
 
 Exit criteria:
 
-- A directive writes an exported string or explicitly JSON-encoded array
-  through host-node, while the same executor package remains unable to write a
+- A directive writes an exported string or an object key selected through
+  `jsontext` via host-node, while the same executor package remains unable to write a
   host file directly.
 
 ## Workstream B: `@pieceful/ravel-js-live`
@@ -738,8 +741,9 @@ Exit criteria:
 
 ## 0.2 release checklist
 
-- [ ] The 0.1 static composition and build suites remain passing and do not
-      execute `.run` blocks implicitly.
+- [ ] The 0.1 static composition and build suites remain passing. `check` and
+      `inspect` do not execute `.run`; `run` and `build` do so explicitly as
+      part of their documented contracts.
 - [ ] Modern Markdown, full LitPro Markdown, Quarto, AsciiDoc, HTML, Org,
       noweb, and MyST adapters pass the shared source-map and normalized-map
       conformance suite.

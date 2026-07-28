@@ -31,4 +31,28 @@ path = "cool.csv"
 ```
 
 `ravel run` prints the exported values and does not write build outputs.
-For that reason this run-only project does not need a `[build]` table.
+
+The example also shows how normal Ravel processing consumes a live result:
+
+```sh
+npm run build
+cat .ravel/build/report.txt
+```
+
+A live string can flow directly into a pipe or `out`. A structured live export
+stays an object for `ch()` consumers. Ordinary text processing uses
+`jsontext()` to serialize the whole value:
+
+```text
+_"summarize.js | jsontext()"
+```
+
+or supplies a top-level key:
+
+```text
+_"summarize.js | jsontext('report')"
+```
+
+If the selected value is a string, it becomes raw text. Other selected JSON
+values become compact JSON text. More elaborate formatting belongs in the live
+block.

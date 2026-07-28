@@ -1,0 +1,1939 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>markup-adapters-design – Ravel</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-6b4c05a7c593a9cf1aba7bb012378658.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<meta property="og:title" content="Ravel">
+<meta property="og:image" content="https://ravel.jostylr.com/og.png">
+<meta property="og:site_name" content="Ravel">
+<meta property="og:locale" content="en_US">
+<meta property="og:image:height" content="630">
+<meta property="og:image:width" content="1200">
+<meta name="twitter:title" content="Ravel">
+<meta name="twitter:image" content="https://ravel.jostylr.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image-height" content="630">
+<meta name="twitter:image-width" content="1200">
+</head>
+
+<body class="nav-sidebar docked nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">Ravel</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="./getting-started.html" aria-current="page">
+<span class="menu-text">Get started</span></a>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-guides" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Guides</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-guides">
+        <li>
+    <a class="dropdown-item" href="./cookbook.html">
+ <span class="dropdown-text">Cookbook</span></a>
+  </li>
+        <li>
+    <a class="dropdown-item" href="./markdown-fences.html">
+ <span class="dropdown-text">Markdown fences</span></a>
+  </li>
+        <li>
+    <a class="dropdown-item" href="./pipes-and-directives.html">
+ <span class="dropdown-text">Pipes and directives</span></a>
+  </li>
+        <li>
+    <a class="dropdown-item" href="./provenance-maps.html">
+ <span class="dropdown-text">Provenance maps</span></a>
+  </li>
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-reference" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Reference</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-reference">
+        <li>
+    <a class="dropdown-item" href="./public-api.html">
+ <span class="dropdown-text">Public API</span></a>
+  </li>
+        <li>
+    <a class="dropdown-item" href="./contracts-and-configuration.html">
+ <span class="dropdown-text">0.1 contracts</span></a>
+  </li>
+        <li>
+    <a class="dropdown-item" href="./ravel-map-schema.html">
+ <span class="dropdown-text">Ravel Map schema</span></a>
+  </li>
+        <li>
+    <a class="dropdown-item" href="./chunk-syntax.html">
+ <span class="dropdown-text">Chunk syntax</span></a>
+  </li>
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="./playground/">
+<span class="menu-text">Playground</span></a>
+  </li>
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./design.html">Design and history</a></li><li class="breadcrumb-item"><a href="./markup-adapters-design.html">Markup adapter design</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container">
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Start here</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a>
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">
+          <li class="sidebar-item">
+  <div class="sidebar-item-container">
+  <a href="./getting-started.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Five-minute getting started</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container">
+  <a href="./cookbook.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Ravel cookbook</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container">
+  <a href="./migration-from-legacy.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Migrating FizzBuzz-era Ravel material</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Language</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a>
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">
+          <li class="sidebar-item">
+  <div class="sidebar-item-container">
+  <a href="./markdown-fences.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Markdown fenced-block profile</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container">
+  <a href="./live-execution.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Live execution (0.2 development)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container">
+  <a href="./chunk-syntax.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Ravel embedded chunk syntax guide</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container">
+  <a href="./pipes-and-directives.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Ravel pipes and directives reference</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Reference</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a>
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">
+          <li class="sidebar-item">
+  <div class="sidebar-item-container">
+  <a href="./contracts-and-configuration.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">0.1 contracts and configuration</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container">
+  <a href="./public-api.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Public JavaScript API</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container">
+  <a href="./ravel-map-schema.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Ravel Map schema guide</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container">
+  <a href="./provenance-maps.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Generated-output provenance maps</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container">
+  <a href="./filesystem-safety.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Filesystem safety and trust boundaries</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container">
+  <a href="./runtime-support.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Runtime support and testing policy</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Design and history</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a>
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">
+          <li class="sidebar-item">
+  <div class="sidebar-item-container">
+  <a href="./design.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Ravel design plan</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container">
+  <a href="./markup-adapters-design.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Markup adapter design</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container">
+  <a href="./proof-of-concept.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">First graph and chunk-processing proof of concept</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container">
+  <a href="./explorer-design.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Ravel Explorer design</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container">
+  <a href="./history.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">History and starting point</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container">
+  <a href="./release-checklist.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">0.1 release checklist</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+
+  <ul>
+  <li><a href="#markup-adapter-design" id="toc-markup-adapter-design" class="nav-link active" data-scroll-target="#markup-adapter-design">Markup adapter design</a>
+  <ul class="collapse">
+  <li><a href="#status" id="toc-status" class="nav-link" data-scroll-target="#status">Status</a></li>
+  <li><a href="#decision-summary" id="toc-decision-summary" class="nav-link" data-scroll-target="#decision-summary">Decision summary</a></li>
+  <li><a href="#goals" id="toc-goals" class="nav-link" data-scroll-target="#goals">Goals</a></li>
+  <li><a href="#non-goals" id="toc-non-goals" class="nav-link" data-scroll-target="#non-goals">Non-goals</a></li>
+  <li><a href="#adapter-contract" id="toc-adapter-contract" class="nav-link" data-scroll-target="#adapter-contract">Adapter contract</a></li>
+  <li><a href="#identity-and-display" id="toc-identity-and-display" class="nav-link" data-scroll-target="#identity-and-display">Identity and display</a></li>
+  <li><a href="#definition-pipelines-in-markup-adapters" id="toc-definition-pipelines-in-markup-adapters" class="nav-link" data-scroll-target="#definition-pipelines-in-markup-adapters">Definition pipelines in markup adapters</a></li>
+  <li><a href="#modern-markdown-adapter-markdown" id="toc-modern-markdown-adapter-markdown" class="nav-link" data-scroll-target="#modern-markdown-adapter-markdown">Modern Markdown adapter (<code>markdown</code>)</a>
+  <ul class="collapse">
+  <li><a href="#headings-and-named-fences-coexist" id="toc-headings-and-named-fences-coexist" class="nav-link" data-scroll-target="#headings-and-named-fences-coexist">Headings and named fences coexist</a></li>
+  <li><a href="#heading-declarations" id="toc-heading-declarations" class="nav-link" data-scroll-target="#heading-declarations">Heading declarations</a></li>
+  <li><a href="#unnamed-fences-and-the-first-fence-pipeline" id="toc-unnamed-fences-and-the-first-fence-pipeline" class="nav-link" data-scroll-target="#unnamed-fences-and-the-first-fence-pipeline">Unnamed fences and the first-fence pipeline</a></li>
+  <li><a href="#named-fences" id="toc-named-fences" class="nav-link" data-scroll-target="#named-fences">Named fences</a></li>
+  <li><a href="#directives-in-modern-markdown-links" id="toc-directives-in-modern-markdown-links" class="nav-link" data-scroll-target="#directives-in-modern-markdown-links">Directives in modern Markdown links</a></li>
+  </ul></li>
+  <li><a href="#full-litpro-markdown-adapter-markdown-litpro" id="toc-full-litpro-markdown-adapter-markdown-litpro" class="nav-link" data-scroll-target="#full-litpro-markdown-adapter-markdown-litpro">Full LitPro Markdown adapter (<code>markdown-litpro</code>)</a>
+  <ul class="collapse">
+  <li><a href="#default-heading-model" id="toc-default-heading-model" class="nav-link" data-scroll-target="#default-heading-model">Default heading model</a></li>
+  <li><a href="#heading-pipes-and-historical-dialects" id="toc-heading-pipes-and-historical-dialects" class="nav-link" data-scroll-target="#heading-pipes-and-historical-dialects">Heading pipes and historical dialects</a></li>
+  <li><a href="#configurable-heading-level-meaning" id="toc-configurable-heading-level-meaning" class="nav-link" data-scroll-target="#configurable-heading-level-meaning">Configurable heading-level meaning</a></li>
+  <li><a href="#other-legacy-constructs-to-preserve" id="toc-other-legacy-constructs-to-preserve" class="nav-link" data-scroll-target="#other-legacy-constructs-to-preserve">Other legacy constructs to preserve</a></li>
+  </ul></li>
+  <li><a href="#quarto" id="toc-quarto" class="nav-link" data-scroll-target="#quarto">Quarto</a>
+  <ul class="collapse">
+  <li><a href="#relationship-to-markdown" id="toc-relationship-to-markdown" class="nav-link" data-scroll-target="#relationship-to-markdown">Relationship to Markdown</a></li>
+  <li><a href="#heading-owned-pieces-in-quarto" id="toc-heading-owned-pieces-in-quarto" class="nav-link" data-scroll-target="#heading-owned-pieces-in-quarto">Heading-owned pieces in Quarto</a></li>
+  <li><a href="#named-fences-in-quarto-make-the-name-visible" id="toc-named-fences-in-quarto-make-the-name-visible" class="nav-link" data-scroll-target="#named-fences-in-quarto-make-the-name-visible">Named fences in Quarto: make the name visible</a></li>
+  <li><a href="#reference-and-definition-navigation" id="toc-reference-and-definition-navigation" class="nav-link" data-scroll-target="#reference-and-definition-navigation">Reference and definition navigation</a></li>
+  <li><a href="#pipeline-and-cache-ordering" id="toc-pipeline-and-cache-ordering" class="nav-link" data-scroll-target="#pipeline-and-cache-ordering">Pipeline and cache ordering</a></li>
+  </ul></li>
+  <li><a href="#asciidoc" id="toc-asciidoc" class="nav-link" data-scroll-target="#asciidoc">AsciiDoc</a>
+  <ul class="collapse">
+  <li><a href="#section-form" id="toc-section-form" class="nav-link" data-scroll-target="#section-form">Section form</a></li>
+  <li><a href="#block-form" id="toc-block-form" class="nav-link" data-scroll-target="#block-form">Block form</a></li>
+  <li><a href="#asciidoc-directives" id="toc-asciidoc-directives" class="nav-link" data-scroll-target="#asciidoc-directives">AsciiDoc directives</a></li>
+  <li><a href="#implementation-choices-and-limitations" id="toc-implementation-choices-and-limitations" class="nav-link" data-scroll-target="#implementation-choices-and-limitations">Implementation choices and limitations</a></li>
+  </ul></li>
+  <li><a href="#html" id="toc-html" class="nav-link" data-scroll-target="#html">HTML</a>
+  <ul class="collapse">
+  <li><a href="#section-form-1" id="toc-section-form-1" class="nav-link" data-scroll-target="#section-form-1">Section form</a></li>
+  <li><a href="#block-form-1" id="toc-block-form-1" class="nav-link" data-scroll-target="#block-form-1">Block form</a></li>
+  <li><a href="#parsing-and-safety" id="toc-parsing-and-safety" class="nav-link" data-scroll-target="#parsing-and-safety">Parsing and safety</a></li>
+  </ul></li>
+  <li><a href="#org-adapter-org" id="toc-org-adapter-org" class="nav-link" data-scroll-target="#org-adapter-org">Org adapter (<code>org</code>)</a>
+  <ul class="collapse">
+  <li><a href="#native-compatible-piece-declarations" id="toc-native-compatible-piece-declarations" class="nav-link" data-scroll-target="#native-compatible-piece-declarations">Native-compatible piece declarations</a></li>
+  <li><a href="#compact-pieceful-org-spelling" id="toc-compact-pieceful-org-spelling" class="nav-link" data-scroll-target="#compact-pieceful-org-spelling">Compact Pieceful Org spelling</a></li>
+  <li><a href="#references-and-use-site-pipes" id="toc-references-and-use-site-pipes" class="nav-link" data-scroll-target="#references-and-use-site-pipes">References and use-site pipes</a></li>
+  <li><a href="#headings-results-and-tangling" id="toc-headings-results-and-tangling" class="nav-link" data-scroll-target="#headings-results-and-tangling">Headings, results, and tangling</a></li>
+  <li><a href="#org-source-maps" id="toc-org-source-maps" class="nav-link" data-scroll-target="#org-source-maps">Org source maps</a></li>
+  </ul></li>
+  <li><a href="#noweb-adapter-noweb" id="toc-noweb-adapter-noweb" class="nav-link" data-scroll-target="#noweb-adapter-noweb">noweb adapter (<code>noweb</code>)</a>
+  <ul class="collapse">
+  <li><a href="#noweb-plus-pipes" id="toc-noweb-plus-pipes" class="nav-link" data-scroll-target="#noweb-plus-pipes">noweb-plus pipes</a></li>
+  <li><a href="#noweb-dialect-and-compatibility-policy" id="toc-noweb-dialect-and-compatibility-policy" class="nav-link" data-scroll-target="#noweb-dialect-and-compatibility-policy">noweb dialect and compatibility policy</a></li>
+  </ul></li>
+  <li><a href="#other-promising-formats" id="toc-other-promising-formats" class="nav-link" data-scroll-target="#other-promising-formats">Other promising formats</a>
+  <ul class="collapse">
+  <li><a href="#myst-markdown-high-priority-after-the-initial-adapters" id="toc-myst-markdown-high-priority-after-the-initial-adapters" class="nav-link" data-scroll-target="#myst-markdown-high-priority-after-the-initial-adapters">MyST Markdown — high priority after the initial adapters</a></li>
+  <li><a href="#restructuredtextsphinx-possible-below-myst" id="toc-restructuredtextsphinx-possible-below-myst" class="nav-link" data-scroll-target="#restructuredtextsphinx-possible-below-myst">reStructuredText/Sphinx — possible, below MyST</a></li>
+  <li><a href="#typst-renderer-first-source-adapter-later" id="toc-typst-renderer-first-source-adapter-later" class="nav-link" data-scroll-target="#typst-renderer-first-source-adapter-later">Typst — renderer first, source adapter later</a></li>
+  <li><a href="#formats-not-recommended-initially" id="toc-formats-not-recommended-initially" class="nav-link" data-scroll-target="#formats-not-recommended-initially">Formats not recommended initially</a></li>
+  </ul></li>
+  <li><a href="#cross-format-equivalence" id="toc-cross-format-equivalence" class="nav-link" data-scroll-target="#cross-format-equivalence">Cross-format equivalence</a></li>
+  <li><a href="#diagnostics-added-by-adapters" id="toc-diagnostics-added-by-adapters" class="nav-link" data-scroll-target="#diagnostics-added-by-adapters">Diagnostics added by adapters</a></li>
+  <li><a href="#conformance-and-test-plan" id="toc-conformance-and-test-plan" class="nav-link" data-scroll-target="#conformance-and-test-plan">Conformance and test plan</a></li>
+  <li><a href="#recommended-delivery-order" id="toc-recommended-delivery-order" class="nav-link" data-scroll-target="#recommended-delivery-order">Recommended delivery order</a></li>
+  <li><a href="#open-decisions" id="toc-open-decisions" class="nav-link" data-scroll-target="#open-decisions">Open decisions</a></li>
+  <li><a href="#recommendation" id="toc-recommendation" class="nav-link" data-scroll-target="#recommendation">Recommendation</a></li>
+  <li><a href="#external-references" id="toc-external-references" class="nav-link" data-scroll-target="#external-references">External references</a></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/jostylr/ravel/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./design.html">Design and history</a></li><li class="breadcrumb-item"><a href="./markup-adapters-design.html">Markup adapter design</a></li></ol></nav></header>
+
+
+
+
+<section id="markup-adapter-design" class="level1">
+<h1>Markup adapter design</h1>
+<section id="status" class="level2">
+<h2 class="anchored" data-anchor-id="status">Status</h2>
+<p>Proposed design for discussion. This document extends <code>syntax-proposal-07-17-26.md</code>; it does not replace the core Piece Document, reference, transform, effect, or capability model defined there.</p>
+<p>In this document, <strong>piece</strong> means the semantic unit also called a full block or chunk in earlier LitPro writing. A source document may contain many pieces.</p>
+</section>
+<section id="decision-summary" class="level2">
+<h2 class="anchored" data-anchor-id="decision-summary">Decision summary</h2>
+<ol type="1">
+<li>There is one Pieceful semantic language and one public, source-mapped Piece Document IR. Markup adapters only recognize authoring conventions and map them to that IR.</li>
+<li>The modern Markdown adapter allows heading-owned pieces and fence-owned pieces to coexist. An unnamed fence belongs to the current heading piece; a named fence declares only itself and does not change that heading context.</li>
+<li>A separate <code>markdown-litpro</code> adapter preserves the original LitPro structure, including peer H1-H4 blocks, relative H5/H6 blocks, repeated headings, minor blocks, link directives, and legacy reference paths.</li>
+<li>Definition pipelines are available after piece names in every adapter. They run once after all fragments of that piece have been concatenated.</li>
+<li>Quarto is a specialization and renderer integration for the Markdown adapter, not a separate compiler language.</li>
+<li>In rendered documents, every piece must have a visible display name and a stable anchor. A format integration should also show <code>uses</code> and <code>used by</code> links generated from the resolved graph.</li>
+<li>The canonical Quarto block form uses Quarto code-listing labels and captions. This addresses the invisible-fence-name problem without inventing a second presentation system.</li>
+<li>AsciiDoc should initially support a section form and an attributed source block form. Its native block titles, IDs, roles, custom attributes, and cross references are a good fit.</li>
+<li>HTML should use ordinary semantic elements plus <code>data-lp-*</code> attributes. Custom elements may enhance the result but are not the canonical source representation.</li>
+<li>Org and noweb are first-class input adapters. Org maps Babel names, <code>noweb-ref</code> groups, and noweb references into the Piece Document. The noweb adapter supports strict-compatible and pipe-extended dialects.</li>
+<li>MyST Markdown remains a high-value later adapter for directive-oriented scientific documents and notebooks.</li>
+</ol>
+</section>
+<section id="goals" class="level2">
+<h2 class="anchored" data-anchor-id="goals">Goals</h2>
+<ul>
+<li>Preserve the visible, narrative quality of the old heading-oriented style.</li>
+<li>Also support self-contained blocks that can be moved without moving an enclosing section.</li>
+<li>Allow definition pipelines after names in every source format and apply them consistently after fragment concatenation.</li>
+<li>Parse traditional Org/Babel and noweb structures without requiring their execution engines.</li>
+<li>Give Markdown, Quarto, AsciiDoc, HTML, Org, noweb, notebooks, and future rich-text hosts the same piece graph and effect plan.</li>
+<li>Preserve exact source ranges for definitions, literal fragments, references, transforms, and directives.</li>
+<li>Make piece identity and graph navigation useful in the rendered document, not only in compiler internals.</li>
+<li>Keep ordinary rendering useful when the Pieceful extension is absent.</li>
+<li>Never require a markup renderer to execute Pieceful effects while parsing.</li>
+</ul>
+</section>
+<section id="non-goals" class="level2">
+<h2 class="anchored" data-anchor-id="non-goals">Non-goals</h2>
+<ul>
+<li>Making every feature of a host format part of Pieceful.</li>
+<li>Treating Quarto/Jupyter execution order as Pieceful dependency order.</li>
+<li>Reimplementing Quarto, Asciidoctor, Babel, or browser rendering.</li>
+<li>Making the modern Markdown adapter emulate legacy LitPro; that responsibility belongs to the separate <code>markdown-litpro</code> adapter.</li>
+<li>Allowing markup-specific syntax to leak into the core resolver.</li>
+</ul>
+</section>
+<section id="adapter-contract" class="level2">
+<h2 class="anchored" data-anchor-id="adapter-contract">Adapter contract</h2>
+<p>Every adapter implements the same conceptual interface:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode ts code-with-copy"><code class="sourceCode typescript"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">interface</span> MarkupAdapter {</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">readonly</span> format<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">parse</span>(input<span class="op">:</span> SourceText<span class="op">,</span> options<span class="op">:</span> AdapterOptions)<span class="op">:</span> AdapterResult<span class="op">;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> AdapterResult <span class="op">=</span> {</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  document<span class="op">:</span> PieceDocument<span class="op">;</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  surface<span class="op">:</span> SurfaceMap<span class="op">;</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>}<span class="op">;</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> SurfaceMap <span class="op">=</span> {</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  definitions<span class="op">:</span> <span class="kw">readonly</span> DefinitionSurface[]<span class="op">;</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>  references<span class="op">:</span> <span class="kw">readonly</span> ReferenceSurface[]<span class="op">;</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>  directives<span class="op">:</span> <span class="kw">readonly</span> DirectiveSurface[]<span class="op">;</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>}<span class="op">;</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> DefinitionSurface <span class="op">=</span> {</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>  pieceId<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>  declaration<span class="op">:</span> <span class="bu">Range</span><span class="op">;</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>  fragments<span class="op">:</span> <span class="kw">readonly</span> <span class="bu">Range</span>[]<span class="op">;</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>  sourceAnchor<span class="op">?:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>  renderedAnchor<span class="op">?:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>  displayName<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>}<span class="op">;</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> ReferenceSurface <span class="op">=</span> {</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>  ownerPieceId<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>  targetText<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>  source<span class="op">:</span> <span class="bu">Range</span><span class="op">;</span></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>}<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The <code>PieceDocument</code> remains the compiler input. <code>SurfaceMap</code> records how the semantic objects appear in this particular markup. It supports render filters, an LSP, go-to-definition, dependency summaries, and generated-document links without teaching the core about headings, fences, or HTML nodes.</p>
+<p>All adapters must:</p>
+<ul>
+<li>preserve the document URI and exact source offsets;</li>
+<li>emit the same AST for Pieceful references and pipelines regardless of markup;</li>
+<li>distinguish a piece declaration from its display name;</li>
+<li>preserve literal fragments before markup rendering or syntax highlighting;</li>
+<li>plan effects as data rather than performing them;</li>
+<li>diagnose duplicate IDs, ambiguous inferred IDs, and unsupported mixtures;</li>
+<li>provide a stable rendered anchor whenever the host format supports one.</li>
+</ul>
+</section>
+<section id="identity-and-display" class="level2">
+<h2 class="anchored" data-anchor-id="identity-and-display">Identity and display</h2>
+<p>A piece has three related but distinct names:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Property</th>
+<th>Purpose</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>semantic ID</td>
+<td>Pieceful references and graph identity</td>
+<td><code>format-greeting</code></td>
+</tr>
+<tr class="even">
+<td>display name</td>
+<td>prose and rendered caption</td>
+<td><code>Greeting formatter</code></td>
+</tr>
+<tr class="odd">
+<td>rendered anchor</td>
+<td>host-format navigation</td>
+<td><code>lp-format-greeting</code> or <code>lst-lp-format-greeting</code></td>
+</tr>
+</tbody>
+</table>
+<p>The semantic ID uses the grammar in <code>syntax-proposal-07-17-26.md</code>. An adapter must not expose a host’s reserved prefix as part of the semantic ID.</p>
+<p>Explicit semantic IDs are canonical for block-local declarations. For heading declarations, deriving an ID from the visible heading is intentionally supported because it is the main attraction of the older style. An explicit anchor can stabilize the ID across a heading rename.</p>
+</section>
+<section id="definition-pipelines-in-markup-adapters" class="level2">
+<h2 class="anchored" data-anchor-id="definition-pipelines-in-markup-adapters">Definition pipelines in markup adapters</h2>
+<p>Every adapter can attach a definition pipeline to a piece declaration:</p>
+<pre class="text"><code>piece-name | transform-one() | transform-two("argument")</code></pre>
+<p>The first unescaped pipe ends the name. <code>\|</code> represents a literal pipe where the host markup permits it. The shared pipeline parser, not the markup adapter, parses the remainder.</p>
+<p>A definition pipeline applies to the complete piece:</p>
+<ol type="1">
+<li>collect all literal fragments;</li>
+<li>concatenate them in the adapter-defined order;</li>
+<li>parse references in the concatenated value;</li>
+<li>apply the definition pipeline once;</li>
+<li>apply a consumer’s inline pipeline, if any, at the reference site.</li>
+</ol>
+<p>It never runs separately on each fragment. This matters for transforms such as formatting, trimming, templating, or parsing a complete file.</p>
+<p>Each format may also provide a native attribute spelling when literal pipes would interfere with the host parser:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Format</th>
+<th>Compact spelling</th>
+<th>Native/attribute spelling</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Markdown heading</td>
+<td><code>## Main | trim()</code></td>
+<td><code>lp-pipe="trim()"</code> on a heading attribute</td>
+</tr>
+<tr class="even">
+<td>Markdown fence</td>
+<td><code>javascript lp:main | trim()</code> in the info string</td>
+<td><code>lp-pipe="trim()"</code></td>
+</tr>
+<tr class="odd">
+<td>Quarto</td>
+<td>same heading form</td>
+<td><code>lp-pipe="trim()"</code> on the listing</td>
+</tr>
+<tr class="even">
+<td>AsciiDoc</td>
+<td><code>== Main | trim()</code></td>
+<td><code>lp-pipe="trim()"</code> block attribute</td>
+</tr>
+<tr class="odd">
+<td>Org</td>
+<td><code>#+LP_NAME: main | trim()</code></td>
+<td>adjacent <code>#+LP_PIPE:</code> keyword</td>
+</tr>
+<tr class="even">
+<td>noweb-plus</td>
+<td><code>&lt;&lt;main | trim()&gt;&gt;=</code></td>
+<td><code>@ %pieceful pipeline ...</code> pragma</td>
+</tr>
+<tr class="odd">
+<td>HTML</td>
+<td>n/a</td>
+<td><code>data-lp-pipe="trim()"</code></td>
+</tr>
+</tbody>
+</table>
+<p>The two spellings must normalize to the same pipeline AST. Supplying both with different values is an error.</p>
+</section>
+<section id="modern-markdown-adapter-markdown" class="level2">
+<h2 class="anchored" data-anchor-id="modern-markdown-adapter-markdown">Modern Markdown adapter (<code>markdown</code>)</h2>
+<section id="headings-and-named-fences-coexist" class="level3">
+<h3 class="anchored" data-anchor-id="headings-and-named-fences-coexist">Headings and named fences coexist</h3>
+<p>The modern adapter does not force a document to choose between a heading style and a fence style. It maintains an <strong>ambient heading piece</strong> while parsing:</p>
+<ul>
+<li>an enabled heading declares a piece and becomes the ambient owner;</li>
+<li>an unnamed fence contributes to the ambient heading piece;</li>
+<li>a named fence declares or appends to its explicitly named piece only;</li>
+<li>a named fence does not replace the ambient heading owner;</li>
+<li>the next enabled heading changes the ambient owner;</li>
+<li>an unnamed fence with no ambient owner is ordinary example code unless the document config chooses to diagnose it.</li>
+</ul>
+<p>Example:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">## Main program | normalize-eol()</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>The first and third blocks belong to <span class="in">`main-program`</span>.</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="in">```javascript</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>console<span class="op">.</span><span class="fu">log</span><span class="op">(</span>_<span class="st">"helper"</span><span class="op">);</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="in">```javascript lp:helper | trim()</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>function <span class="fu">helper</span><span class="op">()</span> <span class="op">{</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="st">"hello"</span><span class="op">;</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="in">```javascript</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>console<span class="op">.</span><span class="fu">log</span><span class="op">(</span><span class="st">"done"</span><span class="op">);</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>This produces:</p>
+<ul>
+<li><code>main-program</code>: the first and third JavaScript fragments, concatenated with one newline, then passed through <code>normalize-eol()</code>;</li>
+<li><code>helper</code>: only the named middle fence, then passed through <code>trim()</code>.</li>
+</ul>
+<p>The fragment language/info string is always preserved. An unnamed <code>javascript</code> fence under <code>Main program</code> is still named by the heading, not by <code>javascript</code>; the language belongs to the fragment metadata. If all nonempty fragment languages agree, the piece inherits that language. Incompatible languages produce <code>LP150</code> unless a registered composition policy handles them.</p>
+</section>
+<section id="heading-declarations" class="level3">
+<h3 class="anchored" data-anchor-id="heading-declarations">Heading declarations</h3>
+<p>The visible form is:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">## Main program | trim() | normalize-eol()</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><code>Main program</code> is both the display name and, absent an explicit ID, the source of the inferred semantic ID <code>main-program</code>. For Pandoc/Quarto Markdown, an explicit anchor stabilizes the ID:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">## Main program | trim() {#lp-main}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The adapter strips the <code>lp-</code> anchor prefix, so the semantic ID is <code>main</code>. The pipeline is excluded from both the display name and inferred ID. A render integration should render only <code>Main program</code> as the heading and may show the pipeline separately as a small definition badge.</p>
+<p>Heading recognition is independently configurable:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">lp</span><span class="kw">:</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">adapter</span><span class="kw">:</span><span class="at"> markdown</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">document</span><span class="kw">:</span><span class="at"> greeting</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">headings</span><span class="kw">:</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">enabled</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">levels</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="dv">2</span><span class="kw">,</span><span class="at"> </span><span class="dv">3</span><span class="kw">,</span><span class="at"> </span><span class="dv">4</span><span class="kw">,</span><span class="at"> </span><span class="dv">5</span><span class="kw">,</span><span class="at"> </span><span class="dv">6</span><span class="kw">]</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">hierarchy</span><span class="kw">:</span><span class="at"> flat</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Modern heading hierarchy is <code>flat</code>: level affects document presentation but not piece identity. <code>enabled: false</code> (or <code>headings: none</code>) makes every heading narrative-only while named fences continue to work. A project may choose any level set. The default treats an initial H1 as the document title and H2-H6 as piece declarations.</p>
+</section>
+<section id="unnamed-fences-and-the-first-fence-pipeline" class="level3">
+<h3 class="anchored" data-anchor-id="unnamed-fences-and-the-first-fence-pipeline">Unnamed fences and the first-fence pipeline</h3>
+<p>An unnamed fence contributes to the ambient heading piece:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">## Main program</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="in">```javascript | trim() | normalize-eol()</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="fu">first</span><span class="op">();</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="in">```javascript</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="fu">second</span><span class="op">();</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The pipeline on the first owned fence is the definition pipeline for <code>main-program</code>; it applies once to <code>first();\nsecond();</code>. The heading remains the name. This form is useful when the author wants the visible heading to stay free of compiler notation.</p>
+<p>Rules:</p>
+<ul>
+<li>only the first unnamed fence owned by a heading may supply the heading piece’s pipeline;</li>
+<li>a heading pipeline and first-fence pipeline may not both be supplied unless they normalize identically;</li>
+<li>a pipeline on a later unnamed fence is an error, because fragment-local transformation would have different semantics;</li>
+<li>the language is the text before the first pipe;</li>
+<li>an empty language is allowed.</li>
+</ul>
+<p>For Pandoc/Quarto compatibility, the attribute form is:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="in">```{.javascript lp-pipe="trim() | normalize-eol()"}</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">first</span><span class="op">();</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="named-fences" class="level3">
+<h3 class="anchored" data-anchor-id="named-fences">Named fences</h3>
+<p>The compact CommonMark form is:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="in">```javascript lp:helper | trim()</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>function <span class="fu">helper</span><span class="op">()</span> <span class="op">{}</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The Pandoc/Quarto form is:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="in">```{.javascript .lp-piece #lp-helper lp-title="Helper" lp-pipe="trim()"}</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>function <span class="fu">helper</span><span class="op">()</span> <span class="op">{}</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The two forms are semantically equivalent. In the compact form, the semantic ID after <code>lp:</code> is also the default display name. In the attribute form:</p>
+<ul>
+<li><code>.lp-piece</code> marks the declaration;</li>
+<li><code>#lp-helper</code> supplies the rendered anchor and default semantic ID <code>helper</code>;</li>
+<li><code>lp-title</code> supplies an optional display name;</li>
+<li><code>lp-pipe</code> supplies the definition pipeline.</li>
+</ul>
+<p>A later fragment can append explicitly:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="in">```{.javascript .lp-fragment lp-for="helper"}</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>helper<span class="op">.</span><span class="fu">extra</span> <span class="op">=</span> <span class="kw">true</span><span class="op">;</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>An explicit append does not change the ambient heading owner. Its language is preserved like any other fragment.</p>
+</section>
+<section id="directives-in-modern-markdown-links" class="level3">
+<h3 class="anchored" data-anchor-id="directives-in-modern-markdown-links">Directives in modern Markdown links</h3>
+<p>The modern adapter recognizes only the compact, typed LP2 link directives:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">Write the entry point</span><span class="co">](dist/greeting.js "lp:write from main")</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">Browser form</span><span class="co">]</span>(#lp-widget "lp:derive browser | minify()")</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">Read shared definitions</span><span class="co">](shared.qmd "lp:read as shared")</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The link text and destination remain useful when Pieceful is absent. The adapter parses the title into a typed AST and plans any effect; it does not execute effects while walking the Markdown tree.</p>
+</section>
+</section>
+<section id="full-litpro-markdown-adapter-markdown-litpro" class="level2">
+<h2 class="anchored" data-anchor-id="full-litpro-markdown-adapter-markdown-litpro">Full LitPro Markdown adapter (<code>markdown-litpro</code>)</h2>
+<p>This is a separate adapter, not a mode inside modern Markdown. Its purpose is to reproduce the original source structure and naming rules closely enough to load the old book, implementation, and fixture corpus without first rewriting the documents.</p>
+<section id="default-heading-model" class="level3">
+<h3 class="anchored" data-anchor-id="default-heading-model">Default heading model</h3>
+<p>The default deliberately keeps the unusual model:</p>
+<ul>
+<li>H1, H2, H3, and H4 are peer major-piece declarations. Markdown outline depth does not affect their Pieceful identity.</li>
+<li>H5 declares a slash child of the most recent major piece: <code>major/h5-name</code>.</li>
+<li>H6 declares a slash grandchild: <code>major/h5-name/h6-name</code>. With no preceding H5 it retains the legacy empty path segment behavior.</li>
+<li>Minor blocks declared by links append a colon: <code>major:minor</code>, <code>major/h5:minor</code>, or <code>major/h5/h6:minor</code>.</li>
+<li>repeated H1-H4 names reopen and concatenate the same piece;</li>
+<li>repeated H5/H6 paths follow the legacy path rules rather than being globally merged solely by visible heading text;</li>
+<li>all fenced and indented code blocks under the current legacy block are fragments, and their info/language strings are preserved.</li>
+</ul>
+<p>H5 and H6 were intended for tightly related topical material such as documentation and tests, but <code>doc</code> and <code>test</code> were conventions, not hard-coded roles. The adapter must preserve arbitrary H5/H6 names.</p>
+<p>Relative legacy references are retained and resolved structurally:</p>
+<pre class="text"><code>./child
+../sibling
+../../major
+:minor
+../:minor
+document::major/h5:minor</code></pre>
+</section>
+<section id="heading-pipes-and-historical-dialects" class="level3">
+<h3 class="anchored" data-anchor-id="heading-pipes-and-historical-dialects">Heading pipes and historical dialects</h3>
+<p>The original LitPro documentation disallowed pipes in headings. The later Pieceful CommonMark prototype split a heading at its first pipe and stored the remainder as a definition transformation. Both behaviors matter.</p>
+<p>The adapter therefore supports:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">lp</span><span class="kw">:</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">adapter</span><span class="kw">:</span><span class="at"> markdown-litpro</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">dialect</span><span class="kw">:</span><span class="at"> litpro-plus</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Dialects:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Dialect</th>
+<th>Heading hierarchy</th>
+<th>Heading pipelines</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>litpro-2017</code></td>
+<td>exact H1-H4/H5/H6 legacy model</td>
+<td>disabled, matching original LitPro</td>
+</tr>
+<tr class="even">
+<td><code>pieceful-2020</code></td>
+<td>same relative model as the prototype</td>
+<td>enabled and accumulated on repeated definitions</td>
+</tr>
+<tr class="odd">
+<td><code>litpro-plus</code></td>
+<td>legacy structure with LP2 typed pipelines</td>
+<td>enabled; default for new legacy-style documents</td>
+</tr>
+</tbody>
+</table>
+<p><code>litpro-plus</code> is the default. Use <code>litpro-2017</code> for exact fixture compatibility. In <code>litpro-plus</code>, this is valid:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">##### Documentation | trim() | normalize-eol()</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The semantic path uses <code>documentation</code>; the pipeline runs after every fragment contributing to that full path has been concatenated.</p>
+</section>
+<section id="configurable-heading-level-meaning" class="level3">
+<h3 class="anchored" data-anchor-id="configurable-heading-level-meaning">Configurable heading-level meaning</h3>
+<p>Front matter can retain the default hierarchy, flatten selected levels, or disable heading declarations:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">lp</span><span class="kw">:</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">adapter</span><span class="kw">:</span><span class="at"> markdown-litpro</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">headings</span><span class="kw">:</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">mode</span><span class="kw">:</span><span class="at"> legacy</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">major</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="dv">1</span><span class="kw">,</span><span class="at"> </span><span class="dv">2</span><span class="kw">,</span><span class="at"> </span><span class="dv">3</span><span class="kw">,</span><span class="at"> </span><span class="dv">4</span><span class="kw">]</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">child</span><span class="kw">:</span><span class="at"> </span><span class="dv">5</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">grandchild</span><span class="kw">:</span><span class="at"> </span><span class="dv">6</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">pipelines</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Supported modes:</p>
+<ul>
+<li><code>legacy</code>: use the configured major/child/grandchild roles;</li>
+<li><code>flat</code>: every configured level is a peer major piece;</li>
+<li><code>none</code>: headings are narrative only. Named-fence declarations remain available as an explicit extension so a document is not left without a way to declare pieces.</li>
+</ul>
+<p>Omitted configuration uses the traditional H1-H4/H5/H6 assignments above. Changing them is recorded in the Piece Document metadata and build trace so two hosts cannot silently interpret the same source differently.</p>
+</section>
+<section id="other-legacy-constructs-to-preserve" class="level3">
+<h3 class="anchored" data-anchor-id="other-legacy-constructs-to-preserve">Other legacy constructs to preserve</h3>
+<p>The adapter recognizes and source-maps:</p>
+<ul>
+<li><code>_"name"</code>, <code>_'name'</code>, and <code>_`name`</code> substitutions;</li>
+<li>scope <code>::</code>, minor <code>:</code>, slash hierarchy, and relative-path resolution;</li>
+<li>use-site pipe commands and their legacy argument escaping;</li>
+<li>counted/delayed substitutions such as <code>\1_"name"</code>;</li>
+<li>repeated heading and minor-block concatenation;</li>
+<li><code>[minor]()</code> and <code>[minor](# ": | commands")</code> switches;</li>
+<li>the <code>[^]</code>-style return-to-major switch behavior;</li>
+<li>link-title directives such as <code>save:</code>, <code>load:</code>, <code>out:</code>, <code>store:</code>, and parsing directives;</li>
+<li>the compiler-visible <code>&lt;!--+ ... --&gt;</code> convention;</li>
+<li>legacy heading normalization and collision behavior.</li>
+</ul>
+<p>Structure, names, references, pipelines, directive requests, and source ranges must be reproducible. Unsafe legacy effects are still planned rather than run automatically. An opt-in restricted legacy host may emulate an effect only through explicit capabilities.</p>
+<p>The compatibility baseline is the historical syntax description in <code>book-all/manuscript/part-1/symphonic-programming.md</code>, the H5/H6 fixture in <code>tests/tests-lib/h5.md</code>, the original parser in <code>src/commonmark.md</code>, and the later heading-pipeline behavior in <code>pieceful-programming/src/commonmark.md</code>. Each legacy construct should have a fixture identifying which implementation and dialect it came from.</p>
+<p>Legacy syntax is not translated by the modern Markdown adapter. A migration command may parse with <code>markdown-litpro</code>, emit the Piece Document, and then rewrite unambiguous constructs into modern Markdown.</p>
+</section>
+</section>
+<section id="quarto" class="level2">
+<h2 class="anchored" data-anchor-id="quarto">Quarto</h2>
+<section id="relationship-to-markdown" class="level3">
+<h3 class="anchored" data-anchor-id="relationship-to-markdown">Relationship to Markdown</h3>
+<p>Quarto uses Pandoc Markdown and already understands headings with IDs, fenced Divs, attributed code blocks, code-cell labels, captions, listings, and cross references. Therefore <code>.qmd</code> uses the Markdown adapter plus a Quarto integration. There is no <code>format: "quarto"</code> Piece Document and no Quarto-only resolver. A project normally selects modern <code>markdown</code>, though <code>markdown-litpro</code> can also feed the Quarto render bridge for historical books.</p>
+<p>The integration has two independent jobs:</p>
+<ol type="1">
+<li><strong>Build bridge</strong> — run pure Pieceful parsing/resolution/weaving before Quarto executes code, producing a temporary source tree and source maps.</li>
+<li><strong>Render bridge</strong> — decorate Quarto’s Pandoc AST with visible piece identity, links, graph summaries, and diagnostics.</li>
+</ol>
+<p>Keeping these jobs separate prevents a Lua render filter from becoming a second Pieceful compiler.</p>
+</section>
+<section id="heading-owned-pieces-in-quarto" class="level3">
+<h3 class="anchored" data-anchor-id="heading-owned-pieces-in-quarto">Heading-owned pieces in Quarto</h3>
+<p>Modern heading ownership works directly and may include a pipeline:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">## Main program | normalize-eol() {#lp-main}</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="in">```{.javascript}</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>console<span class="op">.</span><span class="fu">log</span><span class="op">(</span>_<span class="st">"format-greeting"</span><span class="op">);</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The heading makes the name prominent and gives the piece a normal hyperlink target. The Quarto integration may add a small <code>piece: main</code> badge next to the heading, followed by graph navigation:</p>
+<blockquote class="blockquote">
+<p>Uses: <a href="#lp-format-greeting">format-greeting</a> · Used by: none</p>
+</blockquote>
+<p>The render bridge removes the pipeline suffix from the displayed heading and may show it as a separate badge. The badge is useful but not required to understand the rendered document.</p>
+</section>
+<section id="named-fences-in-quarto-make-the-name-visible" class="level3">
+<h3 class="anchored" data-anchor-id="named-fences-in-quarto-make-the-name-visible">Named fences in Quarto: make the name visible</h3>
+<p>For static code, prefer Quarto’s native listing syntax:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="in">```{.javascript .lp-piece #lst-lp-main lp-id="main" lst-cap="Main program" lp-pipe="normalize-eol()"}</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>console<span class="op">.</span><span class="fu">log</span><span class="op">(</span>_<span class="st">"format-greeting"</span><span class="op">);</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>See @lst-lp-main.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Quarto renders <code>Main program</code> as a visible listing caption and turns <code>@lst-lp-main</code> into a numbered hyperlink. Pieceful takes the semantic ID from <code>lp-id</code>; if it is absent, it may strip <code>lst-lp-</code> from the listing label.</p>
+<p>This is the no-extension baseline. The render bridge can reduce the source boilerplate by deriving a default caption and listing label from:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="in">```{.javascript .lp-piece #lp-main lp-title="Main program" lp-pipe="normalize-eol()"}</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>console<span class="op">.</span><span class="fu">log</span><span class="op">(</span>_<span class="st">"format-greeting"</span><span class="op">);</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>It transforms that block into the equivalent Quarto listing in the Pandoc AST. The source remains readable in renderers that do not load the bridge.</p>
+<p>For an executable cell, Quarto’s native spelling adds curly brackets around the language name. The example below deliberately shows the non-executable <code>python</code> fence so this <code>.md</code> design document remains ordinary Markdown; change it to <code>{python}</code> in a <code>.qmd</code> document to make Quarto execute it.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>::: {#lp-analysis .lp-piece lp-id="analysis" lp-pipe="trim()"}</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="in">```python</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="co">#| lst-label: lst-lp-analysis</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a><span class="co">#| lst-cap: "Analysis"</span></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(_<span class="st">"prepared-data"</span>)</span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>:::</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The build bridge must weave <code>prepared-data</code> into a temporary <code>.qmd</code> before the Jupyter or Knitr engine sees the cell. Quarto remains responsible for executing the resulting cell and rendering its output. Pieceful <code>execute</code> effects are disabled in this path unless separately and explicitly requested, preventing double execution.</p>
+</section>
+<section id="reference-and-definition-navigation" class="level3">
+<h3 class="anchored" data-anchor-id="reference-and-definition-navigation">Reference and definition navigation</h3>
+<p>There are three progressively richer navigation levels:</p>
+<ol type="1">
+<li><strong>No extension</strong> — piece definitions are native section or listing anchors; authors can use normal links or Quarto listing references.</li>
+<li><strong>Portable rendered enhancement</strong> — under each definition, generate <code>Uses</code> and <code>Used by</code> links. Add a piece index/dependency appendix. This works in HTML, PDF, and other Quarto outputs because it is ordinary Pandoc content.</li>
+<li><strong>HTML/editor enhancement</strong> — use the source map to make individual <code>_"piece"</code> occurrences navigable, show hover previews, and support go-to-definition. Exact token links are an HTML and editor feature, not a requirement for all output formats.</li>
+</ol>
+<p>Quarto code annotations can associate prose with source lines, but they require language-specific comment markers in the code. The integration should not rewrite arbitrary target-language source merely to inject annotations. Generated <code>Uses</code> links are safer and work for every language.</p>
+</section>
+<section id="pipeline-and-cache-ordering" class="level3">
+<h3 class="anchored" data-anchor-id="pipeline-and-cache-ordering">Pipeline and cache ordering</h3>
+<p>The supported render pipeline is:</p>
+<pre class="text"><code>source .qmd
+  -&gt; Pieceful adapter and graph validation
+  -&gt; pure weaving into a temporary .qmd tree + source maps
+  -&gt; Quarto execution
+  -&gt; Pandoc/Quarto render bridge
+  -&gt; HTML/PDF/etc.</code></pre>
+<p>Rules:</p>
+<ul>
+<li>never overwrite the author’s <code>.qmd</code> during rendering;</li>
+<li>preserve a composed source map through the temporary file;</li>
+<li>key Quarto freeze/cache inputs on the woven temporary content and Pieceful plugin versions, not only the original <code>.qmd</code>;</li>
+<li>report Quarto execution errors against the original piece/reference chain where the engine supplies usable generated locations;</li>
+<li>do not let Quarto shortcodes, filters, or executed output declare new Pieceful pieces after graph validation.</li>
+</ul>
+</section>
+</section>
+<section id="asciidoc" class="level2">
+<h2 class="anchored" data-anchor-id="asciidoc">AsciiDoc</h2>
+<p>AsciiDoc has unusually good raw materials for an adapter: section IDs, titled source blocks, arbitrary element attributes, roles, cross references, and an extension API over its parsed document tree.</p>
+<section id="section-form" class="level3">
+<h3 class="anchored" data-anchor-id="section-form">Section form</h3>
+<pre class="asciidoc"><code>[#lp-main]
+== Main program | normalize-eol()
+
+The entry point delegates formatting.
+
+[source,javascript]
+----
+console.log(_"format-greeting");
+----
+
+[#lp-format-greeting]
+== Greeting formatter
+
+[source,javascript]
+----
+function formatGreeting(name) {
+  return `Hello, ${name}!`;
+}
+----</code></pre>
+<p>As with a Markdown heading-owned piece:</p>
+<ul>
+<li>section title before the first pipe is the visible display name;</li>
+<li><code>lp-main</code> maps to semantic ID <code>main</code>;</li>
+<li>source/listing blocks in the section become fragments;</li>
+<li>the next configured piece section ends ownership;</li>
+<li>section depth does not create Pieceful namespaces;</li>
+<li>the pipeline runs once after the section’s fragments are concatenated.</li>
+</ul>
+<p>AsciiDoc can link to the piece using its native cross-reference syntax:</p>
+<pre class="asciidoc"><code>See &lt;&lt;lp-format-greeting,Greeting formatter&gt;&gt;.</code></pre>
+</section>
+<section id="block-form" class="level3">
+<h3 class="anchored" data-anchor-id="block-form">Block form</h3>
+<p>One source block can declare a self-contained piece:</p>
+<pre class="asciidoc"><code>.Main program
+[source#lp-main,javascript,role=lp-piece,lp-id=main,lp-pipe="normalize-eol()"]
+----
+console.log(_"format-greeting");
+----</code></pre>
+<p>The block title is visible, <code>#lp-main</code> is a native anchor, <code>role=lp-piece</code> marks the declaration and maps to a useful HTML class, and <code>lp-id=main</code> is a custom element attribute available to the adapter.</p>
+<p>For narrative and several fragments inside one piece, use an open/example container with a title, ID, and role:</p>
+<pre class="asciidoc"><code>.Main program
+[#lp-main,role=lp-piece,lp-id=main,lp-pipe="normalize-eol()"]
+====
+The entry point has two fragments.
+
+[source,javascript]
+----
+console.log(_"format-greeting");
+----
+
+[source,javascript]
+----
+console.log("done");
+----
+====</code></pre>
+<p>The adapter takes descendant source blocks as fragments and excludes nested <code>.lp-piece</code> containers.</p>
+</section>
+<section id="asciidoc-directives" class="level3">
+<h3 class="anchored" data-anchor-id="asciidoc-directives">AsciiDoc directives</h3>
+<p>The native-looking canonical form is a small set of block macros:</p>
+<pre class="asciidoc"><code>lp::write[target=dist/greeting.js,from=main]
+
+lp::derive[target=widget.browser,from=widget,using="minify()"]
+
+lp::read[target=shared.adoc,as=shared]</code></pre>
+<p><code>lp</code> is the block-macro name and <code>write</code>, <code>derive</code>, or <code>read</code> is its target. An Asciidoctor extension renders each macro as visible prose/a link and records its attributes. The standalone adapter recognizes exactly the same grammar without requiring Asciidoctor to perform an effect.</p>
+<p>This syntax is preferable to hiding directives in comments or overloading ordinary links. It also makes effects conspicuous in the source.</p>
+</section>
+<section id="implementation-choices-and-limitations" class="level3">
+<h3 class="anchored" data-anchor-id="implementation-choices-and-limitations">Implementation choices and limitations</h3>
+<p>Use Asciidoctor’s parsed Document API rather than parsing rendered HTML. Enable its source-map option and inspect sections, blocks, IDs, roles, titles, and custom attributes. A tree processor is appropriate for rendering graph decorations; custom block macros are appropriate for directive presentation.</p>
+<p>Asciidoctor source mapping provides block start locations, not complete character ranges for all blocks or inline nodes. The adapter must therefore pair AST nodes with a lossless source scanner to recover:</p>
+<ul>
+<li>metadata-line ranges;</li>
+<li>block end offsets;</li>
+<li>exact code content ranges;</li>
+<li>exact <code>_"..."</code> reference and pipeline ranges inside literal source.</li>
+</ul>
+<p>The AST chooses structure; the scanner supplies exact offsets. Includes need their own URI-aware source maps because a single logical AsciiDoc document may contain blocks from several files.</p>
+</section>
+</section>
+<section id="html" class="level2">
+<h2 class="anchored" data-anchor-id="html">HTML</h2>
+<p>HTML is both a useful authoring format and an important rendered interchange format. The canonical source form should be valid, meaningful HTML even when no Pieceful script is installed.</p>
+<section id="section-form-1" class="level3">
+<h3 class="anchored" data-anchor-id="section-form-1">Section form</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="sourceCode html code-with-copy"><code class="sourceCode html"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">meta</span><span class="ot"> name</span><span class="op">=</span><span class="st">"lp-document"</span><span class="ot"> content</span><span class="op">=</span><span class="st">"greeting"</span><span class="dt">&gt;</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">section</span><span class="ot"> id</span><span class="op">=</span><span class="st">"lp-main"</span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a><span class="ot">         data-lp-piece</span><span class="op">=</span><span class="st">"main"</span></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a><span class="ot">         data-lp-pipe</span><span class="op">=</span><span class="st">"normalize-eol()"</span><span class="dt">&gt;</span></span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&lt;</span><span class="kw">h2</span><span class="dt">&gt;</span>Main program <span class="dt">&lt;</span><span class="kw">code</span><span class="dt">&gt;</span>main<span class="dt">&lt;/</span><span class="kw">code</span><span class="dt">&gt;&lt;/</span><span class="kw">h2</span><span class="dt">&gt;</span></span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&lt;</span><span class="kw">p</span><span class="dt">&gt;</span>The entry point delegates formatting.<span class="dt">&lt;/</span><span class="kw">p</span><span class="dt">&gt;</span></span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&lt;</span><span class="kw">pre</span><span class="dt">&gt;&lt;</span><span class="kw">code</span><span class="ot"> class</span><span class="op">=</span><span class="st">"language-javascript"</span><span class="dt">&gt;</span>console.log(_"format-greeting");<span class="dt">&lt;/</span><span class="kw">code</span><span class="dt">&gt;&lt;/</span><span class="kw">pre</span><span class="dt">&gt;</span></span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;/</span><span class="kw">section</span><span class="dt">&gt;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="block-form-1" class="level3">
+<h3 class="anchored" data-anchor-id="block-form-1">Block form</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb28"><pre class="sourceCode html code-with-copy"><code class="sourceCode html"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">figure</span><span class="ot"> id</span><span class="op">=</span><span class="st">"lp-main"</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="ot">        data-lp-piece</span><span class="op">=</span><span class="st">"main"</span></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a><span class="ot">        data-lp-language</span><span class="op">=</span><span class="st">"javascript"</span></span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a><span class="ot">        data-lp-pipe</span><span class="op">=</span><span class="st">"normalize-eol()"</span><span class="dt">&gt;</span></span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&lt;</span><span class="kw">figcaption</span><span class="dt">&gt;</span>Main program <span class="dt">&lt;</span><span class="kw">code</span><span class="dt">&gt;</span>main<span class="dt">&lt;/</span><span class="kw">code</span><span class="dt">&gt;&lt;/</span><span class="kw">figcaption</span><span class="dt">&gt;</span></span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&lt;</span><span class="kw">pre</span><span class="dt">&gt;&lt;</span><span class="kw">code</span><span class="ot"> class</span><span class="op">=</span><span class="st">"language-javascript"</span><span class="dt">&gt;</span>console.log(_"format-greeting");<span class="dt">&lt;/</span><span class="kw">code</span><span class="dt">&gt;&lt;/</span><span class="kw">pre</span><span class="dt">&gt;</span></span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;/</span><span class="kw">figure</span><span class="dt">&gt;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Both forms make the display name visible, provide a native anchor, and degrade well. Standard elements carry accessibility and rendering semantics; <code>data-lp-*</code> carries private Pieceful metadata.</p>
+<p>Directives use ordinary links with explicit data:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb29"><pre class="sourceCode html code-with-copy"><code class="sourceCode html"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">a</span><span class="ot"> href</span><span class="op">=</span><span class="st">"dist/greeting.js"</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="ot">   data-lp-effect</span><span class="op">=</span><span class="st">"write"</span></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a><span class="ot">   data-lp-from</span><span class="op">=</span><span class="st">"main"</span><span class="dt">&gt;</span>Write the entry point<span class="dt">&lt;/</span><span class="kw">a</span><span class="dt">&gt;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Derived pieces may use a visible <code>&lt;a&gt;</code> or <code>&lt;data&gt;</code> element, but effects that identify an external resource should remain links.</p>
+</section>
+<section id="parsing-and-safety" class="level3">
+<h3 class="anchored" data-anchor-id="parsing-and-safety">Parsing and safety</h3>
+<ul>
+<li>Parse source with a location-preserving HTML parser in scripting-disabled mode; never execute document scripts.</li>
+<li>Extract literal code from the text content of <code>&lt;pre&gt;&lt;code&gt;</code>.</li>
+<li>Preserve a character map when decoding entities such as <code>&amp;lt;</code>, because one output character may occupy several source bytes.</li>
+<li>Reject duplicate element IDs and duplicate semantic piece IDs.</li>
+<li>Ignore runtime DOM mutations. The source HTML, not browser state, is the reproducible input.</li>
+<li>Do not use <code>&lt;template&gt;</code> as the default piece container: its content is intentionally not rendered, which recreates the visibility problem.</li>
+</ul>
+<p>Autonomous custom elements such as <code>&lt;lp-piece&gt;</code> could provide an interactive HTML-only viewer, but standard elements plus data attributes remain canonical. Unknown custom elements have weak fallback semantics, require styling, and would complicate non-HTML conversion.</p>
+</section>
+</section>
+<section id="org-adapter-org" class="level2">
+<h2 class="anchored" data-anchor-id="org-adapter-org">Org adapter (<code>org</code>)</h2>
+<p>Org is a first-class adapter, not only an importer. It already has visible source-block names, repeated noweb groups, source languages, heading trees, header arguments, references, execution, and tangling.</p>
+<section id="native-compatible-piece-declarations" class="level3">
+<h3 class="anchored" data-anchor-id="native-compatible-piece-declarations">Native-compatible piece declarations</h3>
+<p>The adapter recognizes a named Babel source block:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb30"><pre class="sourceCode org code-with-copy"><code class="sourceCode orgmode"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#+NAME: main</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>#+LP_PIPE: normalize-eol() | trim()</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a><span class="in">#+BEGIN_SRC java</span>script</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>console<span class="op">.</span><span class="fu">log</span><span class="op">(&lt;&lt;</span>format<span class="op">-</span>greeting<span class="op">&gt;&gt;);</span></span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a><span class="in">#+END_SRC</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><code>#+NAME</code> remains fully meaningful to Org. The adjacent <code>#+LP_PIPE</code> keyword is Pieceful metadata that Org can otherwise ignore. The pipeline applies after all fragments of <code>main</code> have been collected.</p>
+<p>Org’s <code>:noweb-ref</code> header argument groups several blocks under one shared reference. Pieceful maps that group to repeated fragments:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb31"><pre class="sourceCode org code-with-copy"><code class="sourceCode orgmode"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="in">#+BEGIN_SRC java</span>script <span class="op">:</span>noweb<span class="op">-</span>ref main</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="fu">first</span><span class="op">();</span></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a><span class="in">#+END_SRC</span></span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a><span class="in">#+BEGIN_SRC java</span>script <span class="op">:</span>noweb<span class="op">-</span>ref main</span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a><span class="fu">second</span><span class="op">();</span></span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a><span class="in">#+END_SRC</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The blocks concatenate as <code>first();\nsecond();</code>. A <code>#+NAME</code> identifies one block; a shared <code>:noweb-ref</code> identifies the aggregate. If both are present, the named block may be addressed individually while also contributing to the aggregate, matching Org’s distinction.</p>
+</section>
+<section id="compact-pieceful-org-spelling" class="level3">
+<h3 class="anchored" data-anchor-id="compact-pieceful-org-spelling">Compact Pieceful Org spelling</h3>
+<p>For authors using Pieceful rather than Babel as the primary engine, the adapter also accepts:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb32"><pre class="sourceCode org code-with-copy"><code class="sourceCode orgmode"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>#+LP_NAME: main | normalize-eol() | trim()</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="in">#+BEGIN_SRC java</span>script</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>console<span class="op">.</span><span class="fu">log</span><span class="op">(&lt;&lt;</span>format<span class="op">-</span>greeting<span class="op">&gt;&gt;);</span></span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a><span class="in">#+END_SRC</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>This places the pipeline directly after the name without changing how Org interprets <code>#+NAME</code>. A renderer extension displays <code>main</code> and its pipeline near the block. <code>#+LP_NAME</code> and <code>#+NAME</code> may coexist only when their names agree.</p>
+</section>
+<section id="references-and-use-site-pipes" class="level3">
+<h3 class="anchored" data-anchor-id="references-and-use-site-pipes">References and use-site pipes</h3>
+<p>In <code>org-noweb</code> reference mode:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb33"><pre class="sourceCode org code-with-copy"><code class="sourceCode orgmode"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>&lt;&lt;format-greeting&gt;&gt;</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>maps to the same Pieceful reference AST as <code>_"format-greeting"</code>. The extended form allows a use-site pipeline:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb34"><pre class="sourceCode org code-with-copy"><code class="sourceCode orgmode"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>&lt;&lt;format-greeting | indent(2)&gt;&gt;</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Org Babel would interpret the entire text, including the pipe, as a block ID. Therefore a document that must remain executable by unmodified Babel should use Pieceful’s underscore-quote reference for piped consumption:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb35"><pre class="sourceCode org code-with-copy"><code class="sourceCode orgmode"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>_"format-greeting | indent(2)"</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Front matter/property configuration selects one policy:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb36"><pre class="sourceCode org code-with-copy"><code class="sourceCode orgmode"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#+PROPERTY: pieceful-reference-style org-noweb</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#+PROPERTY: pieceful-execution-owner org</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Reference styles are <code>org-noweb</code>, <code>underscore-quote</code>, or <code>both</code>. Execution owners are <code>org</code> or <code>pieceful</code>; a build must never expand/evaluate the same block through both engines.</p>
+</section>
+<section id="headings-results-and-tangling" class="level3">
+<h3 class="anchored" data-anchor-id="headings-results-and-tangling">Headings, results, and tangling</h3>
+<p>Org headings remain narrative by default. An opt-in heading mode can mirror modern Markdown ambient ownership, but named source blocks are the canonical Org declaration because their names stay visible in the source.</p>
+<p><code>#+RESULTS</code> blocks are artifacts, not piece fragments. Babel’s <code>:tangle</code>, <code>:eval</code>, <code>:results</code>, cache, sessions, and variables are preserved as Org metadata. Pieceful does not reinterpret them as pure transforms. When Org owns execution/tangling, Pieceful supplies the validated dependency graph and woven block bodies; Org performs the native operation. When Pieceful owns it, those requests become capability-gated effects.</p>
+</section>
+<section id="org-source-maps" class="level3">
+<h3 class="anchored" data-anchor-id="org-source-maps">Org source maps</h3>
+<p>Use an Org syntax tree for element boundaries and a lossless scanner for exact reference/pipeline ranges. Preserve affiliation keywords (<code>#+NAME</code>, <code>#+LP_NAME</code>, <code>#+LP_PIPE</code>, <code>#+HEADER</code>) as part of the declaration surface.</p>
+</section>
+</section>
+<section id="noweb-adapter-noweb" class="level2">
+<h2 class="anchored" data-anchor-id="noweb-adapter-noweb">noweb adapter (<code>noweb</code>)</h2>
+<p>The strict adapter parses ordinary noweb documentation and code chunks:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb37"><pre class="sourceCode noweb code-with-copy"><code class="sourceCode noweb"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>The entry point delegates greeting construction.</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a><span class="re">&lt;&lt;main&gt;&gt;=</span></span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>console<span class="op">.</span>log<span class="op">(</span><span class="re">&lt;&lt;format-greeting&gt;&gt;</span><span class="op">);</span></span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a><span class="re">@</span></span>
+<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a><span class="re">&lt;&lt;format-greeting&gt;&gt;=</span></span>
+<span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a>function formatGreeting<span class="op">(</span>name<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb37-9"><a href="#cb37-9" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="st">"Hello, "</span> <span class="op">+</span> name<span class="op">;</span></span>
+<span id="cb37-10"><a href="#cb37-10" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb37-11"><a href="#cb37-11" aria-hidden="true" tabindex="-1"></a><span class="re">@</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Rules:</p>
+<ul>
+<li><code>&lt;&lt;name&gt;&gt;=</code> begins a definition;</li>
+<li><code>@</code> returns to documentation;</li>
+<li><code>&lt;&lt;name&gt;&gt;</code> inside code is a reference;</li>
+<li>repeated definitions of the same name concatenate in source order;</li>
+<li>documentation preceding a chunk becomes its narrative/display context;</li>
+<li>the chunk name is the semantic ID source after adapter normalization;</li>
+<li>root/output chunks are planned as artifacts rather than written while parsing.</li>
+</ul>
+<p>Classic noweb does not encode a source language in the chunk declaration. The adapter takes language from project configuration, root filename conventions, or an explicit Pieceful pragma and records any inference.</p>
+<section id="noweb-plus-pipes" class="level3">
+<h3 class="anchored" data-anchor-id="noweb-plus-pipes">noweb-plus pipes</h3>
+<p>The <code>noweb-plus</code> dialect allows definition and use-site pipelines directly after a name:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb38"><pre class="sourceCode noweb code-with-copy"><code class="sourceCode noweb"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="re">&lt;&lt;main | normalize-eol() | trim()&gt;&gt;=</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>console<span class="op">.</span>log<span class="op">(</span><span class="re">&lt;&lt;format-greeting | indent(2)&gt;&gt;</span><span class="op">);</span></span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a><span class="re">@</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The first unescaped pipe separates the classic chunk name from the typed Pieceful pipeline. This is intentionally an extension: an unmodified noweb tool would treat the full text, including pipes, as the chunk name.</p>
+<p>For a source that must remain consumable by classic noweb, use a documentation pragma for the definition pipeline and underscore-quote syntax for piped references:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb39"><pre class="sourceCode noweb code-with-copy"><code class="sourceCode noweb"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>@ %pieceful pipeline main | normalize-eol() | trim()</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a><span class="re">&lt;&lt;main&gt;&gt;=</span></span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>console<span class="op">.</span>log<span class="op">(</span>_<span class="st">"format-greeting | indent(2)"</span><span class="op">);</span></span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a><span class="re">@</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The pragma is attached to the next matching definition by the Pieceful adapter; classic <code>notangle</code> continues to see the ordinary <code>main</code> chunk.</p>
+</section>
+<section id="noweb-dialect-and-compatibility-policy" class="level3">
+<h3 class="anchored" data-anchor-id="noweb-dialect-and-compatibility-policy">noweb dialect and compatibility policy</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb40"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="fu">lp</span><span class="kw">:</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">adapter</span><span class="kw">:</span><span class="at"> noweb</span></span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">dialect</span><span class="kw">:</span><span class="at"> noweb-plus</span></span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">references</span><span class="kw">:</span><span class="at"> both</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Supported dialects:</p>
+<ul>
+<li><code>noweb</code>: preserve exact chunk names; do not split names at pipes;</li>
+<li><code>noweb-plus</code>: split definition and reference names at the first unescaped pipe and parse the remainder as an LP2 pipeline.</li>
+</ul>
+<p>Reference policy is <code>noweb</code>, <code>underscore-quote</code>, or <code>both</code>. Repeated definitions may each declare pipelines only if the normalized pipelines agree; the pipeline still runs once after concatenation.</p>
+<p>The parser should be a small, lossless line scanner. It records documentation, definition openers, body segments, references, terminators, and exact offsets without requiring TeX, <code>noweave</code>, or <code>notangle</code>.</p>
+</section>
+</section>
+<section id="other-promising-formats" class="level2">
+<h2 class="anchored" data-anchor-id="other-promising-formats">Other promising formats</h2>
+<section id="myst-markdown-high-priority-after-the-initial-adapters" class="level3">
+<h3 class="anchored" data-anchor-id="myst-markdown-high-priority-after-the-initial-adapters">MyST Markdown — high priority after the initial adapters</h3>
+<p>MyST already has directive blocks, labels, captions, cross references, code cells, and notebook integration. A Pieceful MyST plugin can provide a dedicated directive whose argument follows the shared name-and-pipeline rule:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb41"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>:::{piece} main | normalize-eol() | trim()</span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a><span class="sc">:language:</span> javascript</span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a><span class="sc">:caption:</span> Main program</span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>console.log(_"format-greeting");</span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a>:::</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The plugin renders through MyST’s normal code, label, and caption nodes while the adapter emits the same Piece Document as other formats. A no-plugin fallback may use the built-in <code>{code-block}</code> directive with an <code>lp-*</code> label and no Pieceful-only options. MyST is attractive for scientific books and notebooks where Quarto is not the chosen renderer.</p>
+</section>
+<section id="restructuredtextsphinx-possible-below-myst" class="level3">
+<h3 class="anchored" data-anchor-id="restructuredtextsphinx-possible-below-myst">reStructuredText/Sphinx — possible, below MyST</h3>
+<p>Its directives, targets, and code blocks can express pieces cleanly, but MyST offers a similar directive model with Markdown and notebook alignment. Add reStructuredText when an actual Sphinx project needs it rather than for format completeness.</p>
+</section>
+<section id="typst-renderer-first-source-adapter-later" class="level3">
+<h3 class="anchored" data-anchor-id="typst-renderer-first-source-adapter-later">Typst — renderer first, source adapter later</h3>
+<p>Typst has raw code blocks, labels, references, and programmable show rules. It could render a Piece Document attractively. Its source language also executes document expressions, so a safe, exact-range source adapter is a separate and larger commitment. Treat Typst output as the initial goal.</p>
+</section>
+<section id="formats-not-recommended-initially" class="level3">
+<h3 class="anchored" data-anchor-id="formats-not-recommended-initially">Formats not recommended initially</h3>
+<ul>
+<li><strong>MDX</strong> mixes markup with executable JavaScript/JSX and creates an avoidable trust and parsing boundary.</li>
+<li><strong>DocBook/XML</strong> is structurally capable but has a high authoring cost; HTML and AsciiDoc cover the likely use cases.</li>
+<li><strong>Renderer-specific HTML comments</strong> make compiler semantics invisible and cause the source, rendered document, and Piece Document to disagree.</li>
+</ul>
+</section>
+</section>
+<section id="cross-format-equivalence" class="level2">
+<h2 class="anchored" data-anchor-id="cross-format-equivalence">Cross-format equivalence</h2>
+<p>The following declarations must yield equivalent semantic pieces:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Format/form</th>
+<th>Visible name source</th>
+<th>Semantic ID source</th>
+<th>Fragment source</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Modern Markdown heading</td>
+<td>heading text before pipe</td>
+<td><code>#lp-*</code> or inferred slug</td>
+<td>unnamed fences under heading</td>
+</tr>
+<tr class="even">
+<td>Modern Markdown fence</td>
+<td><code>lp-title</code> / rendered caption</td>
+<td><code>lp:*</code>, <code>#lp-*</code>, or <code>lp-id</code></td>
+<td>named/append fence</td>
+</tr>
+<tr class="odd">
+<td>LitPro Markdown major</td>
+<td>H1-H4 text before optional pipe</td>
+<td>legacy normalized heading</td>
+<td>all code under current block</td>
+</tr>
+<tr class="even">
+<td>LitPro Markdown relative</td>
+<td>H5/H6 text before optional pipe</td>
+<td>major/H5/H6 legacy path</td>
+<td>all code under current block</td>
+</tr>
+<tr class="odd">
+<td>Quarto listing</td>
+<td><code>lst-cap</code></td>
+<td><code>lp-id</code> or <code>lst-lp-*</code></td>
+<td>listing/cell body</td>
+</tr>
+<tr class="even">
+<td>AsciiDoc section</td>
+<td>section title before pipe</td>
+<td><code>#lp-*</code> or inferred slug</td>
+<td>source blocks in section</td>
+</tr>
+<tr class="odd">
+<td>AsciiDoc block</td>
+<td>block title</td>
+<td><code>lp-id</code> / <code>#lp-*</code></td>
+<td>source block/container descendants</td>
+</tr>
+<tr class="even">
+<td>HTML section/block</td>
+<td>heading or figcaption</td>
+<td><code>data-lp-piece</code></td>
+<td>descendant <code>pre &gt; code</code></td>
+</tr>
+<tr class="odd">
+<td>MyST</td>
+<td>directive caption</td>
+<td>directive label</td>
+<td>directive body</td>
+</tr>
+<tr class="even">
+<td>Org</td>
+<td><code>#+NAME</code> or <code>#+LP_NAME</code></td>
+<td>declared name / <code>:noweb-ref</code></td>
+<td>source block body</td>
+</tr>
+<tr class="odd">
+<td>noweb</td>
+<td>chunk definition</td>
+<td>text inside <code>&lt;&lt;...&gt;&gt;=</code> before pipe</td>
+<td>chunk body</td>
+</tr>
+</tbody>
+</table>
+<p>Adapter-independent conformance fixtures should compare normalized Piece Documents rather than rendered HTML.</p>
+</section>
+<section id="diagnostics-added-by-adapters" class="level2">
+<h2 class="anchored" data-anchor-id="diagnostics-added-by-adapters">Diagnostics added by adapters</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Code</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>LPA100</td>
+<td>Missing or unknown adapter/dialect configuration.</td>
+</tr>
+<tr class="even">
+<td>LPA101</td>
+<td>Piece has no visible display name.</td>
+</tr>
+<tr class="odd">
+<td>LPA102</td>
+<td>Piece ID was inferred from mutable display text.</td>
+</tr>
+<tr class="even">
+<td>LPA103</td>
+<td>Host anchor uses a reserved or invalid prefix.</td>
+</tr>
+<tr class="odd">
+<td>LPA110</td>
+<td>Code block has ambiguous piece ownership.</td>
+</tr>
+<tr class="even">
+<td>LPA111</td>
+<td>Fragment refers to an unknown piece.</td>
+</tr>
+<tr class="odd">
+<td>LPA112</td>
+<td>Nested piece/fragment ownership is invalid.</td>
+</tr>
+<tr class="even">
+<td>LPA113</td>
+<td>Pipeline appears on a later fragment or conflicts with another declaration pipeline.</td>
+</tr>
+<tr class="odd">
+<td>LPA114</td>
+<td>Host-native tooling would interpret a pipe-extended name differently.</td>
+</tr>
+<tr class="even">
+<td>LPA120</td>
+<td>Markup parser could not provide an exact source range.</td>
+</tr>
+<tr class="odd">
+<td>LPA121</td>
+<td>Included source URI is missing or outside the allowed input set.</td>
+</tr>
+<tr class="even">
+<td>LPA130</td>
+<td>Render integration cannot represent a requested navigation feature.</td>
+</tr>
+<tr class="odd">
+<td>LPA140</td>
+<td>Quarto attempted execution before Pieceful weaving.</td>
+</tr>
+<tr class="even">
+<td>LPA141</td>
+<td>Org/Babel and Pieceful both claim execution or tangling ownership.</td>
+</tr>
+</tbody>
+</table>
+<p>An inferred ID (<code>LPA102</code>) is informational for an enabled heading declaration and a warning for a block-local declaration.</p>
+</section>
+<section id="conformance-and-test-plan" class="level2">
+<h2 class="anchored" data-anchor-id="conformance-and-test-plan">Conformance and test plan</h2>
+<p>Each adapter needs fixtures for:</p>
+<ol type="1">
+<li>one piece and one fragment;</li>
+<li>several fragments joined in source order;</li>
+<li>visible display name distinct from semantic ID;</li>
+<li>local and cross-document references with exact ranges;</li>
+<li>a reference cycle and dependency path;</li>
+<li>typed directives with no effects performed during parsing;</li>
+<li>ignored/example blocks;</li>
+<li>duplicate IDs and malformed attributes;</li>
+<li>Unicode and entity/escape source mapping;</li>
+<li>nested sections/containers;</li>
+<li>included files, where supported;</li>
+<li>a pipeline declared after the name and applied once after concatenation;</li>
+<li>host-compatible versus pipe-extended Org/noweb spellings;</li>
+<li>modern Markdown named fences interleaved with ambient unnamed fences;</li>
+<li>LitPro H1-H4 peers, H5/H6 relative paths, repeated headings, and minors;</li>
+<li>an equivalent Piece Document shared by all format fixtures.</li>
+</ol>
+<p>Quarto adds golden renders for HTML and PDF showing:</p>
+<ul>
+<li>visible piece captions;</li>
+<li>working definition links;</li>
+<li><code>uses</code> and <code>used by</code> links;</li>
+<li>a piece index;</li>
+<li>an execution error mapped through a woven temporary cell.</li>
+</ul>
+</section>
+<section id="recommended-delivery-order" class="level2">
+<h2 class="anchored" data-anchor-id="recommended-delivery-order">Recommended delivery order</h2>
+<ol type="1">
+<li>Finalize the adapter and <code>SurfaceMap</code> interface.</li>
+<li>Implement modern Markdown with coexisting heading and fence declarations.</li>
+<li>Implement <code>markdown-litpro</code> against the legacy fixture corpus and expose the <code>litpro-2017</code>, <code>pieceful-2020</code>, and <code>litpro-plus</code> dialects.</li>
+<li>Implement the small lossless noweb/noweb-plus scanner.</li>
+<li>Implement Org names, <code>noweb-ref</code> aggregation, references, and pipeline metadata without execution.</li>
+<li>Implement a Quarto no-extension example using native listings, then add the render bridge for graph links and a piece index.</li>
+<li>Add the Quarto pre-execution build bridge only after static rendering is sound.</li>
+<li>Implement HTML, which will exercise entity-aware source mapping.</li>
+<li>Implement AsciiDoc with block-level source maps plus lossless rescanning.</li>
+<li>Add MyST when a scientific-book/notebook project needs it.</li>
+</ol>
+</section>
+<section id="open-decisions" class="level2">
+<h2 class="anchored" data-anchor-id="open-decisions">Open decisions</h2>
+<ol type="1">
+<li>Should modern Markdown default to H2-H6 ambient ownership, or require a project to enable heading declarations explicitly?</li>
+<li>Should <code>markdown-litpro</code> default to <code>litpro-plus</code> as proposed, or default to exact <code>litpro-2017</code> and require opting into heading pipelines?</li>
+<li>Is an inferred heading ID acceptable without a diagnostic in an explicitly selected legacy-style document?</li>
+<li>Should <code>#lp-main</code> alone mark a named-fence declaration, or must <code>.lp-piece</code> always be present? Requiring the class is less magical.</li>
+<li>Should the Quarto bridge always number pieces as listings, or support an unnumbered <code>Piece: main</code> caption style?</li>
+<li>Should AsciiDoc retain the single generic block macro (<code>lp::write[target=...]</code>), or use a styled delimited block for directives that need richer visible prose?</li>
+<li>Should <code>&lt;&lt;name | pipeline&gt;&gt;</code> be enabled by <code>noweb-plus</code>/Org configuration only, or recognized with a portability warning whenever encountered?</li>
+<li>Which system owns execution in an Org or notebook workflow? The default should be the native host, with Pieceful limited to pure graph assembly.</li>
+</ol>
+</section>
+<section id="recommendation" class="level2">
+<h2 class="anchored" data-anchor-id="recommendation">Recommendation</h2>
+<p>Prototype the same five-piece example in:</p>
+<ul>
+<li>modern Markdown with a named fence between two heading-owned fragments;</li>
+<li><code>markdown-litpro</code> with H1-H4, H5/H6, a minor, and a repeated heading;</li>
+<li>strict noweb and noweb-plus;</li>
+<li>Org using <code>#+NAME</code>, <code>:noweb-ref</code>, and <code>#+LP_PIPE</code>;</li>
+<li>Quarto using native <code>lst-*</code> captions;</li>
+<li>AsciiDoc section form;</li>
+<li>HTML <code>&lt;figure data-lp-piece&gt;</code> form.</li>
+</ul>
+<p>Compare their normalized Piece Documents and rendered navigation. That small vertical slice will test the adapter boundary, visible naming, graph links, and source maps before committing to more grammars.</p>
+</section>
+<section id="external-references" class="level2">
+<h2 class="anchored" data-anchor-id="external-references">External references</h2>
+<ul>
+<li><a href="https://quarto.org/docs/authoring/markdown-basics.html">Quarto Markdown basics</a></li>
+<li><a href="https://quarto.org/docs/authoring/cross-references/">Quarto cross references and code listings</a></li>
+<li><a href="https://quarto.org/docs/authoring/code-annotation.html">Quarto code annotations</a></li>
+<li><a href="https://quarto.org/docs/extensions/filters.html">Quarto filter extensions</a></li>
+<li><a href="https://docs.asciidoctor.org/asciidoc/latest/verbatim/source-blocks/">AsciiDoc source blocks</a></li>
+<li><a href="https://docs.asciidoctor.org/asciidoc/latest/blocks/assign-id/">AsciiDoc block IDs</a></li>
+<li><a href="https://docs.asciidoctor.org/asciidoc/latest/attributes/element-attributes/">AsciiDoc element attributes</a></li>
+<li><a href="https://docs.asciidoctor.org/asciidoctor/latest/api/sourcemap/">Asciidoctor source maps</a></li>
+<li><a href="https://mystmd.org/guide/directives">MyST directives</a></li>
+<li><a href="https://mystmd.org/guide/cross-references">MyST cross references</a></li>
+<li><a href="https://orgmode.org/manual/Using-Header-Arguments.html">Org header arguments and <code>noweb-ref</code></a></li>
+<li><a href="https://orgmode.org/manual/Noweb-Reference-Syntax.html">Org noweb reference syntax</a></li>
+<li><a href="https://orgmode.org/manual/Extracting-Source-Code.html">Org source extraction</a></li>
+<li><a href="https://www.cs.tufts.edu/~nr/noweb/guide.html">noweb guide and pipeline representation</a></li>
+<li><a href="https://html.spec.whatwg.org/dev/dom.html#custom-data-attribute">HTML custom data attributes</a></li>
+</ul>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button,
+          { trigger: "manual",
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/ravel\.jostylr\.com\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // default icon
+            link.classList.add("external");
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config);
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined;
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              }
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            }
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Ravel 0.1 · MIT licensed</p>
+</div>
+    <div class="nav-footer-center">
+      &nbsp;
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/jostylr/ravel/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></div>
+    <div class="nav-footer-right">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+    <a class="nav-link" href="https://github.com/jostylr/ravel">
+<p>GitHub</p>
+</a>
+  </li>
+    <li class="nav-item">
+    <a class="nav-link" href="./playground/">
+<p>Playground</p>
+</a>
+  </li>
+</ul>
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

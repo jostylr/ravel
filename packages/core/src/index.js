@@ -716,6 +716,30 @@ const applyTransform = (value, step, diagnostics, transforms, context = {}) => {
   if (step.name === "quote-reference") {
     return value.replace(/_(["'\x60])/g, "\\_$1");
   }
+  if (step.name === "jsontext") {
+    if (step.arguments.length > 1 ||
+        (step.arguments.length === 1 && typeof step.arguments[0] !== "string")) {
+      diagnostics.push(diagnostic("RV120", "jsontext accepts no arguments or one string key.", step.source));
+      return value;
+    }
+    let parsed;
+    try {
+      parsed = JSON.parse(value);
+    } catch {
+      diagnostics.push(diagnostic("RV120", "jsontext requires a live-result JSON value.", step.source));
+      return value;
+    }
+    if (step.arguments.length === 0) return JSON.stringify(parsed);
+
+    const key = step.arguments[0];
+    if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed) ||
+        !Object.hasOwn(parsed, key)) {
+      diagnostics.push(diagnostic("RV120", "jsontext could not find object key " + JSON.stringify(key) + ".", step.source));
+      return value;
+    }
+    const selected = parsed[key];
+    return typeof selected === "string" ? selected : JSON.stringify(selected);
+  }
 
   const transform = customTransform(transforms, step.name);
   if (typeof transform === "function") {
@@ -836,6 +860,11 @@ export const transformGraph = (pretransform, options = {}) => {
   const delayTokenCorpus = JSON.stringify(pretransform);
   const compareText = (left, right) => left < right ? -1 : left > right ? 1 : 0;
   const orderedEntries = (value) => Object.entries(value).sort(([left], [right]) => compareText(left, right));
+  const liveExecutions = options.liveResults?.executions ?? options.liveResults;
+  const liveExecution = (id) => liveExecutions instanceof Map
+    ? liveExecutions.get(id)
+    : liveExecutions?.[id];
+  const isExecutable = (definition) => definition?.metadata?.data?.ravel?.run === true;
 
   const normalizeDefinitionPipeline = (steps, source) => {
     if (steps === undefined) return [];
@@ -1074,10 +1103,47 @@ export const transformGraph = (pretransform, options = {}) => {
       to: resolved,
       source: clone(node.source)
     };
-    let value = mappedValue(dependency.value, dependency.segments.map((segment) => ({
-      ...clone(segment),
-      via: [...(segment.via ?? []), reference]
-    })));
+    const resolvedDefinition = definitions.get(resolved);
+    const ownerIsExecutable = isExecutable(owner.definition);
+    const shouldUseLiveResult = isExecutable(resolvedDefinition) && !ownerIsExecutable;
+    if (shouldUseLiveResult && options.deferLiveResults && !liveExecutions) {
+      return mappedValue();
+    }
+    let value;
+    if (shouldUseLiveResult && liveExecutions) {
+      const execution = liveExecution(resolved);
+      if (execution?.status !== "succeeded") {
+        diagnostics.push(diagnostic("RV140", "Live result is unavailable for reference " + node.reference + ".", node.source));
+        return mappedValue();
+      }
+      const first = node.pipeline[0];
+      const hasJsonTextBoundary = first?.type === "transform" && first.name === "jsontext";
+      const serializeWholeValue = hasJsonTextBoundary && first.arguments.length === 0;
+      if (typeof execution.value === "string" && !serializeWholeValue) {
+        value = coarseMapped(execution.value, resolvedDefinition.source, resolved, "live-result", [reference]);
+      } else if (hasJsonTextBoundary) {
+        value = coarseMapped(
+          execution.serialized ?? JSON.stringify(execution.value),
+          resolvedDefinition.source,
+          resolved,
+          "live-result",
+          [reference]
+        );
+      } else {
+        diagnostics.push(diagnostic(
+          "RV140",
+          "Non-string live result " + resolved +
+            " requires jsontext() or jsontext(\"key\") before ordinary Ravel processing.",
+          node.source
+        ));
+        return mappedValue();
+      }
+    } else {
+      value = mappedValue(dependency.value, dependency.segments.map((segment) => ({
+        ...clone(segment),
+        via: [...(segment.via ?? []), reference]
+      })));
+    }
     return evaluatePipeline(value, node.pipeline, owner);
   };
 
@@ -1335,7 +1401,26 @@ export const transformGraph = (pretransform, options = {}) => {
       diagnostics.push(diagnostic("RV130", "out requires a fully qualified existing source chunk ID.", directive.source));
       continue;
     }
-    const chunk = evaluate(id, directive.source);
+    let chunk = evaluate(id, directive.source);
+    const definition = definitions.get(id);
+    if (isExecutable(definition) && liveExecutions) {
+      const execution = liveExecution(id);
+      if (execution?.status !== "succeeded") {
+        diagnostics.push(diagnostic("RV140", "Live result is unavailable for output " + name + ".", directive.source));
+        continue;
+      }
+      if (typeof execution.value !== "string") {
+        diagnostics.push(diagnostic(
+          "RV140",
+          "Output " + name +
+            " requires a live string; use jsontext() or jsontext(\"key\") in a derived chunk.",
+          directive.source
+        ));
+        continue;
+      }
+      const mapped = coarseMapped(execution.value, definition.source, id, "live-result");
+      chunk = { ...chunk, value: mapped.text, segments: mapped.segments };
+    }
     if (deliverables[name]) {
       diagnostics.push(diagnostic("RV101", "Duplicate out deliverable: " + name, directive.source));
       continue;

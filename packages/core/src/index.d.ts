@@ -83,7 +83,11 @@ export function formatChunkId(identity: ChunkIdentity): string;
 export function parseChunkId(input: string, options?: { reference?: boolean }): ChunkIdentity | null;
 export function parseChunk(body: string, source: SourceLocation): { nodes: unknown[]; diagnostics: Diagnostic[] };
 export function combineMaps(maps: RavelMap[]): PretransformGraph;
-export function transformGraph(graph: PretransformGraph, options?: { transforms?: Record<string, (value: string, ...argumentsValue: unknown[]) => string> | Map<string, Function> }): RavelProgram;
+export function transformGraph(graph: PretransformGraph, options?: {
+  transforms?: Record<string, (value: string, ...argumentsValue: unknown[]) => string> | Map<string, Function>;
+  deferLiveResults?: boolean;
+  liveResults?: LiveProgramResult | LiveProgramResult["executions"] | Map<string, LiveProgramResult["executions"][string]>;
+}): RavelProgram;
 export function ravelValueIssue(value: unknown, path?: string): string | null;
 export function serializeRavelValue(value: unknown): string;
 export function cloneRavelValue(value: RavelValue): RavelValue;

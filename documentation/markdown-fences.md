@@ -28,6 +28,10 @@ In 0.2 development, `.run` marks an explicitly named chunk for the separate
 live-execution stage and implies `.ravel`. The language token remains available
 for syntax highlighting and provider selection. `.run` does not execute during
 Markdown parsing, and a language token alone never opts a block into execution.
+The CLI's `run` and `build` commands execute marked blocks; `check` and
+`inspect` do not. During a build, live strings can enter ordinary Ravel
+processing directly. `jsontext()` serializes complete non-string live values,
+while `jsontext("key")` selects one top-level object value.
 See [Live execution](live-execution.md).
 
 ## Greedy continuation

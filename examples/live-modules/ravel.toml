@@ -1,5 +1,8 @@
 version = 1
 
+[build]
+out_dir = ".ravel/build"
+
 [[files]]
 path = "live.md"
 mode = "primary"

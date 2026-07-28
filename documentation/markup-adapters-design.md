@@ -565,12 +565,15 @@ console.log(_"format-greeting");
 It transforms that block into the equivalent Quarto listing in the Pandoc AST.
 The source remains readable in renderers that do not load the bridge.
 
-For an executable cell, Quarto's native spelling is:
+For an executable cell, Quarto's native spelling adds curly brackets around
+the language name. The example below deliberately shows the non-executable
+`python` fence so this `.md` design document remains ordinary Markdown; change
+it to `{python}` in a `.qmd` document to make Quarto execute it.
 
 ````markdown
 ::: {#lp-analysis .lp-piece lp-id="analysis" lp-pipe="trim()"}
 
-```{python}
+```python
 #| lst-label: lst-lp-analysis
 #| lst-cap: "Analysis"
 

@@ -26,6 +26,24 @@ const total = rows.reduce(
 export default {
   items: rows.map((row) => row.item),
   rows: rows.length,
-  total
+  total,
+  report: `Processed ${rows.length} rows with a total of ${total.toFixed(2)}.`
 };
+```
+
+Ordinary Ravel processing remains text-based. A structured live export must
+use `jsontext()`. With no argument it serializes the entire export; with a key
+it selects that top-level value:
+
+```text {.ravel #report}
+_"summarize.js | jsontext('report')"
+```
+
+```json {.ravel #summary-json}
+_"summarize.js | jsontext()"
+```
+
+```ravel
+out("report.txt", _"report.text")
+out("summary.json", _"summary-json.json")
 ```
