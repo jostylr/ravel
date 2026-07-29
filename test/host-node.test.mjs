@@ -184,6 +184,32 @@ test("Node host follows in directives from Markdown into another Markdown map", 
   assert.equal(program.deliverables["dist/main.js"].value, "export const helper = true;\n");
 });
 
+test("Node host loads Quarto sources through the modern Markdown adapter", async () => {
+  const sandbox = await mkdtemp(join(tmpdir(), "ravel-quarto-"));
+  const input = join(sandbox, "analysis.qmd");
+  try {
+    await writeFile(input, [
+      "---",
+      "title: Analysis",
+      "---",
+      "## Live result",
+      "",
+      "```{.javascript .run provider=quickjs-wasm-worker}",
+      "export default \"ready\";",
+      "```",
+      ""
+    ].join("\n"));
+    const loaded = await loadBuildInput(input);
+
+    assert.deepEqual(loaded.pretransform.diagnostics, []);
+    assert.equal(loaded.pretransform.documents[0].format, "markdown+ravel-modern-v1");
+    assert.equal(loaded.pretransform.chunks[0].id, "analysis::live-result");
+    assert.equal(loaded.pretransform.chunks[0].metadata.data.ravel.run, true);
+  } finally {
+    await rm(sandbox, { recursive: true, force: true });
+  }
+});
+
 test("Node host confines TOML inputs, imports, and configured outputs to its root", async () => {
   const sandbox = await mkdtemp(join(tmpdir(), "ravel-scope-"));
   const root = join(sandbox, "project");

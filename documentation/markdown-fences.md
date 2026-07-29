@@ -4,6 +4,36 @@
 fenced code blocks as chunks; headings, links, and prose have no effect on
 chunk identity.
 
+The opt-in 0.2 modern profile, `markdown+ravel-modern-v1`, additionally lets
+H2-H6 headings own unnamed fences while named fences continue to own only
+themselves. Select it with `modernMarkdownToMap`, `profile: "modern"`, or
+`lp.adapter: markdown` in YAML front matter. This explicit selection preserves
+the published fence-only behavior of existing `markdownToMap` calls.
+
+````markdown
+## Main program | trim()
+
+```javascript
+first();
+```
+
+```javascript lp:helper | normalize-eol()
+helper();
+```
+
+```javascript
+third();
+```
+````
+
+`main-program` contains the first and third bodies; `helper` contains the
+middle body. A pipeline may instead appear after the language of the first
+unnamed fence. Pandoc/Quarto attribute forms use `.lp-piece`, `#lp-name`,
+`lp-title`, `lp-pipe`, and `.lp-fragment lp-for="name"`. Fragment languages
+and original info strings are retained in adapter metadata. A heading-owned
+fence may use `.run` and `provider=...`; these are still declarative execution
+metadata and never cause adapter-time execution.
+
 ## Named chunks
 
 Use Pandoc-style attributes after a fence language:

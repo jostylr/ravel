@@ -41,17 +41,29 @@ const defaultDocumentId = (uri) => {
   return componentPattern.test(id) ? id : null;
 };
 
-const documentFromFrontMatter = (text) => {
+const frontMatterFrom = (text) => {
   if (!text.startsWith("---\n") && !text.startsWith("---\r\n")) return undefined;
   const firstEnd = text.indexOf("\n");
   const close = /^---\s*\r?$/m.exec(text.slice(firstEnd + 1));
   if (!close) return undefined;
   try {
-    const data = parseYaml(text.slice(firstEnd + 1, firstEnd + 1 + close.index));
-    return data?.ravel?.document;
+    return parseYaml(text.slice(firstEnd + 1, firstEnd + 1 + close.index));
   } catch {
     return undefined;
   }
+};
+
+const frontMatterEndOffset = (text) => {
+  if (!text.startsWith("---\n") && !text.startsWith("---\r\n")) return 0;
+  const firstEnd = text.indexOf("\n");
+  const close = /^---\s*\r?$/m.exec(text.slice(firstEnd + 1));
+  if (!close) return 0;
+  return firstEnd + 1 + close.index + close[0].length;
+};
+
+const documentFromFrontMatter = (text) => {
+  const data = frontMatterFrom(text);
+  return data?.lp?.document ?? data?.ravel?.document;
 };
 
 const tokens = (text) => {
@@ -143,6 +155,12 @@ const codeNodes = (node, found = []) => {
   return found;
 };
 
+const structuralNodes = (node, found = []) => {
+  if (node.type === "heading" || node.type === "code") found.push(node);
+  for (const child of node.children ?? []) structuralNodes(child, found);
+  return found;
+};
+
 const fenceBody = (text, node, starts, uri) => {
   const start = node.position.start.offset;
   const end = node.position.end.offset;
@@ -151,10 +169,13 @@ const fenceBody = (text, node, starts, uri) => {
   const closingStart = block.lastIndexOf("\n") + 1;
   const bodyStart = openingEnd === -1 ? end : start + openingEnd + 1;
   const bodyEnd = closingStart === 0 ? bodyStart : start + closingStart;
+  const opening = openingEnd === -1 ? block : block.slice(0, openingEnd);
+  const infoString = /^(?:`{3,}|~{3,})(.*)$/.exec(opening)?.[1].trim() ?? "";
   return {
     body: text.slice(bodyStart, bodyEnd),
     start: bodyStart,
     end: bodyEnd,
+    infoString,
     source: rangeAt(uri, starts, bodyStart, bodyEnd),
     fenceSource: rangeAt(uri, starts, start, end)
   };
@@ -499,7 +520,7 @@ const cleanChunk = ({ _fragments, fragments, ...chunk }) => ({
  * `mode` is `opt-in` or `primary`; in primary mode every non-excluded code
  * fence must be a named Ravel chunk or a valid greedy continuation.
  */
-export const markdownToMap = (text, options = {}) => {
+const fencedMarkdownToMap = (text, options = {}) => {
   const uri = options.uri ?? "document.md";
   const mode = options.mode ?? "opt-in";
   const starts = lineStarts(text);
@@ -596,4 +617,346 @@ export const markdownToMap = (text, options = {}) => {
     },
     diagnostics
   };
+};
+
+const plainText = (node) => {
+  if (node.type === "text" || node.type === "inlineCode") return node.value;
+  if (node.type === "image") return node.alt ?? "";
+  return (node.children ?? []).map(plainText).join("");
+};
+
+const splitNameAndPipeline = (text) => {
+  let escaped = false;
+  for (let index = 0; index < text.length; index += 1) {
+    const character = text[index];
+    if (escaped) {
+      escaped = false;
+    } else if (character === "\\") {
+      escaped = true;
+    } else if (character === "|") {
+      return {
+        name: text.slice(0, index).trim().replace(/\\\|/g, "|"),
+        pipe: text.slice(index + 1).trim()
+      };
+    }
+  }
+  return { name: text.trim().replace(/\\\|/g, "|"), pipe: null };
+};
+
+const semanticName = (value) => {
+  const normalized = value.toLowerCase()
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+  return componentPattern.test(normalized) ? normalized : null;
+};
+
+const modernControlClasses = new Set([...controlClasses, "lp-piece", "lp-fragment"]);
+
+const modernFence = (node, source) => {
+  let language = node.lang ?? null;
+  let attributes = { id: null, classes: [], values: {}, diagnostics: [] };
+  let compactPipe = null;
+
+  if (node.lang?.startsWith("{")) {
+    const spelling = node.lang + (node.meta ? " " + node.meta : "");
+    attributes = parseAttributes(spelling, source);
+    const languageIndex = attributes.classes.findIndex((entry) => !modernControlClasses.has(entry));
+    if (languageIndex === -1) language = null;
+    else {
+      language = attributes.classes[languageIndex];
+      attributes.classes.splice(languageIndex, 1);
+    }
+  } else {
+    const meta = node.meta?.trim() ?? "";
+    if (meta.startsWith("lp:")) {
+      const split = splitNameAndPipeline(meta.slice(3));
+      attributes.id = split.name;
+      attributes.classes.push("lp-piece");
+      compactPipe = split.pipe;
+    } else if (meta.startsWith("|")) {
+      compactPipe = meta.slice(1).trim();
+    } else {
+      attributes = parseAttributes(node.meta, source);
+    }
+  }
+
+  const values = attributes.values;
+  if (values["lp-pipe"] !== undefined) {
+    if (compactPipe !== null && compactPipe !== values["lp-pipe"]) {
+      attributes.diagnostics.push(diagnostic("RM105", "Compact and lp-pipe definition pipelines conflict.", source));
+    }
+    compactPipe = values["lp-pipe"];
+  }
+  if (compactPipe !== null) values.pipe = compactPipe;
+  if (values["lp-for"] !== undefined) values.chunk = values["lp-for"];
+  if (attributes.id?.startsWith("lp-")) attributes.id = attributes.id.slice(3);
+
+  return {
+    language,
+    attributes,
+    named: attributes.classes.includes("lp-piece") || attributes.id !== null ||
+      Object.hasOwn(values, "chunk"),
+    append: attributes.classes.includes("lp-fragment")
+  };
+};
+
+const headingDeclaration = (node, starts, uri, diagnostics) => {
+  const source = rangeAt(uri, starts, node.position.start.offset, node.position.end.offset);
+  let text = plainText(node).trim();
+  let attributes = { id: null, classes: [], values: {}, diagnostics: [] };
+  const attributeMatch = /\s*(\{[^{}]*\})\s*$/.exec(text);
+  if (attributeMatch) {
+    attributes = parseAttributes(attributeMatch[1], source);
+    diagnostics.push(...attributes.diagnostics);
+    text = text.slice(0, attributeMatch.index).trim();
+  }
+  const split = splitNameAndPipeline(text);
+  const attributePipe = attributes.values["lp-pipe"];
+  if (split.pipe !== null && attributePipe !== undefined && split.pipe !== attributePipe) {
+    diagnostics.push(diagnostic("RM105", "Heading and lp-pipe definition pipelines conflict.", source));
+  }
+  const explicit = attributes.id?.startsWith("lp-") ? attributes.id.slice(3) : attributes.id;
+  const chunk = explicit ?? semanticName(split.name);
+  if (!componentPattern.test(chunk ?? "")) {
+    diagnostics.push(diagnostic("RM102", "A heading piece requires a name that normalizes to a lowercase Ravel identifier.", source));
+    return null;
+  }
+  return {
+    chunk,
+    displayName: split.name,
+    pipe: attributePipe ?? split.pipe,
+    anchor: attributes.id,
+    source
+  };
+};
+
+const modernChunk = (document, declaration, diagnostics) => {
+  const identity = { document, chunk: declaration.chunk, minor: null, type: null };
+  const ravel = {
+    displayName: declaration.displayName,
+    ...(declaration.anchor ? { renderedAnchor: declaration.anchor } : {})
+  };
+  if (declaration.pipe) ravel.definitionPipe = declaration.pipe;
+  return {
+    id: formatId(identity),
+    identity,
+    name: declaration.displayName,
+    body: "",
+    definitionPipeline: definitionPipeline(declaration.pipe, declaration.source, diagnostics),
+    metadata: { tags: [], data: { ravel } },
+    source: declaration.source,
+    fragments: [],
+    _fragmentLanguages: [],
+    _pipe: declaration.pipe ?? null
+  };
+};
+
+const setModernFenceMetadata = (chunk, attributes, language, source, diagnostics) => {
+  chunk.metadata.tags = [...new Set([
+    ...chunk.metadata.tags,
+    ...attributes.classes.filter((entry) => !modernControlClasses.has(entry))
+  ])];
+  if (!attributes.classes.includes("run") && attributes.values.provider === undefined) return;
+  if (attributes.classes.includes("run") && !language) {
+    diagnostics.push(diagnostic("RM103", "A .run fence requires a language.", source));
+    return;
+  }
+  const ravel = chunk.metadata.data.ravel;
+  if (attributes.classes.includes("run")) ravel.run = true;
+  if (attributes.values.provider !== undefined) {
+    if (ravel.provider !== undefined && ravel.provider !== attributes.values.provider) {
+      diagnostics.push(diagnostic("RM105", "Fragments of one piece cannot select different live providers.", source));
+    } else {
+      ravel.provider = attributes.values.provider;
+    }
+  }
+};
+
+const appendModernFragment = (chunk, block, language, source, diagnostics) => {
+  chunk.body += block.body;
+  chunk.fragments.push({ body: block.body, source: block.source });
+  chunk._fragmentLanguages.push(language);
+  const languages = [...new Set(chunk._fragmentLanguages.filter(Boolean))];
+  if (languages.length === 1) chunk.metadata.language = languages[0];
+  else if (languages.length > 1) {
+    delete chunk.metadata.language;
+    diagnostics.push(diagnostic(
+      "RM150",
+      "Fragments of " + chunk.id + " use incompatible languages: " + languages.join(", ") + ".",
+      source
+    ));
+  }
+  chunk.metadata.data.ravel.fragmentLanguages = [...chunk._fragmentLanguages];
+  chunk.metadata.data.ravel.fragmentInfo = [
+    ...(chunk.metadata.data.ravel.fragmentInfo ?? []),
+    { language, infoString: block.infoString }
+  ];
+};
+
+const cleanModernChunk = ({ _fragmentLanguages, _pipe, ...chunk }) => chunk;
+
+const modernHeadingOptions = (text, options) => {
+  const frontMatter = frontMatterFrom(text);
+  const configured = options.headings ?? frontMatter?.lp?.headings;
+  if (configured === false || configured === "none" || configured?.enabled === false) {
+    return { enabled: false, levels: [] };
+  }
+  const levels = Array.isArray(configured?.levels) ? configured.levels : [2, 3, 4, 5, 6];
+  return {
+    enabled: true,
+    levels: levels.filter((level) => Number.isInteger(level) && level >= 1 && level <= 6)
+  };
+};
+
+const modernMarkdownToMapInternal = (text, options = {}) => {
+  const uri = options.uri ?? "document.md";
+  const mode = options.mode ?? "opt-in";
+  if (mode !== "opt-in" && mode !== "primary") {
+    throw new Error("Ravel Markdown mode must be opt-in or primary: " + mode);
+  }
+  const starts = lineStarts(text);
+  const diagnostics = [];
+  const documentId = options.document ?? documentFromFrontMatter(text) ?? defaultDocumentId(uri);
+  if (!componentPattern.test(documentId ?? "")) {
+    throw new Error("Ravel Markdown document identity must be a lowercase identifier: " + String(documentId));
+  }
+
+  const headingOptions = modernHeadingOptions(text, options);
+  const headingLevels = new Set(headingOptions.levels);
+  const chunks = [];
+  const chunksById = new Map();
+  const directives = [];
+  let ambient = null;
+  const tree = fromMarkdown(text);
+  const frontMatterEnd = frontMatterEndOffset(text);
+
+  for (const node of structuralNodes(tree).sort((left, right) => left.position.start.offset - right.position.start.offset)) {
+    if (node.position.start.offset < frontMatterEnd) continue;
+    if (node.type === "heading") {
+      if (!headingOptions.enabled || !headingLevels.has(node.depth)) continue;
+      const declaration = headingDeclaration(node, starts, uri, diagnostics);
+      if (!declaration) {
+        ambient = null;
+        continue;
+      }
+      const candidate = modernChunk(documentId, declaration, diagnostics);
+      if (chunksById.has(candidate.id)) {
+        diagnostics.push(diagnostic("RM106", "Duplicate modern Markdown heading piece: " + candidate.id + ".", declaration.source));
+        ambient = chunksById.get(candidate.id);
+      } else {
+        chunks.push(candidate);
+        chunksById.set(candidate.id, candidate);
+        ambient = candidate;
+      }
+      continue;
+    }
+
+    const block = fenceBody(text, node, starts, uri);
+    if (node.lang === "ravel") {
+      directives.push(...parseDirectiveFence(block, documentId, starts, uri, diagnostics));
+      continue;
+    }
+    const declaration = modernFence(node, block.fenceSource);
+    const { attributes, language } = declaration;
+    diagnostics.push(...attributes.diagnostics);
+    const classes = new Set(attributes.classes);
+    const excluded = classes.has("no-ravel");
+    if (excluded && classes.has("run")) {
+      diagnostics.push(diagnostic("RM103", ".run cannot be combined with .no-ravel.", block.fenceSource));
+      continue;
+    }
+    if (excluded) continue;
+
+    if (declaration.named) {
+      if (declaration.append && !Object.hasOwn(attributes.values, "chunk")) {
+        diagnostics.push(diagnostic("RM103", ".lp-fragment requires lp-for=name.", block.fenceSource));
+        continue;
+      }
+      const chunkName = attributes.values.chunk ?? attributes.id;
+      if (!componentPattern.test(chunkName ?? "")) {
+        diagnostics.push(diagnostic("RM102", "A named modern Markdown fence requires a lowercase Ravel identifier.", block.fenceSource));
+        continue;
+      }
+      const id = documentId + "::" + chunkName;
+      let chunk = chunksById.get(id);
+      if (declaration.append) {
+        if (!chunk) {
+          diagnostics.push(diagnostic("RM103", ".lp-fragment cannot append to an undeclared piece: " + id + ".", block.fenceSource));
+          continue;
+        }
+        if (attributes.values.pipe) {
+          diagnostics.push(diagnostic("RM105", "An appended fragment cannot declare a definition pipeline.", block.fenceSource));
+        }
+      } else if (chunk) {
+        diagnostics.push(diagnostic("RM106", "Duplicate modern Markdown piece declaration: " + id + ".", block.fenceSource));
+        continue;
+      } else {
+        const displayName = attributes.values["lp-title"] ?? chunkName;
+        chunk = modernChunk(documentId, {
+          chunk: chunkName,
+          displayName,
+          pipe: attributes.values.pipe ?? null,
+          anchor: attributes.id ? "lp-" + attributes.id : null,
+          source: block.fenceSource
+        }, diagnostics);
+        chunks.push(chunk);
+        chunksById.set(chunk.id, chunk);
+      }
+      appendModernFragment(chunk, block, language, block.fenceSource, diagnostics);
+      setModernFenceMetadata(chunk, attributes, language, block.fenceSource, diagnostics);
+      continue;
+    }
+
+    if (!ambient) {
+      if (mode === "primary") {
+        diagnostics.push(diagnostic("RM103", "An unnamed modern Markdown fence requires an enabled heading owner or .no-ravel.", block.fenceSource));
+      }
+      continue;
+    }
+    const pipe = attributes.values.pipe ?? null;
+    if (pipe !== null) {
+      if (ambient.fragments.length > 0) {
+        diagnostics.push(diagnostic("RM105", "Only the first unnamed fence owned by a heading may declare its pipeline.", block.fenceSource));
+      } else if (ambient._pipe !== null && ambient._pipe !== pipe) {
+        diagnostics.push(diagnostic("RM105", "Heading and first-fence definition pipelines conflict.", block.fenceSource));
+      } else if (ambient._pipe === null) {
+        ambient._pipe = pipe;
+        ambient.metadata.data.ravel.definitionPipe = pipe;
+        ambient.definitionPipeline = definitionPipeline(pipe, block.fenceSource, diagnostics);
+      }
+    }
+    appendModernFragment(ambient, block, language, block.fenceSource, diagnostics);
+    setModernFenceMetadata(ambient, attributes, language, block.fenceSource, diagnostics);
+  }
+
+  return {
+    map: {
+      version: 1,
+      document: { id: documentId, uri, format: "markdown+ravel-modern-v1" },
+      chunks: chunks.map(cleanModernChunk),
+      directives
+    },
+    diagnostics
+  };
+};
+
+/**
+ * Convert modern heading/fence Markdown into a format-neutral map.
+ * H2-H6 headings own unnamed fences by default; named fences remain local.
+ */
+export const modernMarkdownToMap = (text, options = {}) => modernMarkdownToMapInternal(text, options);
+
+/**
+ * Convert Markdown into a Ravel Map. Existing calls retain the fenced-block
+ * profile. `profile: "modern"` or `lp.adapter: markdown` selects the modern
+ * heading/fence profile.
+ */
+export const markdownToMap = (text, options = {}) => {
+  const adapter = frontMatterFrom(text)?.lp?.adapter;
+  const modern = options.profile === undefined ? adapter === "markdown" : options.profile === "modern";
+  return modern
+    ? modernMarkdownToMapInternal(text, options)
+    : fencedMarkdownToMap(text, options);
 };

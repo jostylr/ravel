@@ -504,16 +504,16 @@ Exit criteria:
 
 ### D2. Complete modern and full-LitPro Markdown
 
-- [ ] Extend `@pieceful/ravel-markdown` so heading-owned and named-fence chunks
+- [x] Extend `@pieceful/ravel-markdown` so heading-owned and named-fence chunks
       coexist. A named fence owns only itself and does not replace the current
       ambient heading; later unnamed fences continue contributing to that
       heading chunk.
-- [ ] Preserve the language/info string on every unnamed heading-owned fence.
+- [x] Preserve the language/info string on every unnamed heading-owned fence.
       Infer a chunk language only when its nonempty fragment languages agree.
-- [ ] Allow a definition pipeline after a heading name or on the first unnamed
+- [x] Allow a definition pipeline after a heading name or on the first unnamed
       fence. Apply it once after all heading-owned fragments concatenate and
       reject pipelines on later unnamed fragments.
-- [ ] Support compact CommonMark and attributed Pandoc/Quarto spellings for
+- [x] Support compact CommonMark and attributed Pandoc/Quarto spellings for
       named chunks, append fragments, display names, stable IDs, languages, and
       pipelines.
 - [ ] Add the independent `markdown-litpro` adapter with H1-H4 peer chunks, H5
@@ -538,7 +538,7 @@ Exit criteria:
 
 ### D3. Implement the Quarto integration
 
-- [ ] Accept `.qmd` through the selected Markdown adapter rather than defining
+- [x] Accept `.qmd` through the selected Markdown adapter rather than defining
       a Quarto-specific Ravel Map dialect.
 - [ ] Use native `lst-*` labels and `lst-cap` captions for the no-extension
       baseline so named chunks are visible and cross-referenceable.

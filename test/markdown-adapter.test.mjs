@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { readFile } from "node:fs/promises";
-import { markdownToMap } from "../packages/markdown/src/index.js";
+import { markdownToMap, modernMarkdownToMap } from "../packages/markdown/src/index.js";
 import { combineMaps, transformGraph } from "../packages/core/src/index.js";
+import { validateRavelMap } from "../packages/map/src/index.js";
 
 const fixture = async (name) => readFile(new URL("../fixtures/markdown/" + name, import.meta.url), "utf8");
 
@@ -78,4 +79,181 @@ test("ravel fences translate directives into portable staged composition IR", ()
   assert.equal(program.chunks["guide::program:min.js"].value, "value");
   assert.equal(program.chunks["guide::public.js"].value, "  value");
   assert.equal(program.deliverables["dist/stage.js"].value, "  value");
+});
+
+test("modern Markdown keeps heading ownership across a named fence", () => {
+  const source = [
+    "# Guide",
+    "## Main program | trim()",
+    "",
+    "```javascript",
+    "first();",
+    "```",
+    "",
+    "```javascript lp:helper | trim()",
+    "helper();",
+    "```",
+    "",
+    "```javascript",
+    "third();",
+    "```",
+    ""
+  ].join("\n");
+  const { map, diagnostics } = modernMarkdownToMap(source, {
+    uri: "modern.md",
+    document: "modern"
+  });
+
+  assert.deepEqual(diagnostics, []);
+  assert.deepEqual(validateRavelMap(map), []);
+  assert.equal(map.document.format, "markdown+ravel-modern-v1");
+  assert.deepEqual(map.chunks.map((chunk) => chunk.id), ["modern::main-program", "modern::helper"]);
+  assert.equal(map.chunks[0].body, "first();\nthird();\n");
+  assert.equal(map.chunks[0].fragments.length, 2);
+  assert.equal(map.chunks[0].metadata.language, "javascript");
+  assert.deepEqual(map.chunks[0].metadata.data.ravel.fragmentLanguages, ["javascript", "javascript"]);
+  assert.deepEqual(map.chunks[0].metadata.data.ravel.fragmentInfo, [
+    { language: "javascript", infoString: "javascript" },
+    { language: "javascript", infoString: "javascript" }
+  ]);
+  assert.equal(map.chunks[1].body, "helper();\n");
+});
+
+test("modern Markdown accepts a first-fence pipeline and retains heading-owned live metadata", () => {
+  const source = [
+    "## Analysis {#lp-analysis}",
+    "",
+    "```{.javascript .run provider=quickjs-wasm-worker lp-pipe=\"trim()\"}",
+    "export default \"ok\";",
+    "```",
+    "",
+    "```javascript",
+    "// still analysis",
+    "```",
+    ""
+  ].join("\n");
+  const { map, diagnostics } = modernMarkdownToMap(source, {
+    uri: "live-modern.md",
+    document: "live-modern"
+  });
+
+  assert.deepEqual(diagnostics, []);
+  assert.deepEqual(validateRavelMap(map), []);
+  assert.equal(map.chunks[0].id, "live-modern::analysis");
+  assert.deepEqual(map.chunks[0].definitionPipeline, [{ name: "trim", arguments: [] }]);
+  assert.deepEqual(map.chunks[0].metadata.data.ravel.run, true);
+  assert.equal(map.chunks[0].metadata.data.ravel.provider, "quickjs-wasm-worker");
+  assert.equal(map.chunks[0].fragments.length, 2);
+});
+
+test("modern Markdown rejects a definition pipeline on a later heading-owned fence", () => {
+  const source = [
+    "## Main",
+    "",
+    "```js",
+    "first();",
+    "```",
+    "",
+    "```js | trim()",
+    "second();",
+    "```",
+    ""
+  ].join("\n");
+  const { diagnostics } = modernMarkdownToMap(source, {
+    uri: "later-pipe.md",
+    document: "later-pipe"
+  });
+
+  assert.equal(diagnostics[0].code, "RM105");
+  assert.match(diagnostics[0].message, /Only the first unnamed fence/);
+});
+
+test("lp.adapter front matter opts markdownToMap into the modern profile", () => {
+  const source = [
+    "---",
+    "lp:",
+    "  adapter: markdown",
+    "  document: front-matter",
+    "---",
+    "# Narrative title",
+    "## Owned",
+    "",
+    "```js",
+    "value();",
+    "```",
+    ""
+  ].join("\n");
+  const { map, diagnostics } = markdownToMap(source);
+
+  assert.deepEqual(diagnostics, []);
+  assert.equal(map.document.format, "markdown+ravel-modern-v1");
+  assert.deepEqual(map.chunks.map((chunk) => chunk.id), ["front-matter::owned"]);
+});
+
+test("an explicit fences profile overrides modern Markdown front matter", () => {
+  const source = [
+    "---",
+    "lp:",
+    "  adapter: markdown",
+    "  document: compatibility",
+    "---",
+    "## Not a piece in the fences profile",
+    "",
+    "```js",
+    "example();",
+    "```",
+    ""
+  ].join("\n");
+  const { map, diagnostics } = markdownToMap(source, { profile: "fences" });
+
+  assert.deepEqual(diagnostics, []);
+  assert.equal(map.document.format, "markdown+ravel-fences-v1");
+  assert.deepEqual(map.chunks, []);
+});
+
+test("modern Pandoc fences support named declarations and explicit append fragments", () => {
+  const source = [
+    "```{.javascript .lp-piece #lp-helper lp-title=\"Helper\"}",
+    "helper();",
+    "```",
+    "",
+    "```{.javascript .lp-fragment lp-for=\"helper\"}",
+    "helper.extra = true;",
+    "```",
+    ""
+  ].join("\n");
+  const { map, diagnostics } = modernMarkdownToMap(source, {
+    uri: "pandoc.md",
+    document: "pandoc"
+  });
+
+  assert.deepEqual(diagnostics, []);
+  assert.deepEqual(validateRavelMap(map), []);
+  assert.equal(map.chunks[0].name, "Helper");
+  assert.equal(map.chunks[0].body, "helper();\nhelper.extra = true;\n");
+  assert.equal(map.chunks[0].metadata.data.ravel.renderedAnchor, "lp-helper");
+});
+
+test("modern Markdown diagnoses incompatible fragment languages", () => {
+  const source = [
+    "## Mixed",
+    "",
+    "```js",
+    "one();",
+    "```",
+    "",
+    "```css",
+    ".two {}",
+    "```",
+    ""
+  ].join("\n");
+  const { map, diagnostics } = modernMarkdownToMap(source, {
+    uri: "mixed.md",
+    document: "mixed"
+  });
+
+  assert.equal(diagnostics[0].code, "RM150");
+  assert.match(diagnostics[0].message, /js, css/);
+  assert.equal(map.chunks[0].metadata.language, undefined);
+  assert.deepEqual(map.chunks[0].metadata.data.ravel.fragmentLanguages, ["js", "css"]);
 });

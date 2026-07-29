@@ -19,6 +19,15 @@ In 0.2 development, an explicitly named fence can add `.run`; the adapter
 retains its real language and emits portable execution metadata without
 executing the block.
 
+The 0.2 modern profile is available through
+`modernMarkdownToMap(text, options)`, `profile: "modern"`, or
+`lp.adapter: markdown` in YAML front matter. It treats H2-H6 headings as piece
+declarations by default. Unnamed fences belong to the current heading, while a
+named `lp:name` or Pandoc `.lp-piece` fence owns only itself and does not change
+the heading context. A pipeline may follow the heading name or appear on its
+first unnamed fence. `.run` remains metadata in this profile; parsing never
+executes a live block.
+
 See the [Ravel documentation](https://ravel.jostylr.com/) for the Markdown
 fenced-block profile, directives, and examples.
 

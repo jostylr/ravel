@@ -183,7 +183,7 @@ const readMap = async (path) => {
 
 const loadMarkdownFile = async (path, options = {}) => markdownToMap(
   await readInputText(path, "Markdown input", "RM201"),
-  { uri: path, document: options.document, mode: options.mode }
+  { uri: path, document: options.document, mode: options.mode, profile: options.profile }
 );
 
 const collectPretransformMaps = async (entryPath, entryOptions = {}, scope) => {
@@ -201,13 +201,16 @@ const collectPretransformMaps = async (entryPath, entryOptions = {}, scope) => {
     let map;
     if (extension === ".json") {
       map = await readMap(absolutePath);
-    } else if (extension === ".md" || extension === ".markdown" || extension === ".mdown") {
-      const result = await loadMarkdownFile(absolutePath, options);
+    } else if (extension === ".md" || extension === ".markdown" || extension === ".mdown" || extension === ".qmd") {
+      const result = await loadMarkdownFile(absolutePath, {
+        ...options,
+        profile: options.profile ?? (extension === ".qmd" ? "modern" : undefined)
+      });
       map = result.map;
       diagnostics.push(...result.diagnostics);
       assertRavelMap(map, { uri: absolutePath });
     } else {
-      throw inputError("RH101", "Ravel input must be a .json map or Markdown file.", absolutePath);
+      throw inputError("RH101", "Ravel input must be a .json map or Markdown/Quarto file.", absolutePath);
     }
     for (const directive of map.directives ?? []) {
       if (directive.kind !== "in") continue;
@@ -334,12 +337,16 @@ export const loadTomlBuild = async (configPath) => {
   const live = await loadLiveConfiguration(config.live, scope, absoluteConfig);
   const results = await Promise.all(config.files.map(async (file, index) => {
     if (!file || typeof file !== "object") throw inputError("RC102", "files[" + index + "] must be a table.", absoluteConfig);
-    reportUnknownKeys(file, new Set(["path", "document", "mode"]), "files[" + index + "]", absoluteConfig);
+    reportUnknownKeys(file, new Set(["path", "document", "mode", "profile"]), "files[" + index + "]", absoluteConfig);
     const path = requireConfigString(file.path, "files[" + index + "].path", absoluteConfig);
     if (file.document !== undefined) requireConfigString(file.document, "files[" + index + "].document", absoluteConfig);
     const mode = file.mode ?? "opt-in";
     if (!["opt-in", "primary"].includes(mode)) throw inputError("RC102", "files[" + index + "].mode must be opt-in or primary.", absoluteConfig);
-    return collectPretransformMaps(resolve(baseDirectory, path), { document: file.document, mode }, scope);
+    const profile = file.profile;
+    if (profile !== undefined && !["fences", "modern"].includes(profile)) {
+      throw inputError("RC102", "files[" + index + "].profile must be fences or modern.", absoluteConfig);
+    }
+    return collectPretransformMaps(resolve(baseDirectory, path), { document: file.document, mode, profile }, scope);
   }));
   const pretransform = combineMaps(results.flatMap((result) => result.maps));
   pretransform.diagnostics.push(...results.flatMap((result) => result.diagnostics));
@@ -365,11 +372,11 @@ export const loadTomlBuild = async (configPath) => {
   };
 };
 
-/** Load a JSON map, one Markdown document, or a single Ravel TOML build run. */
+/** Load a JSON map, one Markdown/Quarto document, or a Ravel TOML build run. */
 export const loadBuildInput = async (inputPath, options = {}) => {
   const extension = extname(inputPath).toLowerCase();
   if (extension === ".toml") return loadTomlBuild(inputPath);
-  if (extension === ".md" || extension === ".markdown" || extension === ".mdown") {
+  if (extension === ".md" || extension === ".markdown" || extension === ".mdown" || extension === ".qmd") {
     const rootDirectory = dirname(resolve(inputPath));
     return {
       pretransform: await loadPretransformGraph(resolve(inputPath), options),
@@ -384,7 +391,7 @@ export const loadBuildInput = async (inputPath, options = {}) => {
       rootDirectory: dirname(resolve(inputPath))
     };
   }
-  throw inputError("RH101", "Ravel input must be a .json map, Markdown document, or .toml build config.", inputPath);
+  throw inputError("RH101", "Ravel input must be a .json map, Markdown/Quarto document, or .toml build config.", inputPath);
 };
 
 const safeDestination = (outputDirectory, name) => {
