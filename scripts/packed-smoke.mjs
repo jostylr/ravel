@@ -58,6 +58,7 @@ const expectedPackages = new Set([
   "@pieceful/ravel-map",
   "@pieceful/ravel-markdown",
   "@pieceful/ravel-markdown-litpro",
+  "@pieceful/ravel-myst",
   "@pieceful/ravel-noweb",
   "@pieceful/ravel-org"
 ]);
@@ -127,6 +128,7 @@ try {
     'const liveNode = await import("@pieceful/ravel-js-live/node");',
     'await import("@pieceful/ravel-markdown");',
     'await import("@pieceful/ravel-markdown-litpro");',
+    'const myst = await import("@pieceful/ravel-myst");',
     'const noweb = await import("@pieceful/ravel-noweb");',
     'const org = await import("@pieceful/ravel-org");',
     'await import("@pieceful/ravel-host-node");',
@@ -136,6 +138,7 @@ try {
     'const point = { line: 0, column: 0, offset: 0 };',
     'if (noweb.nowebToMap("<<main>>=\\nok\\n@\\n", { document: "smoke" }).map.chunks[0].body !== "ok\\n") process.exit(1);',
     'if (org.orgToMap("#+NAME: main\\n#+BEGIN_SRC text\\nok\\n#+END_SRC\\n", { document: "smoke" }).map.chunks[0].body !== "ok\\n") process.exit(1);',
+    'if (myst.mystToMap("```{piece} main\\n:caption: Main\\n\\nok\\n```\\n", { document: "smoke" }).map.chunks[0].body !== "ok\\n") process.exit(1);',
     'const provider = live.createJavaScriptLiveProvider({ modules: {',
     '"@ravel/math": "export const twice = (value) => value * 2;"',
     '} });',

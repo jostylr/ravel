@@ -167,6 +167,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="dropdown-text">Org/Babel</span></a>
   </li>  
         <li>
+    <a class="dropdown-item" href="./myst.html">
+ <span class="dropdown-text">MyST Markdown</span></a>
+  </li>  
+        <li>
     <a class="dropdown-item" href="./pipes-and-directives.html">
  <span class="dropdown-text">Pipes and directives</span></a>
   </li>  
@@ -296,6 +300,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <div class="sidebar-item-container"> 
   <a href="./org.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Org and Babel</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./myst.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">MyST Markdown</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -568,22 +578,30 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  definitions<span class="op">:</span> <span class="kw">readonly</span> DefinitionSurface[]<span class="op">;</span></span>
 <span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>  references<span class="op">:</span> <span class="kw">readonly</span> ReferenceSurface[]<span class="op">;</span></span>
 <span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>  directives<span class="op">:</span> <span class="kw">readonly</span> DirectiveSurface[]<span class="op">;</span></span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>}<span class="op">;</span></span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> DefinitionSurface <span class="op">=</span> {</span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>  pieceId<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
-<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>  declaration<span class="op">:</span> <span class="bu">Range</span><span class="op">;</span></span>
-<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>  fragments<span class="op">:</span> <span class="kw">readonly</span> <span class="bu">Range</span>[]<span class="op">;</span></span>
-<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>  sourceAnchor<span class="op">?:</span> <span class="dt">string</span><span class="op">;</span></span>
-<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>  renderedAnchor<span class="op">?:</span> <span class="dt">string</span><span class="op">;</span></span>
-<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>  displayName<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
-<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>}<span class="op">;</span></span>
-<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> ReferenceSurface <span class="op">=</span> {</span>
-<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>  ownerPieceId<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
-<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>  targetText<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
-<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>  source<span class="op">:</span> <span class="bu">Range</span><span class="op">;</span></span>
-<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>}<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>  navigation<span class="op">?:</span> <span class="kw">readonly</span> NavigationSurface[]<span class="op">;</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>}<span class="op">;</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> DefinitionSurface <span class="op">=</span> {</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>  pieceId<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>  declaration<span class="op">:</span> <span class="bu">Range</span><span class="op">;</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>  fragments<span class="op">:</span> <span class="kw">readonly</span> <span class="bu">Range</span>[]<span class="op">;</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>  sourceAnchor<span class="op">?:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>  renderedAnchor<span class="op">?:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>  displayName<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>}<span class="op">;</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> ReferenceSurface <span class="op">=</span> {</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>  ownerPieceId<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>  targetText<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>  source<span class="op">:</span> <span class="bu">Range</span><span class="op">;</span></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>}<span class="op">;</span></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> NavigationSurface <span class="op">=</span> {</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>  targetPieceId<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>  targetLabel<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>  syntax<span class="op">:</span> <span class="st">"link"</span> <span class="op">|</span> <span class="st">"role"</span> <span class="op">|</span> <span class="st">"shorthand"</span><span class="op">;</span></span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>  source<span class="op">:</span> <span class="bu">Range</span><span class="op">;</span></span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>}<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>The <code>PieceDocument</code> remains the compiler input. <code>SurfaceMap</code> records how the semantic objects appear in this particular markup. It supports render filters, an LSP, go-to-definition, dependency summaries, and generated-document links without teaching the core about headings, fences, or HTML nodes.</p>
 <p>All adapters must:</p>
 <ul>
@@ -1257,6 +1275,18 @@ lp::read[target=shared.adoc,as=shared]</code></pre>
 <span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>console.log(_"format-greeting");</span>
 <span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a>:::</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>The plugin renders through MyST’s normal code, label, and caption nodes while the adapter emits the same Piece Document as other formats. A no-plugin fallback may use the built-in <code>{code-block}</code> directive with an <code>lp-*</code> label and no Pieceful-only options. MyST is attractive for scientific books and notebooks where Quarto is not the chosen renderer.</p>
+<p>The implemented adapter uses the following mapping:</p>
+<ul>
+<li>the <code>{piece}</code> argument supplies the authored name and optional definition pipeline;</li>
+<li><code>:label:</code> supplies the stable MyST anchor and semantic ID after removing an optional <code>lp-</code> prefix;</li>
+<li><code>:caption:</code> is the visible display name and <code>:language:</code> is language metadata;</li>
+<li>native <code>{code}</code>/<code>{code-block}</code> and <code>{code-cell}</code> directives are recognized as no-plugin fallbacks only when their label begins with <code>lp-</code>;</li>
+<li>underscore-quote references inside exact directive bodies enter the Ravel dependency graph;</li>
+<li>MyST links, <code>{ref}</code>/<code>{numref}</code> roles, and <code>@label</code> shorthand are retained separately in <code>SurfaceMap.navigation</code>, because document navigation must not acquire code-composition semantics.</li>
+</ul>
+<p>Both colon and backtick fences are scanned losslessly. A target in <code>(label)=</code> form immediately before the directive is equivalent to <code>:label:</code>; if both are present they must agree. Repeated directives concatenate only when they resolve to the same semantic ID, their pipelines agree, and they do not reuse a rendered label.</p>
+<p><code>{code-cell}</code> and <code>{piece}</code> with <code>:cell:</code> retain page front matter, cell tags, and an inert <code>myst-code-cell</code> effect plan. MyST is the default execution owner. Pieceful live execution requires explicit <code>pieceful</code> ownership plus an explicit run request; parsing itself invokes neither MyST nor Jupyter.</p>
+<p><code>.myst.md</code> selects the adapter in the Node host. Ordinary <code>.md</code> remains normal Markdown unless its TOML entry declares <code>adapter = "myst"</code>.</p>
 </section>
 <section id="restructuredtextsphinx-possible-below-myst" class="level3">
 <h3 class="anchored" data-anchor-id="restructuredtextsphinx-possible-below-myst">reStructuredText/Sphinx — possible, below MyST</h3>

@@ -9,7 +9,7 @@ packages.
 Ravel separates source-format policy from program composition:
 
 ```text
-Markdown, Org, noweb, JSON Ravel Maps, or editor-produced maps
+Markdown, MyST, Org, noweb, JSON Ravel Maps, or editor-produced maps
                          ↓
                      Ravel Map
                          ↓
@@ -34,6 +34,7 @@ examples live at [ravel.jostylr.com](https://ravel.jostylr.com/).
 | [@pieceful/ravel-map](https://www.npmjs.com/package/@pieceful/ravel-map) | Versioned Ravel Map schema, validation, and diagnostic contract. |
 | [@pieceful/ravel-markdown](https://www.npmjs.com/package/@pieceful/ravel-markdown) | Portable adapter that extracts Ravel Maps from Markdown fences and directives. |
 | [@pieceful/ravel-markdown-litpro](https://www.npmjs.com/package/@pieceful/ravel-markdown-litpro) | Historical H1-H6, minor-block, and legacy-directive Markdown adapter. |
+| [@pieceful/ravel-myst](https://www.npmjs.com/package/@pieceful/ravel-myst) | Lossless MyST pieces, native code fallbacks, cross-reference, and notebook-cell adapter. |
 | [@pieceful/ravel-noweb](https://www.npmjs.com/package/@pieceful/ravel-noweb) | Lossless strict-noweb and pipe-extended noweb-plus adapter. |
 | [@pieceful/ravel-org](https://www.npmjs.com/package/@pieceful/ravel-org) | Lossless Org/Babel names, groups, references, metadata, and ownership adapter. |
 | [@pieceful/ravel-host-node](https://www.npmjs.com/package/@pieceful/ravel-host-node) | Node filesystem host for project loading, safe artifact writes, manifests, and backups. |

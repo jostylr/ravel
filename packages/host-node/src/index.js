@@ -11,6 +11,7 @@ import {
 import { markdownToMap } from "@pieceful/ravel-markdown";
 import { isLitproMarkdown, litproMarkdownToMap } from "@pieceful/ravel-markdown-litpro";
 import { assertRavelMap } from "@pieceful/ravel-map";
+import { mystToMap } from "@pieceful/ravel-myst";
 import { nowebToMap } from "@pieceful/ravel-noweb";
 import { orgToMap } from "@pieceful/ravel-org";
 
@@ -229,6 +230,17 @@ const loadOrgFile = async (path, options = {}) => {
   });
 };
 
+const loadMystFile = async (path, options = {}) => {
+  const text = await readInputText(path, "MyST input", "RM201");
+  return mystToMap(text, {
+    uri: path,
+    document: options.document,
+    executionOwner: options.executionOwner,
+    run: options.run,
+    provider: options.provider
+  });
+};
+
 const collectPretransformMaps = async (entryPath, entryOptions = {}, scope) => {
   const activeScope = scope ?? await createInputScope(dirname(resolve(entryPath)));
   const visited = new Set();
@@ -242,8 +254,14 @@ const collectPretransformMaps = async (entryPath, entryOptions = {}, scope) => {
 
     const extension = extname(absolutePath).toLowerCase();
     let map;
+    const mystExtension = absolutePath.toLowerCase().endsWith(".myst.md");
     if (extension === ".json") {
       map = await readMap(absolutePath);
+    } else if (mystExtension || options.adapter === "myst") {
+      const result = await loadMystFile(absolutePath, options);
+      map = result.map;
+      diagnostics.push(...result.diagnostics);
+      assertRavelMap(map, { uri: absolutePath });
     } else if (extension === ".org" || options.adapter === "org") {
       const result = await loadOrgFile(absolutePath, options);
       map = result.map;
@@ -409,13 +427,13 @@ export const loadTomlBuild = async (configPath) => {
       throw inputError("RC102", "files[" + index + "].profile must be fences, modern, or litpro.", absoluteConfig);
     }
     const adapter = file.adapter;
-    if (adapter !== undefined && !["markdown", "markdown-litpro", "noweb", "org"].includes(adapter)) {
-      throw inputError("RC102", "files[" + index + "].adapter must be markdown, markdown-litpro, noweb, or org.", absoluteConfig);
+    if (adapter !== undefined && !["markdown", "markdown-litpro", "myst", "noweb", "org"].includes(adapter)) {
+      throw inputError("RC102", "files[" + index + "].adapter must be markdown, markdown-litpro, myst, noweb, or org.", absoluteConfig);
     }
     const dialect = file.dialect;
     const supportedDialects = adapter === "noweb"
       ? ["noweb", "noweb-plus"]
-      : adapter === "org"
+      : adapter === "org" || adapter === "myst"
         ? []
         : ["litpro-2017", "pieceful-2020", "litpro-plus"];
     if (dialect !== undefined && !supportedDialects.includes(dialect)) {
@@ -433,8 +451,15 @@ export const loadTomlBuild = async (configPath) => {
       throw inputError("RC102", "files[" + index + "].noweb_pipes must be true or false.", absoluteConfig);
     }
     const executionOwner = file.execution_owner;
-    if (executionOwner !== undefined && !["org", "pieceful"].includes(executionOwner)) {
-      throw inputError("RC102", "files[" + index + "].execution_owner must be org or pieceful.", absoluteConfig);
+    const supportedExecutionOwners = adapter === "myst"
+      ? ["myst", "pieceful"]
+      : ["org", "pieceful"];
+    if (executionOwner !== undefined && !supportedExecutionOwners.includes(executionOwner)) {
+      throw inputError(
+        "RC102",
+        "files[" + index + "].execution_owner is not supported by its adapter.",
+        absoluteConfig
+      );
     }
     if (file.run !== undefined && typeof file.run !== "boolean") {
       throw inputError("RC102", "files[" + index + "].run must be true or false.", absoluteConfig);
@@ -443,12 +468,18 @@ export const loadTomlBuild = async (configPath) => {
     if (file.language !== undefined && adapter !== "noweb") {
       throw inputError("RC102", "files[" + index + "].language currently requires adapter = \"noweb\".", absoluteConfig);
     }
-    if ((file.noweb_pipes !== undefined || executionOwner !== undefined) && adapter !== "org") {
-      throw inputError("RC102", "noweb_pipes and execution_owner require adapter = \"org\".", absoluteConfig);
+    if (file.noweb_pipes !== undefined && adapter !== "org") {
+      throw inputError("RC102", "noweb_pipes requires adapter = \"org\".", absoluteConfig);
     }
-    if ((references !== undefined || file.run !== undefined || file.provider !== undefined) &&
-        !["noweb", "org"].includes(adapter)) {
-      throw inputError("RC102", "reference, run, and provider settings require adapter = \"noweb\" or \"org\".", absoluteConfig);
+    if (executionOwner !== undefined && !["org", "myst"].includes(adapter)) {
+      throw inputError("RC102", "execution_owner requires adapter = \"org\" or \"myst\".", absoluteConfig);
+    }
+    if (references !== undefined && !["noweb", "org"].includes(adapter)) {
+      throw inputError("RC102", "references requires adapter = \"noweb\" or \"org\".", absoluteConfig);
+    }
+    if ((file.run !== undefined || file.provider !== undefined) &&
+        !["noweb", "org", "myst"].includes(adapter)) {
+      throw inputError("RC102", "run and provider settings require adapter = \"noweb\", \"org\", or \"myst\".", absoluteConfig);
     }
     return collectPretransformMaps(resolve(baseDirectory, path), {
       document: file.document,

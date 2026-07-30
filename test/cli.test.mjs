@@ -28,6 +28,9 @@ test("CLI check accepts direct markup and TOML project inputs", async () => {
   const org = await run(process.execPath, [cli, "check", "fixtures/org/native.org"]);
   assert.match(org.stdout, /Ravel check passed\./);
 
+  const myst = await run(process.execPath, [cli, "check", "fixtures/myst/native.myst.md"]);
+  assert.match(myst.stdout, /Ravel check passed\./);
+
   const toml = await run(process.execPath, [cli, "check", "--config", "fixtures/markdown/ravel-web.toml"]);
   assert.match(toml.stdout, /Ravel check passed\./);
 });

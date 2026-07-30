@@ -43,6 +43,13 @@ authority with `execution_owner = "org"` or `"pieceful"`. The host retains
 Babel header arguments, result artifacts, and tangle requests as data; loading
 does not invoke Emacs or Babel.
 
+MyST sources use `.myst.md` or `adapter = "myst"`. Labeled `{piece}`,
+`{code}`, `{code-block}`, and `{code-cell}` directives retain visible
+captions, anchors, exact bodies, cross-reference navigation, front matter, and
+notebook tags. TOML may assign cell authority with
+`execution_owner = "myst"` or `"pieceful"`; loading invokes neither MyST nor
+Jupyter.
+
 Requires Node.js 22 or newer. This package is intentionally Node-specific;
 browser and Bun hosts should supply their own I/O boundary around
 `@pieceful/ravel-core`.

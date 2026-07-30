@@ -88,6 +88,7 @@ type SurfaceMap = {
   definitions: readonly DefinitionSurface[];
   references: readonly ReferenceSurface[];
   directives: readonly DirectiveSurface[];
+  navigation?: readonly NavigationSurface[];
 };
 
 type DefinitionSurface = {
@@ -102,6 +103,13 @@ type DefinitionSurface = {
 type ReferenceSurface = {
   ownerPieceId: string;
   targetText: string;
+  source: Range;
+};
+
+type NavigationSurface = {
+  targetPieceId: string;
+  targetLabel: string;
+  syntax: "link" | "role" | "shorthand";
   source: Range;
 };
 ```
@@ -1038,6 +1046,36 @@ the adapter emits the same Piece Document as other formats. A no-plugin
 fallback may use the built-in `{code-block}` directive with an `lp-*` label and
 no Pieceful-only options. MyST is attractive for scientific books and
 notebooks where Quarto is not the chosen renderer.
+
+The implemented adapter uses the following mapping:
+
+- the `{piece}` argument supplies the authored name and optional definition
+  pipeline;
+- `:label:` supplies the stable MyST anchor and semantic ID after removing an
+  optional `lp-` prefix;
+- `:caption:` is the visible display name and `:language:` is language
+  metadata;
+- native `{code}`/`{code-block}` and `{code-cell}` directives are recognized
+  as no-plugin fallbacks only when their label begins with `lp-`;
+- underscore-quote references inside exact directive bodies enter the Ravel
+  dependency graph;
+- MyST links, `{ref}`/`{numref}` roles, and `@label` shorthand are retained
+  separately in `SurfaceMap.navigation`, because document navigation must not
+  acquire code-composition semantics.
+
+Both colon and backtick fences are scanned losslessly. A target in `(label)=`
+form immediately before the directive is equivalent to `:label:`; if both are
+present they must agree. Repeated directives concatenate only when they resolve
+to the same semantic ID, their pipelines agree, and they do not reuse a
+rendered label.
+
+`{code-cell}` and `{piece}` with `:cell:` retain page front matter, cell tags,
+and an inert `myst-code-cell` effect plan. MyST is the default execution owner.
+Pieceful live execution requires explicit `pieceful` ownership plus an explicit
+run request; parsing itself invokes neither MyST nor Jupyter.
+
+`.myst.md` selects the adapter in the Node host. Ordinary `.md` remains normal
+Markdown unless its TOML entry declares `adapter = "myst"`.
 
 ### reStructuredText/Sphinx — possible, below MyST
 

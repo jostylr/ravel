@@ -55,12 +55,14 @@ path = "data/cool.csv"           # UTF-8 file below the project root
 ```
 
 Markup entries may select `adapter = "markdown"`, `"markdown-litpro"`,
-`"noweb"`, or `"org"`. Org entries additionally accept
+`"myst"`, `"noweb"`, or `"org"`. Org entries additionally accept
 `references = "org-noweb" | "underscore-quote" | "both"`,
 `noweb_pipes = true | false`, and
 `execution_owner = "org" | "pieceful"`. See [Org and Babel](org.md) for the
 ownership boundary. Noweb uses its corresponding reference policies and
-`dialect = "noweb" | "noweb-plus"`.
+`dialect = "noweb" | "noweb-plus"`. MyST entries accept
+`execution_owner = "myst" | "pieceful"`; `.myst.md` selects the adapter
+without TOML. See [MyST Markdown](myst.md).
 
 All file, import, output, and backup paths are confined to the directory that
 contains the TOML file. Ravel rejects escaping paths and symbolic-link

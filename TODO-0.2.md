@@ -600,7 +600,7 @@ Exit criteria:
 - [x] Implement strict `noweb` and extended `noweb-plus` dialects. In
       `noweb-plus`, split definition and reference names at the first unescaped
       pipe; also support the classic-compatible Pieceful pipeline pragma.
-- [ ] Implement the MyST `{piece}` directive with name-and-pipeline argument,
+- [x] Implement the MyST `{piece}` directive with name-and-pipeline argument,
       language, caption, label, code body, cross-reference, and notebook-cell
       mapping.
 - [ ] Add native-tool compatibility fixtures showing which sources remain

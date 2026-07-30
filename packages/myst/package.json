@@ -1,0 +1,23 @@
+{
+  "name": "@pieceful/ravel-myst",
+  "version": "0.1.1",
+  "type": "module",
+  "description": "Lossless MyST directive and notebook-cell source adapter for Ravel.",
+  "license": "MIT",
+  "author": "James Taylor",
+  "repository": { "type": "git", "url": "git+https://github.com/jostylr/ravel.git", "directory": "packages/myst" },
+  "bugs": { "url": "https://github.com/jostylr/ravel/issues" },
+  "homepage": "https://ravel.jostylr.com/",
+  "engines": { "node": ">=22" },
+  "keywords": ["ravel", "myst", "jupyter", "literate-programming"],
+  "publishConfig": { "access": "public" },
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "types": "./src/index.d.ts",
+  "files": ["src", "README.md", "LICENSE"],
+  "dependencies": {
+    "@pieceful/ravel-core": "0.1.1",
+    "yaml": "^2.8.2"
+  }
+}

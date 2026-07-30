@@ -1,7 +1,7 @@
 # @pieceful/ravel
 
 Ravel's Node.js command-line interface builds static literate-programming
-projects from supported markup sources—including Markdown, Org, and
+projects from supported markup sources—including Markdown, MyST, Org, and
 noweb—Ravel Maps, or a `ravel.toml` project configuration.
 
 ```sh

@@ -169,6 +169,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="dropdown-text">Org/Babel</span></a>
   </li>  
         <li>
+    <a class="dropdown-item" href="./myst.html">
+ <span class="dropdown-text">MyST Markdown</span></a>
+  </li>  
+        <li>
     <a class="dropdown-item" href="./pipes-and-directives.html">
  <span class="dropdown-text">Pipes and directives</span></a>
   </li>  
@@ -298,6 +302,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <div class="sidebar-item-container"> 
   <a href="./org.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Org and Babel</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./myst.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">MyST Markdown</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -521,7 +531,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="kw">[[live.resources]]</span></span>
 <span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="dt">name</span> <span class="op">=</span> <span class="st">"cool.csv"</span>                <span class="co"># exact load("cool.csv") name</span></span>
 <span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="dt">path</span> <span class="op">=</span> <span class="st">"data/cool.csv"</span>           <span class="co"># UTF-8 file below the project root</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Markup entries may select <code>adapter = "markdown"</code>, <code>"markdown-litpro"</code>, <code>"noweb"</code>, or <code>"org"</code>. Org entries additionally accept <code>references = "org-noweb" | "underscore-quote" | "both"</code>, <code>noweb_pipes = true | false</code>, and <code>execution_owner = "org" | "pieceful"</code>. See <a href="./org.html">Org and Babel</a> for the ownership boundary. Noweb uses its corresponding reference policies and <code>dialect = "noweb" | "noweb-plus"</code>.</p>
+<p>Markup entries may select <code>adapter = "markdown"</code>, <code>"markdown-litpro"</code>, <code>"myst"</code>, <code>"noweb"</code>, or <code>"org"</code>. Org entries additionally accept <code>references = "org-noweb" | "underscore-quote" | "both"</code>, <code>noweb_pipes = true | false</code>, and <code>execution_owner = "org" | "pieceful"</code>. See <a href="./org.html">Org and Babel</a> for the ownership boundary. Noweb uses its corresponding reference policies and <code>dialect = "noweb" | "noweb-plus"</code>. MyST entries accept <code>execution_owner = "myst" | "pieceful"</code>; <code>.myst.md</code> selects the adapter without TOML. See <a href="./myst.html">MyST Markdown</a>.</p>
 <p>All file, import, output, and backup paths are confined to the directory that contains the TOML file. Ravel rejects escaping paths and symbolic-link traversal. TOML configs are individual runs and are not merged.</p>
 <p><code>build.clean = true</code> behaves like <code>ravel build --clean</code>: it removes only files recorded in the preceding Ravel manifest. <code>build.backup = true</code> writes the default dated archive under <code>backups/</code>; a string names a relative <code>.zip</code> archive. A backup is made before Ravel cleans or replaces output, and Ravel refuses to overwrite an existing archive.</p>
 </section>

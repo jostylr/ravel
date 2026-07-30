@@ -54,6 +54,20 @@ Use this package at adapter, editor, and host boundaries.
 - `options.executionOwner` selects `org` or `pieceful`. Execution and tangling
   requests without one owner are diagnosed, and parsing performs neither.
 
+## `@pieceful/ravel-myst`
+
+- `mystToMap(text, options)` scans `{piece}` directives and labeled native
+  `{code}`, `{code-block}`, and `{code-cell}` fallbacks, returning
+  `{ map, diagnostics, surface }`.
+- Piece arguments use the shared name-and-pipeline grammar. `:label:` supplies
+  a rendered anchor and semantic ID, while `:caption:` remains the visible
+  display name.
+- `surface.references` contains code-composition uses;
+  `surface.navigation` separately contains MyST links, reference roles, and
+  `@label` shorthand.
+- `options.executionOwner` selects `myst` or `pieceful` for notebook cells.
+  Cell metadata and effect plans are inert during parsing.
+
 ## `@pieceful/ravel-core`
 
 - `parseChunkId` and `formatChunkId` convert canonical chunk identities.

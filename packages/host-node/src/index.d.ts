@@ -10,12 +10,12 @@ export interface SourceAdapterOptions {
   document?: string;
   mode?: "opt-in" | "primary";
   profile?: "fences" | "modern" | "litpro";
-  adapter?: "markdown" | "markdown-litpro" | "noweb" | "org";
+  adapter?: "markdown" | "markdown-litpro" | "myst" | "noweb" | "org";
   dialect?: "litpro-2017" | "pieceful-2020" | "litpro-plus" | "noweb" | "noweb-plus";
   references?: "noweb" | "org-noweb" | "underscore-quote" | "both";
   language?: string;
   nowebPipes?: boolean;
-  executionOwner?: "org" | "pieceful";
+  executionOwner?: "org" | "myst" | "pieceful";
   run?: boolean;
   provider?: string;
 }

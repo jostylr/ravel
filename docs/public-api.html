@@ -134,6 +134,10 @@ ul.task-list li input[type="checkbox"] {
  <span class="dropdown-text">Org/Babel</span></a>
   </li>  
         <li>
+    <a class="dropdown-item" href="./myst.html">
+ <span class="dropdown-text">MyST Markdown</span></a>
+  </li>  
+        <li>
     <a class="dropdown-item" href="./pipes-and-directives.html">
  <span class="dropdown-text">Pipes and directives</span></a>
   </li>  
@@ -267,6 +271,12 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="./myst.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">MyST Markdown</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="./live-execution.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Live execution (0.2 development)</span></a>
   </div>
@@ -396,6 +406,7 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#piecefulravel-markdown-litpro" id="toc-piecefulravel-markdown-litpro" class="nav-link" data-scroll-target="#piecefulravel-markdown-litpro"><code>@pieceful/ravel-markdown-litpro</code></a></li>
   <li><a href="#piecefulravel-noweb" id="toc-piecefulravel-noweb" class="nav-link" data-scroll-target="#piecefulravel-noweb"><code>@pieceful/ravel-noweb</code></a></li>
   <li><a href="#piecefulravel-org" id="toc-piecefulravel-org" class="nav-link" data-scroll-target="#piecefulravel-org"><code>@pieceful/ravel-org</code></a></li>
+  <li><a href="#piecefulravel-myst" id="toc-piecefulravel-myst" class="nav-link" data-scroll-target="#piecefulravel-myst"><code>@pieceful/ravel-myst</code></a></li>
   <li><a href="#piecefulravel-core" id="toc-piecefulravel-core" class="nav-link" data-scroll-target="#piecefulravel-core"><code>@pieceful/ravel-core</code></a></li>
   <li><a href="#piecefulravel-js-live-0.2-development" id="toc-piecefulravel-js-live-0.2-development" class="nav-link" data-scroll-target="#piecefulravel-js-live-0.2-development"><code>@pieceful/ravel-js-live</code> (0.2 development)</a></li>
   <li><a href="#piecefulravel-host-node" id="toc-piecefulravel-host-node" class="nav-link" data-scroll-target="#piecefulravel-host-node"><code>@pieceful/ravel-host-node</code></a></li>
@@ -455,6 +466,15 @@ ul.task-list li input[type="checkbox"] {
 <li><code>#+NAME</code> and <code>#+LP_NAME</code> declare individual pieces; <code>:noweb-ref</code> contributes the same source body to a repeated aggregate piece.</li>
 <li><code>options.references</code> selects <code>org-noweb</code>, <code>underscore-quote</code>, or <code>both</code>; <code>options.nowebPipes</code> explicitly enables piped Org-noweb uses.</li>
 <li><code>options.executionOwner</code> selects <code>org</code> or <code>pieceful</code>. Execution and tangling requests without one owner are diagnosed, and parsing performs neither.</li>
+</ul>
+</section>
+<section id="piecefulravel-myst" class="level2">
+<h2 class="anchored" data-anchor-id="piecefulravel-myst"><code>@pieceful/ravel-myst</code></h2>
+<ul>
+<li><code>mystToMap(text, options)</code> scans <code>{piece}</code> directives and labeled native <code>{code}</code>, <code>{code-block}</code>, and <code>{code-cell}</code> fallbacks, returning <code>{ map, diagnostics, surface }</code>.</li>
+<li>Piece arguments use the shared name-and-pipeline grammar. <code>:label:</code> supplies a rendered anchor and semantic ID, while <code>:caption:</code> remains the visible display name.</li>
+<li><code>surface.references</code> contains code-composition uses; <code>surface.navigation</code> separately contains MyST links, reference roles, and <code>@label</code> shorthand.</li>
+<li><code>options.executionOwner</code> selects <code>myst</code> or <code>pieceful</code> for notebook cells. Cell metadata and effect plans are inert during parsing.</li>
 </ul>
 </section>
 <section id="piecefulravel-core" class="level2">
