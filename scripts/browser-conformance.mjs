@@ -50,7 +50,8 @@ const close = () => new Promise((resolveClose, reject) => server.close((error) =
 const pages = [
   { path: "runtime-contract.html", selector: "html", attribute: "ravelTest" },
   { path: "markdown-adapter.html", selector: "body", attribute: "ravelMarkdownTest" },
-  { path: "js-live.html", selector: "body", attribute: "ravelJsLiveTest" }
+  { path: "js-live.html", selector: "body", attribute: "ravelJsLiveTest" },
+  { path: "explorer.html", selector: "body", attribute: "ravelExplorerTest" }
 ];
 
 const address = await listen();

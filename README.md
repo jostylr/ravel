@@ -300,7 +300,7 @@ packages/
   host-browser/private in-memory adapter and live CodeMirror playground
   cli/        development command-line entry point
   map/        Ravel Map public metadata and structural validation
-  explorer/   proposed portable graph, provenance, and change explorer
+  explorer/   portable focused graph projections and Explorer host contracts
   vscode/     proposed VS Code host for Explorer and source-linked editing
 schemas/      Ravel Map JSON Schema
 examples/     proof-of-concept and migration builds

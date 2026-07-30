@@ -1,0 +1,44 @@
+{
+  "name": "@pieceful/ravel-explorer",
+  "version": "0.1.1",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "description": "Portable focused graph projections and host contracts for Ravel Explorer.",
+  "license": "MIT",
+  "author": "James Taylor",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jostylr/ravel.git",
+    "directory": "packages/explorer"
+  },
+  "bugs": {
+    "url": "https://github.com/jostylr/ravel/issues"
+  },
+  "homepage": "https://ravel.jostylr.com/",
+  "engines": {
+    "node": ">=22"
+  },
+  "keywords": [
+    "ravel",
+    "literate-programming",
+    "graph",
+    "provenance",
+    "explorer"
+  ],
+  "exports": {
+    ".": "./src/index.js",
+    "./browser": "./src/browser.js"
+  },
+  "types": "./src/index.d.ts",
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "dependencies": {
+    "@pieceful/ravel-core": "0.1.1",
+    "cytoscape": "^3.34.0",
+    "cytoscape-elk": "^2.3.0"
+  }
+}

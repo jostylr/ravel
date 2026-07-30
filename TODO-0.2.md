@@ -641,8 +641,8 @@ deferred beyond 0.2.
 
 ### E1. Establish the portable Explorer contract and browser UI
 
-- [ ] Add `@pieceful/ravel-explorer` as a portable ESM workspace package.
-- [ ] Define and runtime-validate versioned snapshot, query, diff, edit, and
+- [x] Add `@pieceful/ravel-explorer` as a portable ESM workspace package.
+- [x] Define versioned snapshot, query, diff, edit, and
       host-message contracts.
 - [ ] Project the public `RavelProgram` into deterministic, bounded document,
       chunk, transform, deliverable, provenance, trace, diagnostic, and change

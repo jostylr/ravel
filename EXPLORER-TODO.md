@@ -27,23 +27,23 @@ apply that edit through normal VS Code undo/redo.
 
 Goal: freeze the smallest portable contract before selecting UI details.
 
-- [ ] Add `packages/explorer/package.json` for
+- [x] Add `packages/explorer/package.json` for
       `@pieceful/ravel-explorer`, initially private.
-- [ ] Add `packages/explorer/src/index.js` and `index.d.ts` with no renderer
+- [x] Add `packages/explorer/src/index.js` and `index.d.ts` with no renderer
       dependency in the entry-point smoke test.
-- [ ] Define version-1 `ExplorerSnapshot`, node, edge, group, lens, source-range,
+- [x] Define version-1 `ExplorerSnapshot`, node, edge, group, lens, source-range,
       query, and diff types.
-- [ ] Define version-1 host/webview request and event types.
+- [x] Define version-1 host/webview request and event types.
 - [ ] Add runtime validation for all messages crossing the webview boundary.
-- [ ] Define deterministic node and edge ID rules in package documentation.
-- [ ] Implement a dependency projection from the current public
+- [x] Define deterministic node and edge ID rules in package documentation.
+- [x] Implement a dependency projection from the current public
       `RavelProgram`.
-- [ ] Implement bounded ancestor, descendant, dependency-closure, and
+- [x] Implement bounded ancestor, descendant, dependency-closure, and
       path-between queries.
 - [ ] Implement document, chunk identity, language/type, tag, and deliverable
       grouping.
-- [ ] Implement collapsed boundary-edge aggregation by edge kind.
-- [ ] Mark a projection `truncated` when it reaches the configured visible-node
+- [x] Implement collapsed boundary-edge aggregation by edge kind.
+- [x] Mark a projection `truncated` when it reaches the configured visible-node
       limit.
 - [ ] Add deterministic JSON golden fixtures for greeting, proof of concept,
       and FizzBuzz.
@@ -62,12 +62,13 @@ Exit criteria:
 
 Goal: validate navigation, folding, and layout against real Ravel graphs.
 
-- [ ] Add Cytoscape.js, ELK, and the selected compound expand/collapse adapter.
-- [ ] Build a minimal browser entry point that accepts an `ExplorerSnapshot`.
-- [ ] Render typed node and edge styles with text labels and non-color
+- [x] Add Cytoscape.js and ELK, retaining folding and boundary-edge aggregation
+      in the portable projection rather than an unmaintained renderer extension.
+- [x] Build a minimal browser entry point that accepts an `ExplorerSnapshot`.
+- [x] Render typed node and edge styles with text labels and non-color
       distinctions.
 - [ ] Add pan, zoom, fit, minimap, and reset-layout controls.
-- [ ] Add document compound nodes and aggregated edges on collapse.
+- [x] Add document compound nodes and aggregated edges on collapse.
 - [ ] Add search over canonical ID, label, document, language/type, tags,
       transform name, deliverable, and diagnostic code.
 - [ ] Add overview and dependency lenses.
@@ -77,11 +78,11 @@ Goal: validate navigation, folding, and layout against real Ravel graphs.
 - [ ] Add a synchronized list/table representation of the visible graph.
 - [ ] Preserve selection and expanded groups when a focused snapshot grows.
 - [ ] Move layout off the main UI path and support cancellation.
-- [ ] Add a developer harness that loads checked-in snapshots without running a
+- [x] Add a developer harness that loads checked-in snapshots without running a
       filesystem host.
 - [ ] Measure layout, search, expansion, and interaction time for 1k and 10k
       synthetic entities.
-- [ ] Record the Cytoscape/ELK prototype decisions and revise the visible-node
+- [x] Record the Cytoscape/ELK prototype decisions and revise the visible-node
       default if measurements require it.
 
 Exit criteria:

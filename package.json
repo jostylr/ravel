@@ -39,7 +39,7 @@
     "build:browser": "node scripts/build-browser.mjs",
     "build:docs": "node scripts/build-docs.mjs",
     "build:site": "npm run build:docs && npm run build:browser",
-    "build:browser-test": "esbuild browser-test/source/markdown-adapter-entry.mjs --bundle --format=esm --platform=browser --outfile=browser-test/generated/markdown-adapter.mjs && esbuild browser-test/source/js-live-entry.mjs --bundle --format=esm --platform=browser --outfile=browser-test/generated/js-live.mjs && esbuild packages/js-live/src/worker-browser.js --bundle --format=esm --platform=browser --outfile=browser-test/generated/js-live-worker.mjs && node scripts/copy-quickjs-browser-wasm.mjs",
+    "build:browser-test": "esbuild browser-test/source/markdown-adapter-entry.mjs --bundle --format=esm --platform=browser --outfile=browser-test/generated/markdown-adapter.mjs && esbuild browser-test/source/js-live-entry.mjs --bundle --format=esm --platform=browser --outfile=browser-test/generated/js-live.mjs && esbuild browser-test/source/explorer-entry.mjs --bundle --format=esm --platform=browser --outfile=browser-test/generated/explorer.mjs && esbuild packages/js-live/src/worker-browser.js --bundle --format=esm --platform=browser --outfile=browser-test/generated/js-live-worker.mjs && node scripts/copy-quickjs-browser-wasm.mjs",
     "test:browser": "npm run build:browser-test && node scripts/browser-conformance.mjs",
     "test:pack": "node scripts/packed-smoke.mjs"
   },

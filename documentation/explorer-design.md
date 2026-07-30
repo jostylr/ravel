@@ -80,8 +80,11 @@ Expected dependencies:
 
 - `@pieceful/ravel-core` for public program and provenance contracts;
 - Cytoscape.js for graph interaction;
-- `elkjs` and the Cytoscape ELK adapter for hierarchical layout;
-- an expand/collapse integration for compound nodes.
+- the Cytoscape ELK adapter and its `elkjs` dependency for hierarchical layout.
+
+Folding and aggregate boundary edges remain projection operations. The
+prototype deliberately does not depend on the unmaintained Cytoscape
+expand/collapse extension.
 
 It must not import `vscode`, `node:*`, access the filesystem, execute transforms
 on its own, or write source files.
@@ -187,6 +190,9 @@ interface ExplorerNode {
     | "outline"
     | "chunk"
     | "transform"
+    | "compose-step"
+    | "emit"
+    | "directive"
     | "deliverable"
     | "source-fragment"
     | "generated-fragment"
@@ -196,7 +202,7 @@ interface ExplorerNode {
   source?: SourceLocation;
   language?: string;
   tags?: string[];
-  state?: ("generated" | "changed" | "stale" | "warning" | "error")[];
+  state?: ("generated" | "live" | "succeeded" | "failed" | "changed" | "stale" | "warning" | "error")[];
   counts?: { children?: number; incoming?: number; outgoing?: number };
 }
 
@@ -205,7 +211,9 @@ interface ExplorerEdge {
   kind:
     | "contains"
     | "references"
+    | "consumes"
     | "transforms"
+    | "declares"
     | "composes"
     | "aliases"
     | "imports"
@@ -602,11 +610,13 @@ also be written to a Ravel output channel.
 7. Exact/coarse provenance controls editing capabilities.
 8. Preview evaluates in-memory overlays and performs no artifact writes.
 9. Visual operations are enabled only when they map to an explicit source edit.
+10. Folding is computed by the Explorer projection so hidden boundary edges
+    retain Ravel kinds, counts, and stable identities.
 
 ## Open questions to resolve through prototypes
 
-- Whether Cytoscape compound-node expansion remains responsive at the target
-  visible-node limit.
+- Whether relayout after projection-owned folding remains responsive at the
+  target visible-node limit.
 - Whether ELK layout should run in the webview worker or extension host.
 - Whether the initial UI should use a small framework or DOM modules around
   Cytoscape.
