@@ -1,0 +1,50 @@
+{
+  "name": "@pieceful/ravel-vscode",
+  "displayName": "Ravel Explorer",
+  "version": "0.1.1",
+  "private": true,
+  "type": "module",
+  "description": "Experimental VS Code host for the source-linked Ravel Explorer.",
+  "license": "MIT",
+  "author": "James Taylor",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jostylr/ravel.git",
+    "directory": "packages/vscode"
+  },
+  "engines": {
+    "vscode": "^1.99.0",
+    "node": ">=22"
+  },
+  "categories": [
+    "Visualization",
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:ravel.openExplorer"
+  ],
+  "main": "./dist/extension.cjs",
+  "contributes": {
+    "commands": [
+      {
+        "command": "ravel.openExplorer",
+        "title": "Ravel: Open Explorer",
+        "category": "Ravel"
+      }
+    ]
+  },
+  "scripts": {
+    "build": "esbuild src/extension.js --bundle --platform=node --format=cjs --external:vscode --outfile=dist/extension.cjs && esbuild src/webview.js --bundle --platform=browser --format=esm --outfile=dist/webview.mjs"
+  },
+  "dependencies": {
+    "@pieceful/ravel-core": "0.1.1",
+    "@pieceful/ravel-explorer": "0.1.1",
+    "@pieceful/ravel-host-node": "0.1.1"
+  },
+  "files": [
+    "dist",
+    "media",
+    "README.md",
+    "LICENSE"
+  ]
+}

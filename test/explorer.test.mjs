@@ -4,6 +4,7 @@ import { combineMaps, transformGraph } from "@pieceful/ravel-core";
 import {
   assertExplorerMessage,
   collapseExplorerGroups,
+  createExplorerEntityDetails,
   createExplorerSnapshot,
   dependencyPath,
   diffExplorerSnapshots,
@@ -214,6 +215,25 @@ test("snapshot diffs detect same-length source-result changes through fingerprin
   assert.equal(diff.beforeRevision, "before");
   assert.equal(diff.afterRevision, "after");
   assert.deepEqual(diff.nodes.changed, ["chunk:guide::main.text"]);
+});
+
+test("entity details return bounded authored and evaluated chunk text on demand", () => {
+  const context = fixture();
+  const details = createExplorerEntityDetails(context, "chunk:guide::source.text", {
+    maxTextLength: 100
+  });
+
+  assert.deepEqual(details.authored, {
+    text: " hello ",
+    length: 7,
+    truncated: false
+  });
+  assert.deepEqual(details.evaluated, {
+    text: "hello",
+    length: 5,
+    truncated: false
+  });
+  assert.equal(createExplorerEntityDetails(context, "chunk:missing"), null);
 });
 
 test("validates the versioned host protocol", () => {

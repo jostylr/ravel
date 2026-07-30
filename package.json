@@ -37,6 +37,7 @@
     "benchmark:assembly": "node examples/benchmark/benchmark-build.mjs",
     "validate:schema": "node scripts/validate-map-example.mjs",
     "build:browser": "node scripts/build-browser.mjs",
+    "build:vscode": "npm run build --workspace @pieceful/ravel-vscode",
     "build:docs": "node scripts/build-docs.mjs",
     "build:site": "npm run build:docs && npm run build:browser",
     "build:explorer-demo": "node scripts/build-explorer-fixture.mjs && esbuild browser-test/source/explorer-entry.mjs --bundle --format=esm --platform=browser --outfile=browser-test/generated/explorer.mjs",

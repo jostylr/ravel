@@ -87,6 +87,18 @@ const normalizeContext = (value) => value?.program?.chunks
   ? value
   : { program: value };
 
+const boundedText = (value, maximum) => {
+  if (typeof value !== "string") return undefined;
+  if (value.length <= maximum) {
+    return { text: value, length: value.length, truncated: false };
+  }
+  return {
+    text: value.slice(0, maximum),
+    length: value.length,
+    truncated: true
+  };
+};
+
 const rawFocus = (focus) => Array.isArray(focus)
   ? focus
   : focus === undefined || focus === null
@@ -678,6 +690,101 @@ export const createExplorerSnapshot = (programOrContext, options = {}) => {
       chunks: focused.chunks.length
     }
   };
+};
+
+export const createExplorerEntityDetails = (programOrContext, entityId, options = {}) => {
+  const context = normalizeContext(programOrContext);
+  const program = context.program;
+  if (!program?.chunks || !program?.deliverables) {
+    throw new TypeError("createExplorerEntityDetails requires a RavelProgram or { program } context.");
+  }
+  if (typeof entityId !== "string" || !entityId) {
+    throw new TypeError("createExplorerEntityDetails requires a nonempty entity ID.");
+  }
+  const maximum = Math.max(
+    100,
+    Number.isInteger(options.maxTextLength) ? options.maxTextLength : 20_000
+  );
+  const revision = context.revision ?? defaultRevision(context);
+
+  const chunkDetails = (chunkId, kind = "chunk", label) => {
+    const chunk = program.chunks[chunkId];
+    if (!chunk) return null;
+    const raw = context.pretransform?.chunks?.find((candidate) => candidate.id === chunkId);
+    return {
+      version: 1,
+      entityId,
+      revision,
+      kind,
+      label: label ?? chunkLabel(chunk, chunkId),
+      ...(kind === "chunk" ? {} : { ownerEntityId: chunkNodeId(chunkId) }),
+      source: chunk.source,
+      language: chunk.metadata?.language,
+      authored: boundedText(raw?.body, maximum),
+      evaluated: boundedText(chunk.value, maximum)
+    };
+  };
+
+  if (entityId.startsWith("chunk:")) {
+    return chunkDetails(entityId.slice("chunk:".length));
+  }
+
+  for (const raw of context.pretransform?.chunks ?? []) {
+    for (const [phase, step] of (raw.definitionPipeline ?? []).entries()) {
+      const id = "transform:" + raw.id + ":" + phase + ":" + step.name;
+      if (id !== entityId) continue;
+      const details = chunkDetails(raw.id, "transform", step.name);
+      return details ? { ...details, source: step.source ?? raw.source } : null;
+    }
+  }
+
+  for (const [index, directive] of (context.pretransform?.directives ?? []).entries()) {
+    const directiveId =
+      "directive:" + directive.kind + ":" + sourceKey(directive.source) + ":" + index;
+    const isDirective = entityId === directiveId;
+    const isComposeStep = entityId.startsWith("compose:" + directiveId + ":");
+    if (!isDirective && !isComposeStep) continue;
+    const generated = directiveChunkId(directive);
+    if (generated && program.chunks[generated]) {
+      const details = chunkDetails(
+        generated,
+        isDirective ? "directive" : "compose-step",
+        isDirective ? directive.kind : "compose step"
+      );
+      return details ? { ...details, source: directive.source } : null;
+    }
+    if (directive.kind === "out" && program.deliverables[directive.name]) {
+      const deliverable = program.deliverables[directive.name];
+      return {
+        version: 1,
+        entityId,
+        revision,
+        kind: "directive",
+        label: "out",
+        ownerEntityId: deliverableNodeId(directive.name),
+        source: directive.source,
+        evaluated: boundedText(deliverable.value, maximum)
+      };
+    }
+    return null;
+  }
+
+  if (entityId.startsWith("deliverable:")) {
+    const name = entityId.slice("deliverable:".length);
+    const deliverable = program.deliverables[name];
+    if (!deliverable) return null;
+    return {
+      version: 1,
+      entityId,
+      revision,
+      kind: "deliverable",
+      label: name,
+      source: deliverable.source,
+      evaluated: boundedText(deliverable.value, maximum)
+    };
+  }
+
+  return null;
 };
 
 const changedById = (before, after) => {

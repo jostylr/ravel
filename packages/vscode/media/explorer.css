@@ -1,0 +1,145 @@
+:root {
+  color-scheme: light dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+.app {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+body {
+  color: var(--vscode-foreground);
+  background: var(--vscode-editor-background);
+  font-family: var(--vscode-font-family);
+  font-size: var(--vscode-font-size);
+}
+
+button,
+input,
+select {
+  min-height: 1.8rem;
+  border: 1px solid var(--vscode-input-border, transparent);
+  border-radius: 2px;
+  color: var(--vscode-input-foreground);
+  background: var(--vscode-input-background);
+  font: inherit;
+}
+
+button {
+  padding: 0.3rem 0.65rem;
+  color: var(--vscode-button-foreground);
+  background: var(--vscode-button-background);
+  cursor: pointer;
+}
+
+button:hover {
+  background: var(--vscode-button-hoverBackground);
+}
+
+input {
+  min-width: 12rem;
+  flex: 1 1 16rem;
+  padding: 0.3rem 0.5rem;
+}
+
+.app {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.6rem;
+  border-bottom: 1px solid var(--vscode-panel-border);
+}
+
+.toolbar strong {
+  white-space: nowrap;
+}
+
+#status {
+  color: var(--vscode-descriptionForeground);
+  font-size: 0.9em;
+  white-space: nowrap;
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(17rem, 30%);
+  min-height: 0;
+}
+
+#graph {
+  min-width: 0;
+  min-height: 0;
+}
+
+#details {
+  min-width: 0;
+  overflow: auto;
+  padding: 1rem;
+  border-left: 1px solid var(--vscode-panel-border);
+  background: var(--vscode-sideBar-background);
+}
+
+h1 {
+  margin: 0.2rem 0 0.65rem;
+  overflow-wrap: anywhere;
+  font-size: 1.15rem;
+}
+
+h2,
+.eyebrow {
+  margin: 1.2rem 0 0.45rem;
+  color: var(--vscode-descriptionForeground);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.eyebrow {
+  margin-top: 0;
+}
+
+.source {
+  overflow-wrap: anywhere;
+  color: var(--vscode-textLink-foreground);
+  font-family: var(--vscode-editor-font-family);
+  font-size: 0.86em;
+}
+
+pre {
+  overflow: auto;
+  margin: 0;
+  padding: 0.65rem;
+  border: 1px solid var(--vscode-panel-border);
+  background: var(--vscode-textCodeBlock-background);
+  font-family: var(--vscode-editor-font-family);
+  font-size: var(--vscode-editor-font-size);
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
+@media (max-width: 720px) {
+  .workspace {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(15rem, 2fr) minmax(10rem, 1fr);
+  }
+
+  #details {
+    border-top: 1px solid var(--vscode-panel-border);
+    border-left: 0;
+  }
+}

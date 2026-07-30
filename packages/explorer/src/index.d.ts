@@ -129,6 +129,25 @@ export interface ExplorerSnapshotDiff {
   diagnosticsChanged: boolean;
 }
 
+export interface ExplorerTextPreview {
+  text: string;
+  length: number;
+  truncated: boolean;
+}
+
+export interface ExplorerEntityDetails {
+  version: 1;
+  entityId: string;
+  revision: string;
+  kind: "chunk" | "transform" | "directive" | "compose-step" | "deliverable";
+  label: string;
+  ownerEntityId?: string;
+  source?: SourceLocation | { uri: string };
+  language?: string;
+  authored?: ExplorerTextPreview;
+  evaluated?: ExplorerTextPreview;
+}
+
 export type ExplorerRequestType =
   | "project/open"
   | "view/request"
@@ -177,6 +196,11 @@ export function createExplorerSnapshot(
   programOrContext: RavelProgram | ExplorerContext,
   options?: ExplorerSnapshotOptions
 ): ExplorerSnapshot;
+export function createExplorerEntityDetails(
+  programOrContext: RavelProgram | ExplorerContext,
+  entityId: string,
+  options?: { maxTextLength?: number }
+): ExplorerEntityDetails | null;
 export function upstreamChunkIds(
   programOrContext: RavelProgram | ExplorerContext,
   focus: string | string[],

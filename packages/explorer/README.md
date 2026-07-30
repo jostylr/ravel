@@ -63,6 +63,25 @@ const view = createExplorerView(document.querySelector("#graph"), snapshot, {
 await view.ready;
 ```
 
+Chunk bodies and evaluated values are intentionally not embedded in every
+snapshot. Hosts can request bounded details after selection:
+
+```js
+import { createExplorerEntityDetails } from "@pieceful/ravel-explorer";
+
+const details = createExplorerEntityDetails(
+  { program, pretransform, revision },
+  selectedEntityId
+);
+```
+
+For authored chunks, `details.authored` is the adapter's pre-transform body and
+`details.evaluated` is the current completed value. Deliverables expose their
+generated value. Selecting a definition transform returns the owning chunk's
+before/after text; directive and compose selections return the generated chunk
+or output when one exists. Each text field reports its full length and whether
+the returned preview was truncated.
+
 Folding remains a projection operation so collapsed boundary edges retain Ravel
 edge kinds and counts. The renderer does not depend on the unmaintained
 Cytoscape expand/collapse extension.

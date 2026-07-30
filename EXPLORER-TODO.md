@@ -99,22 +99,27 @@ Exit criteria:
 
 Goal: link graph navigation with the ordinary Markdown editor.
 
-- [ ] Add an initially private `packages/vscode/` extension package.
-- [ ] Add extension development, test, package, and launch configuration.
-- [ ] Register `Ravel: Open Explorer`.
-- [ ] Discover a direct Markdown/Ravel Map input or `ravel.toml` from the active
-      editor and allow explicit project selection when discovery is ambiguous.
-- [ ] Open the webview in an editor column beside the active source editor.
-- [ ] Bundle Explorer assets locally and enforce a nonce-based content-security
+- [x] Add an initially private `packages/vscode/` extension package.
+- [x] Add extension build, project-discovery tests, and an Extension Development
+      Host launch configuration.
+- [ ] Add extension packaging and VS Code-hosted integration tests.
+- [x] Register `Ravel: Open Explorer`.
+- [x] Discover a direct source or nearest `ravel.toml` from the active editor.
+- [ ] Allow explicit project selection when discovery is ambiguous.
+- [x] Open the webview in an editor column beside the active source editor.
+- [x] Bundle Explorer assets locally and enforce a nonce-based content-security
       policy.
-- [ ] Validate every webview message and reject unknown versions and types.
-- [ ] Load and evaluate the selected project through `host-node`.
-- [ ] Send only bounded Explorer snapshots to the webview.
-- [ ] Reveal and select exact source ranges from graph selection.
+- [x] Validate every implemented webview request, reject unknown directions and
+      versions, and reject stale selection revisions.
+- [x] Load and evaluate the selected project through `host-node`.
+- [x] Send only bounded Explorer snapshots to the webview.
+- [x] Reveal and select exact source ranges from graph selection.
+- [x] Request bounded authored and evaluated chunk text only after selection.
 - [ ] Observe VS Code selections and focus corresponding graph entities.
 - [ ] Add origin tokens and tests preventing editor/webview selection loops.
 - [ ] Publish Ravel diagnostics through a VS Code diagnostic collection.
-- [ ] Add progress, cancellation, and a Ravel output channel.
+- [x] Add project-load progress.
+- [ ] Add cancellation and a Ravel output channel.
 - [ ] Persist the current lens, focus, grouping, filters, expanded groups, and
       pinned nodes in workspace state.
 - [ ] Restore the perspective after webview reload.

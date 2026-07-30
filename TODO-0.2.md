@@ -666,14 +666,16 @@ Exit criteria:
 
 ### E2. Embed Explorer beside the normal VS Code editor
 
-- [ ] Add the initially private `@pieceful/ravel-vscode` extension package and
+- [x] Add the initially private `@pieceful/ravel-vscode` extension package and
       register `Ravel: Open Explorer`.
-- [ ] Discover direct inputs and `ravel.toml` projects from the active editor,
-      with explicit selection when discovery is ambiguous.
-- [ ] Open a content-security-policy-restricted webview beside the ordinary
+- [ ] Discover direct inputs and nearest `ravel.toml` projects from the active
+      editor, with explicit selection still required when discovery is
+      ambiguous.
+- [x] Open a content-security-policy-restricted webview beside the ordinary
       Markdown or Ravel Map editor.
-- [ ] Load authoritative project state through `host-node`, validate every
-      webview message, and send only bounded Explorer projections.
+- [x] Load authoritative project state through `host-node`, validate the
+      implemented request payloads and revisions, and send only bounded
+      Explorer projections.
 - [ ] Synchronize graph selection with exact source reveal and editor selection
       without feedback loops.
 - [ ] Publish diagnostics through VS Code and support progress, cancellation,

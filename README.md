@@ -301,7 +301,7 @@ packages/
   cli/        development command-line entry point
   map/        Ravel Map public metadata and structural validation
   explorer/   portable focused graph projections and Explorer host contracts
-  vscode/     proposed VS Code host for Explorer and source-linked editing
+  vscode/     experimental VS Code host for Explorer and source-linked editing
 schemas/      Ravel Map JSON Schema
 examples/     proof-of-concept and migration builds
 fixtures/     Markdown, map, and configuration cases
@@ -323,6 +323,7 @@ npm run test:bun            # same test files under Bun
 npm run validate:schema     # structural validation of checked-in map examples
 npm run test:browser         # bundle and execute browser harnesses in Chromium
 npm run test:pack           # pack, install, import, and build through tarballs
+npm run build:vscode        # bundle the experimental VS Code extension
 npm run build:site          # render Quarto docs and bundle the browser playground
 ```
 

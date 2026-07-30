@@ -6,6 +6,7 @@ import {
   explorerLayoutOptions
 } from "../../packages/explorer/src/browser.js";
 import snapshot from "../generated/explorer-snapshot.json";
+import entityDetails from "../generated/explorer-details.json";
 
 const byId = (id) => document.querySelector("#" + id);
 const root = byId("explorer");
@@ -167,6 +168,12 @@ const showDetails = (entity) => {
       .map(([key, value]) => `<dt>${escapeHtml(key)}</dt><dd>${escapeHtml(value)}</dd>`)
       .join("")
     : "";
+  const content = entityDetails[entity.id];
+  const textPreview = (heading, preview) => preview ? `
+    <h2>${escapeHtml(heading)}</h2>
+    <pre><code>${escapeHtml(preview.text)}${preview.truncated
+      ? `\n\n… ${preview.length - preview.text.length} more characters`
+      : ""}</code></pre>` : "";
 
   details.innerHTML = `
     <p class="eyebrow">${escapeHtml(node?.kind ?? "edge · " + edge?.kind)}</p>
@@ -180,6 +187,11 @@ const showDetails = (entity) => {
       <dt>ID</dt><dd>${escapeHtml(entity.id)}</dd>
       ${counts}
     </dl>
+    ${textPreview("Authored chunk · before Ravel", content?.authored)}
+    ${textPreview(
+      content?.kind === "deliverable" ? "Generated output" : "Evaluated value",
+      content?.evaluated
+    )}
     ${relationships.length ? `
       <h2>Relationships</h2>
       <div class="relation-list">

@@ -59,7 +59,7 @@ an unambiguous source representation.
 
 ### `@pieceful/ravel-explorer`
 
-Proposed directory: `packages/explorer/`
+Directory: `packages/explorer/`
 
 This is a portable ESM package. It owns:
 
@@ -91,7 +91,7 @@ on its own, or write source files.
 
 ### `@pieceful/ravel-vscode`
 
-Proposed directory: `packages/vscode/`
+Directory: `packages/vscode/`
 
 This is the VS Code extension and host adapter. It owns:
 

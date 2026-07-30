@@ -3,7 +3,10 @@ import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { transformGraph } from "@pieceful/ravel-core";
 import { loadBuildInput } from "@pieceful/ravel-host-node";
-import { createExplorerSnapshot } from "../packages/explorer/src/index.js";
+import {
+  createExplorerEntityDetails,
+  createExplorerSnapshot
+} from "../packages/explorer/src/index.js";
 
 test("FizzBuzz projects chunks, definition pipes, compose directives, emits, aliases, imports, and outputs", async () => {
   const config = fileURLToPath(
@@ -74,4 +77,22 @@ test("FizzBuzz projects chunks, definition pipes, compose directives, emits, ali
     first.nodes.find(({ id }) => id === "chunk:fizzbuzz::program:main.js")?.label,
     "program:main.js"
   );
+
+  const details = createExplorerEntityDetails({
+    program,
+    pretransform: loaded.pretransform,
+    revision: "fizzbuzz-fixture"
+  }, "chunk:fizzbuzz::program:main.js");
+  assert.equal(details.revision, "fizzbuzz-fixture");
+  assert.match(details.authored.text, /_"program:initial-array\.js"/);
+  assert.match(details.evaluated.text, /const values = Array\.from/);
+  assert.equal(details.authored.truncated, false);
+
+  const transformDetails = createExplorerEntityDetails({
+    program,
+    pretransform: loaded.pretransform
+  }, "transform:fizzbuzz::program:main.js:0:dedent");
+  assert.equal(transformDetails.kind, "transform");
+  assert.equal(transformDetails.ownerEntityId, "chunk:fizzbuzz::program:main.js");
+  assert.match(transformDetails.authored.text, /_"program:helpers\.js"/);
 });
