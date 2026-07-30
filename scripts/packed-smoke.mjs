@@ -63,7 +63,8 @@ const expectedPackages = new Set([
   "@pieceful/ravel-myst",
   "@pieceful/ravel-myst-plugin",
   "@pieceful/ravel-noweb",
-  "@pieceful/ravel-org"
+  "@pieceful/ravel-org",
+  "@pieceful/ravel-quarto"
 ]);
 
 const publicWorkspacePaths = [];
@@ -137,6 +138,7 @@ try {
     'const mystPlugin = await import("@pieceful/ravel-myst-plugin");',
     'const noweb = await import("@pieceful/ravel-noweb");',
     'const org = await import("@pieceful/ravel-org");',
+    'const quarto = await import("@pieceful/ravel-quarto");',
     'await import("@pieceful/ravel-host-node");',
     'const map = await import("@pieceful/ravel-map");',
     'await import("@pieceful/ravel");',
@@ -146,6 +148,7 @@ try {
     'if (html.htmlToMap("<figure data-ravel-piece=\\"main\\"><figcaption>Main</figcaption><pre><code>ok</code></pre></figure>", { document: "smoke" }).map.chunks[0].body !== "ok") process.exit(1);',
     'if (noweb.nowebToMap("<<main>>=\\nok\\n@\\n", { document: "smoke" }).map.chunks[0].body !== "ok\\n") process.exit(1);',
     'if (org.orgToMap("#+NAME: main\\n#+BEGIN_SRC text\\nok\\n#+END_SRC\\n", { document: "smoke" }).map.chunks[0].body !== "ok\\n") process.exit(1);',
+    'if (!quarto.prepareQuartoRender("```{#lst-lp-main .text .lp-piece lst-cap=\\"Main\\"}\\nok\\n```\\n", { document: "smoke" }).source.includes("Piece index")) process.exit(1);',
     'if (myst.mystToMap("```{ravel:piece} main\\n:caption: Main\\n\\nok\\n```\\n", { document: "smoke" }).map.chunks[0].body !== "ok\\n") process.exit(1);',
     'if (mystPlugin.default.directives[0].name !== "ravel:piece") process.exit(1);',
     'if (mystPlugin.default.directives[1].name !== "ravel") process.exit(1);',

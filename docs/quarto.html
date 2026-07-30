@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>contracts-and-configuration – Ravel</title>
+<title>quarto – Ravel</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -234,7 +234,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./contracts-and-configuration.html">Reference</a></li><li class="breadcrumb-item"><a href="./contracts-and-configuration.html">0.1 contracts and configuration</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./markdown-fences.html">Language</a></li><li class="breadcrumb-item"><a href="./quarto.html">Quarto</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -336,7 +336,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./quarto.html" class="sidebar-item-text sidebar-link">
+  <a href="./quarto.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Quarto</span></a>
   </div>
 </li>
@@ -371,7 +371,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./contracts-and-configuration.html" class="sidebar-item-text sidebar-link active">
+  <a href="./contracts-and-configuration.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">0.1 contracts and configuration</span></a>
   </div>
 </li>
@@ -464,196 +464,67 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#contracts-and-configuration" id="toc-contracts-and-configuration" class="nav-link active" data-scroll-target="#contracts-and-configuration">0.1 contracts and configuration</a>
+  <li><a href="#quarto" id="toc-quarto" class="nav-link active" data-scroll-target="#quarto">Quarto</a>
   <ul class="collapse">
-  <li><a href="#stable-versioned-surfaces" id="toc-stable-versioned-surfaces" class="nav-link" data-scroll-target="#stable-versioned-surfaces">Stable versioned surfaces</a></li>
-  <li><a href="#canonical-ravel.toml" id="toc-canonical-ravel.toml" class="nav-link" data-scroll-target="#canonical-ravel.toml">Canonical <code>ravel.toml</code></a></li>
-  <li><a href="#cli-contract" id="toc-cli-contract" class="nav-link" data-scroll-target="#cli-contract">CLI contract</a></li>
-  <li><a href="#diagnostics" id="toc-diagnostics" class="nav-link" data-scroll-target="#diagnostics">Diagnostics</a></li>
-  <li><a href="#output-manifests" id="toc-output-manifests" class="nav-link" data-scroll-target="#output-manifests">Output manifests</a></li>
+  <li><a href="#no-extension-baseline" id="toc-no-extension-baseline" class="nav-link" data-scroll-target="#no-extension-baseline">No-extension baseline</a></li>
+  <li><a href="#graph-aware-render-preparation" id="toc-graph-aware-render-preparation" class="nav-link" data-scroll-target="#graph-aware-render-preparation">Graph-aware render preparation</a></li>
+  <li><a href="#execution-boundary" id="toc-execution-boundary" class="nav-link" data-scroll-target="#execution-boundary">Execution boundary</a></li>
   </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/jostylr/ravel/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
-<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./contracts-and-configuration.html">Reference</a></li><li class="breadcrumb-item"><a href="./contracts-and-configuration.html">0.1 contracts and configuration</a></li></ol></nav></header>
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./markdown-fences.html">Language</a></li><li class="breadcrumb-item"><a href="./quarto.html">Quarto</a></li></ol></nav></header>
 
 
 
 
-<section id="contracts-and-configuration" class="level1">
-<h1>0.1 contracts and configuration</h1>
-<p>This reference distinguishes Ravel’s implemented 0.1 contracts from planned work. A value described as a versioned contract may be consumed by tools; other object shapes and implementation details are not public API.</p>
-<section id="stable-versioned-surfaces" class="level2">
-<h2 class="anchored" data-anchor-id="stable-versioned-surfaces">Stable versioned surfaces</h2>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 33%">
-<col style="width: 33%">
-<col style="width: 33%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Surface</th>
-<th>Current contract</th>
-<th>Compatibility rule</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>Ravel Map</td>
-<td>version <code>1</code></td>
-<td>Reject any other map version.</td>
-</tr>
-<tr class="even">
-<td>Markdown profile</td>
-<td>documented <code>markdown+ravel-v1</code> fenced profile</td>
-<td>The documented opt-in and primary modes are stable; undocumented fence behavior is not.</td>
-</tr>
-<tr class="odd">
-<td>TOML run config</td>
-<td><code>version = 1</code></td>
-<td>Reject unsupported fields or versions.</td>
-</tr>
-<tr class="even">
-<td>Output manifest</td>
-<td>version <code>2</code></td>
-<td>Readers accept legacy version <code>1</code> manifests for managed cleanup; writers emit version <code>2</code>.</td>
-</tr>
-<tr class="odd">
-<td>Generated provenance map</td>
-<td>version <code>1</code></td>
-<td>Sidecars and aggregate bundles use UTF-16 ranges; unknown versions must not be interpreted as version 1.</td>
-</tr>
-<tr class="even">
-<td>CLI results and diagnostics</td>
-<td>documented commands, exits, and JSON shapes</td>
-<td>Additive fields may appear; consumers should use documented fields.</td>
-</tr>
-</tbody>
-</table>
-<p>Generated provenance maps distinguish exact character correspondence from coarse transform attribution. See <a href="./provenance-maps.html">Generated-output provenance maps</a> for the format, derivation chains, query API, and current precision boundary.</p>
+<section id="quarto" class="level1">
+<h1>Quarto</h1>
+<p>Quarto is a specialization of modern Markdown, not a separate Ravel source dialect. <code>.qmd</code> files enter through <code>@pieceful/ravel-markdown</code>; the <code>@pieceful/ravel-quarto</code> bridge adds graph-aware temporary render source.</p>
+<p>The integration follows Quarto’s native listing contract. A listing identifier must begin with <code>lst-</code>, while <code>lst-cap</code> supplies its visible caption. See <a href="https://quarto.org/docs/authoring/cross-references.html#code-listings">Quarto code-listing cross references</a>.</p>
+<section id="no-extension-baseline" class="level2">
+<h2 class="anchored" data-anchor-id="no-extension-baseline">No-extension baseline</h2>
+<p>The canonical static form is already visible and cross-referenceable without a Ravel filter:</p>
+<pre><code>```{#lst-lp-main .javascript .lp-piece lp-id="main" lst-cap="Main program" lp-pipe="trim()"}
+console.log(_"helper");
+```
+
+See @lst-lp-main.</code></pre>
+<p>Ravel maps <code>lp-id="main"</code> to the semantic piece <code>main</code>, keeps <code>lst-lp-main</code> as the rendered anchor, and uses <code>Main program</code> as the display name. If <code>lp-id</code> is absent, <code>#lst-lp-main</code> infers <code>main</code>.</p>
+<p>Quarto 1.9 renders the checked-in fixture with numbered “Main program” and “Helper” listing captions and working <code>@lst-*</code> links.</p>
 </section>
-<section id="canonical-ravel.toml" class="level2">
-<h2 class="anchored" data-anchor-id="canonical-ravel.toml">Canonical <code>ravel.toml</code></h2>
-<p><code>ravel.toml</code> is the conventional project file. From its directory, a plain <code>ravel</code> is equivalent to <code>ravel build --config ravel.toml</code>. Other TOML names remain useful for alternate build paths and must be selected explicitly with <code>--config</code>. The <code>[build]</code> table is required only when that configuration is used with <code>build</code>; a no-write <code>run</code> configuration may omit it.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dt">version</span> <span class="op">=</span> <span class="dv">1</span></span>
+<section id="graph-aware-render-preparation" class="level2">
+<h2 class="anchored" data-anchor-id="graph-aware-render-preparation">Graph-aware render preparation</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { prepareQuartoRender } <span class="im">from</span> <span class="st">"@pieceful/ravel-quarto"</span><span class="op">;</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="kw">[build]</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="dt">name</span> <span class="op">=</span> <span class="st">"site"</span>                    <span class="co"># optional descriptive name</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="dt">out_dir</span> <span class="op">=</span> <span class="st">".ravel/runs/site"</span>     <span class="co"># required, relative to this file</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="dt">clean</span> <span class="op">=</span> <span class="cn">false</span>                     <span class="co"># optional; default false</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="dt">backup</span> <span class="op">=</span> <span class="cn">false</span>                    <span class="co"># false, true, or a relative .zip path</span></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="kw">[[files]]</span></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="dt">path</span> <span class="op">=</span> <span class="st">"guide.md"</span>                <span class="co"># required, relative to this file</span></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="dt">document</span> <span class="op">=</span> <span class="st">"guide"</span>               <span class="co"># optional document override</span></span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="dt">mode</span> <span class="op">=</span> <span class="st">"primary"</span>                 <span class="co"># opt-in (default) or primary</span></span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="kw">[[outputs]]</span></span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="dt">name</span> <span class="op">=</span> <span class="st">"dist/main.js"</span>            <span class="co"># required output-relative path</span></span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="dt">from</span> <span class="op">=</span> <span class="st">"guide::main.javascript"</span>  <span class="co"># required canonical chunk address</span></span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="kw">[[live.modules]]</span></span>
-<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="dt">specifier</span> <span class="op">=</span> <span class="st">"@example/csv"</span>       <span class="co"># exact import visible inside live code</span></span>
-<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="dt">from</span> <span class="op">=</span> <span class="st">"csv-parse/browser/esm/sync"</span> <span class="co"># installed package export to bundle</span></span>
-<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="kw">[[live.resources]]</span></span>
-<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="dt">name</span> <span class="op">=</span> <span class="st">"cool.csv"</span>                <span class="co"># exact load("cool.csv") name</span></span>
-<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="dt">path</span> <span class="op">=</span> <span class="st">"data/cool.csv"</span>           <span class="co"># UTF-8 file below the project root</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Markup entries may select <code>adapter = "asciidoc"</code>, <code>"html"</code>, <code>"markdown"</code>, <code>"markdown-litpro"</code>, <code>"myst"</code>, <code>"noweb"</code>, or <code>"org"</code>. AsciiDoc uses <code>.adoc</code> or <code>.asciidoc</code> automatically and may retain <code>run</code> and <code>provider</code> metadata. HTML uses <code>.html</code> or <code>.htm</code> and supports the same inert live metadata. Org entries additionally accept <code>references = "org-noweb" | "underscore-quote" | "both"</code>, <code>noweb_pipes = true | false</code>, and <code>execution_owner = "org" | "ravel"</code>. See <a href="./org.html">Org and Babel</a> for the ownership boundary. Noweb uses its corresponding reference policies and <code>dialect = "noweb" | "noweb-plus"</code>. MyST entries accept <code>execution_owner = "myst" | "ravel"</code>; <code>.myst.md</code> selects the adapter without TOML. See <a href="./myst.html">MyST Markdown</a>.</p>
-<p>All file, import, output, and backup paths are confined to the directory that contains the TOML file. Ravel rejects escaping paths and symbolic-link traversal. TOML configs are individual runs and are not merged.</p>
-<p><code>build.clean = true</code> behaves like <code>ravel build --clean</code>: it removes only files recorded in the preceding Ravel manifest. <code>build.backup = true</code> writes the default dated archive under <code>backups/</code>; a string names a relative <code>.zip</code> archive. A backup is made before Ravel cleans or replaces output, and Ravel refuses to overwrite an existing archive.</p>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> prepared <span class="op">=</span> <span class="fu">prepareQuartoRender</span>(source<span class="op">,</span> {</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">uri</span><span class="op">:</span> <span class="st">"analysis.qmd"</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The bridge:</p>
+<ol type="1">
+<li>parses through the modern Markdown adapter;</li>
+<li>validates and resolves the Ravel graph;</li>
+<li>inserts ordinary Markdown <code>Uses</code> and <code>Used by</code> blocks;</li>
+<li>appends a piece/dependency index;</li>
+<li>returns a source map and deterministic cache-key material.</li>
+</ol>
+<p>It does not overwrite the authored <code>.qmd</code>. Inserted prose is explicitly generated in the returned source map, while every copied source region retains an exact authored range. If graph validation fails, the source is returned unchanged.</p>
+<p>The bridge performs compilation before rendering rather than inside a filter. Quarto recommends Lua for AST filters, but such a filter should only place already-validated decorations. See the official <a href="https://quarto.org/docs/extensions/filters.html">Quarto filter extension guide</a>.</p>
 </section>
-<section id="cli-contract" class="level2">
-<h2 class="anchored" data-anchor-id="cli-contract">CLI contract</h2>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 50%">
-<col style="width: 50%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Command</th>
-<th>Effect</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><code>ravel check &lt;input&gt;</code></td>
-<td>Validate and evaluate without writing artifacts.</td>
-</tr>
-<tr class="even">
-<td><code>ravel inspect &lt;input&gt;</code></td>
-<td>Show the completed program, <code>--chunks</code>, <code>--graph</code>, <code>--trace</code>, or a <code>--provenance &lt;deliverable&gt;</code> query.</td>
-</tr>
-<tr class="odd">
-<td><code>ravel run &lt;input&gt;</code></td>
-<td>Execute only <code>.run</code> blocks through registered providers and print their exported values without writing artifacts.</td>
-</tr>
-<tr class="even">
-<td><code>ravel build &lt;input&gt;</code></td>
-<td>Execute <code>.run</code> blocks, materialize permitted live-result text, and build declared artifacts. TOML supplies <code>out_dir</code>; direct inputs require <code>--out-dir</code>.</td>
-</tr>
-<tr class="odd">
-<td><code>ravel refresh &lt;output-dir&gt;</code></td>
-<td>Remove only stale managed outputs retained by a prior build.</td>
-</tr>
-</tbody>
-</table>
-<p><code>--dry-run</code> previews build or refresh effects. <code>--json</code> emits machine-readable command results or diagnostics. <code>--clean</code> and <code>--backup [file.zip]</code> apply to builds. Explicit CLI options take priority over the corresponding TOML setting when both name a value.</p>
-<p>Exit status <code>0</code> means success, <code>1</code> means a source/configuration/validation error, <code>2</code> means command usage is invalid, and <code>3</code> means an unexpected host or filesystem failure.</p>
-</section>
-<section id="diagnostics" class="level2">
-<h2 class="anchored" data-anchor-id="diagnostics">Diagnostics</h2>
-<p>Diagnostics have <code>code</code>, <code>severity</code>, <code>message</code>, and source URI/range fields. Human output is <code>path:line:column severity[code]: message</code>; <code>--json</code> writes the same diagnostic objects to standard error.</p>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 33%">
-<col style="width: 33%">
-<col style="width: 33%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Prefix</th>
-<th>Owner</th>
-<th>Examples</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><code>RM</code></td>
-<td>Ravel Map and Markdown adapters</td>
-<td><code>RM101</code> fence syntax, <code>RM200</code> map shape, <code>RM201</code> unreadable/malformed JSON input</td>
-</tr>
-<tr class="even">
-<td><code>RC</code></td>
-<td>TOML configuration</td>
-<td><code>RC101</code> TOML parsing, <code>RC102</code> invalid config field/value, <code>RC103</code> unavailable resource</td>
-</tr>
-<tr class="odd">
-<td><code>RH</code></td>
-<td>Node host input handling</td>
-<td><code>RH101</code> unsupported input, <code>RH102</code> incomplete import directive</td>
-</tr>
-<tr class="even">
-<td><code>RV</code></td>
-<td>Core graph evaluation</td>
-<td>references, cycles, transforms, composition, and derived chunks</td>
-</tr>
-<tr class="odd">
-<td><code>RJL</code></td>
-<td>QuickJS/Wasm JavaScript provider</td>
-<td>analysis, runtime limits, worker failure, and module preparation</td>
-</tr>
-</tbody>
-</table>
-<p>Codes describe stable user-visible failure classes. Exact prose may improve as long as the diagnosis and source location remain equivalent.</p>
-</section>
-<section id="output-manifests" class="level2">
-<h2 class="anchored" data-anchor-id="output-manifests">Output manifests</h2>
-<p>Each successful build writes both <code>.ravel-manifest.json</code> and <code>.manifest.txt</code> in the output directory. The JSON manifest is the managed-output record; the text manifest is for review. Version 2 records the Ravel program version, build time, current deliverables with byte counts and SHA-256 hashes, and retained stale entries. The manifest is also the authority for <code>--clean</code>, <code>refresh</code>, and backup safety—Ravel never deletes arbitrary neighboring files.</p>
-<p>See the <a href="./ravel-map-schema.html">Ravel Map schema guide</a>, <a href="./markdown-fences.html">Markdown profile</a>, and <a href="../README.md#try-the-current-cli">lifecycle guide</a> for worked examples.</p>
+<section id="execution-boundary" class="level2">
+<h2 class="anchored" data-anchor-id="execution-boundary">Execution boundary</h2>
+<p>Curly-language cells are recognized as executable Quarto cells:</p>
+<pre><code>```{python .lp-piece #lp-analysis lp-id="analysis" ravel-execution-owner="quarto"}
+#| lst-label: lst-lp-analysis
+#| lst-cap: Analysis
+
+print(_"prepared-data | trim()")
+```</code></pre>
+<p>Cell options remain in the temporary <code>.qmd</code> but are excluded from the Ravel piece body. For <code>ravel-execution-owner="quarto"</code>, references are resolved before Quarto sees the cell. For owner <code>ravel</code>, the bridge inserts <code>eval: false</code> unless already present, preventing native double execution. Combining Quarto ownership with a Ravel <code>.run</code> marker is diagnosed.</p>
+<p>The pure bridge now composes authored, woven-code, and generated-decoration mappings. The remaining project-host phase will materialize a complete temporary source tree, add transform/provider versions to project cache keys, invoke Quarto, and translate native-engine failures through those maps.</p>
+<p>Quarto cache invalidation normally follows cell source and cache attributes. Ravel therefore exposes prepared-source cache material rather than relying on the unmodified <code>.qmd</code> alone. See <a href="https://quarto.org/docs/projects/code-execution.html">Quarto execution and cache management</a>.</p>
+<p>The fixtures at <code>fixtures/quarto/static-listing.qmd</code> and <code>fixtures/quarto/executable-cell.qmd</code> exercise native listings, cross references, pipelines, graph decoration, ownership, and pre-execution weaving.</p>
 
 
 </section>

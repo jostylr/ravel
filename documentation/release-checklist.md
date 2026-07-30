@@ -7,6 +7,7 @@ repository suite is the release verification contract:
 npm ci
 npm test
 npm run test:bun
+npm run test:quarto
 npm run validate:schema
 npm run test:browser
 npm run test:pack

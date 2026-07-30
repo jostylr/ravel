@@ -146,6 +146,10 @@ ul.task-list li input[type="checkbox"] {
  <span class="dropdown-text">HTML</span></a>
   </li>  
         <li>
+    <a class="dropdown-item" href="./quarto.html">
+ <span class="dropdown-text">Quarto</span></a>
+  </li>  
+        <li>
     <a class="dropdown-item" href="./pipes-and-directives.html">
  <span class="dropdown-text">Pipes and directives</span></a>
   </li>  
@@ -297,6 +301,12 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="./quarto.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Quarto</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="./live-execution.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Live execution (0.2 development)</span></a>
   </div>
@@ -428,6 +438,7 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#piecefulravel-org" id="toc-piecefulravel-org" class="nav-link" data-scroll-target="#piecefulravel-org"><code>@pieceful/ravel-org</code></a></li>
   <li><a href="#piecefulravel-asciidoc" id="toc-piecefulravel-asciidoc" class="nav-link" data-scroll-target="#piecefulravel-asciidoc"><code>@pieceful/ravel-asciidoc</code></a></li>
   <li><a href="#piecefulravel-html" id="toc-piecefulravel-html" class="nav-link" data-scroll-target="#piecefulravel-html"><code>@pieceful/ravel-html</code></a></li>
+  <li><a href="#piecefulravel-quarto" id="toc-piecefulravel-quarto" class="nav-link" data-scroll-target="#piecefulravel-quarto"><code>@pieceful/ravel-quarto</code></a></li>
   <li><a href="#piecefulravel-myst" id="toc-piecefulravel-myst" class="nav-link" data-scroll-target="#piecefulravel-myst"><code>@pieceful/ravel-myst</code></a></li>
   <li><a href="#piecefulravel-myst-plugin" id="toc-piecefulravel-myst-plugin" class="nav-link" data-scroll-target="#piecefulravel-myst-plugin"><code>@pieceful/ravel-myst-plugin</code></a></li>
   <li><a href="#piecefulravel-core" id="toc-piecefulravel-core" class="nav-link" data-scroll-target="#piecefulravel-core"><code>@pieceful/ravel-core</code></a></li>
@@ -508,6 +519,17 @@ ul.task-list li input[type="checkbox"] {
 <li><code>data-ravel-pipe</code>, language, live metadata, native anchor links, and visible <code>read</code>, <code>derive</code>, and <code>write</code> elements map to the shared contracts.</li>
 <li>Character references are decoded while fragment precision preserves honest source-to-value provenance. Scripts, runtime mutations, and template contents cannot declare pieces.</li>
 <li>The older <code>data-lp-*</code> and <code>lp-document</code> spellings remain accepted aliases.</li>
+</ul>
+</section>
+<section id="piecefulravel-quarto" class="level2">
+<h2 class="anchored" data-anchor-id="piecefulravel-quarto"><code>@pieceful/ravel-quarto</code></h2>
+<ul>
+<li><code>prepareQuartoRender(text, options)</code> parses <code>.qmd</code> through modern Markdown, validates and resolves the Ravel graph, and returns temporary decorated source without invoking Quarto or an execution engine.</li>
+<li>Native <code>#lst-lp-*</code> labels, <code>lst-cap</code>, and <code>lp-id</code> map to one semantic piece, one visible Quarto listing caption, and one rendered anchor.</li>
+<li>Generated <code>Uses</code>, <code>Used by</code>, and piece-index Markdown links target those native anchors. Invalid graphs remain undecorated.</li>
+<li><code>sourceMap</code> maps authored temporary-source regions exactly and marks inserted graph prose as generated. <code>cacheKeyMaterial</code> includes authored source, prepared source, adapter format, and bridge version.</li>
+<li><code>decorateQuartoMarkdown(text, map, program, options)</code> exposes the pure decoration stage for hosts that already own graph construction.</li>
+<li><code>weaveQuartoExecutions(text, map, program)</code> replaces Quarto-owned cell source with resolved code while preserving cell options and provenance. Ravel-owned cells receive an <code>eval: false</code> guard.</li>
 </ul>
 </section>
 <section id="piecefulravel-myst" class="level2">

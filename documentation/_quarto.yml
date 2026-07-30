@@ -40,6 +40,8 @@ website:
             href: asciidoc.md
           - text: "HTML"
             href: html.md
+          - text: "Quarto"
+            href: quarto.md
           - text: "Pipes and directives"
             href: pipes-and-directives.md
           - text: "Provenance maps"
@@ -75,6 +77,7 @@ website:
           - myst.md
           - asciidoc.md
           - html.md
+          - quarto.md
           - live-execution.md
           - chunk-syntax.md
           - pipes-and-directives.md

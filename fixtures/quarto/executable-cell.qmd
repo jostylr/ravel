@@ -1,0 +1,19 @@
+---
+title: "Ravel Quarto execution bridge"
+execute:
+  enabled: false
+ravel:
+  document: quarto-execution
+---
+
+```{#lst-lp-prepared-data .python .lp-piece lp-id="prepared-data" lst-cap="Prepared data"}
+40 + 2
+```
+
+```{python .lp-piece #lp-analysis lp-id="analysis" ravel-execution-owner="quarto"}
+#| lst-label: lst-lp-analysis
+#| lst-cap: Analysis
+#| echo: true
+
+print(_"prepared-data | trim()")
+```

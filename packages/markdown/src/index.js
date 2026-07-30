@@ -454,13 +454,62 @@ const semanticName = (value) => {
 
 const modernControlClasses = new Set([...controlClasses, "lp-piece", "lp-fragment"]);
 
-const modernFence = (node, source) => {
+const quartoExecutableFence = (node) =>
+  /^\{[A-Za-z][A-Za-z0-9+_.-]*(?=[\s}])/.test(
+    node.lang + (node.meta ? " " + node.meta : "")
+  );
+
+const quartoCellBody = (block, starts, uri, diagnostics) => {
+  const lines = [];
+  let cursor = 0;
+  while (cursor < block.body.length) {
+    const newline = block.body.indexOf("\n", cursor);
+    const end = newline === -1 ? block.body.length : newline + 1;
+    const line = block.body.slice(cursor, end);
+    const match = /^#\|[ \t]?(.*?)(?:\r?\n)?$/.exec(line);
+    if (!match) break;
+    lines.push(match[1]);
+    cursor = end;
+  }
+  let options = {};
+  if (lines.length) {
+    try {
+      options = parseYaml(lines.join("\n")) ?? {};
+    } catch {
+      diagnostics.push(diagnostic(
+        "RM101",
+        "Malformed Quarto cell options.",
+        block.fenceSource
+      ));
+    }
+  }
+  return {
+    options,
+    block: cursor === 0
+      ? block
+      : {
+          ...block,
+          body: block.body.slice(cursor),
+          start: block.start + cursor,
+          source: rangeAt(uri, starts, block.start + cursor, block.end)
+        }
+  };
+};
+
+const modernFence = (node, source, cellOptions = {}) => {
   let language = node.lang ?? null;
   let attributes = { id: null, classes: [], values: {}, diagnostics: [] };
   let compactPipe = null;
+  let executable = false;
 
   if (node.lang?.startsWith("{")) {
-    const spelling = node.lang + (node.meta ? " " + node.meta : "");
+    let spelling = node.lang + (node.meta ? " " + node.meta : "");
+    const engine = /^\{([A-Za-z][A-Za-z0-9+_.-]*)(?=[\s}])/
+      .exec(spelling);
+    if (engine) {
+      executable = true;
+      spelling = "{." + engine[1] + spelling.slice(engine[0].length);
+    }
     attributes = parseAttributes(spelling, source);
     const languageIndex = attributes.classes.findIndex((entry) => !modernControlClasses.has(entry));
     if (languageIndex === -1) language = null;
@@ -483,6 +532,13 @@ const modernFence = (node, source) => {
   }
 
   const values = attributes.values;
+  const cellListingLabel = typeof cellOptions["lst-label"] === "string"
+    ? cellOptions["lst-label"]
+    : null;
+  const cellListingCaption = typeof cellOptions["lst-cap"] === "string"
+    ? cellOptions["lst-cap"]
+    : null;
+  const renderedAnchor = cellListingLabel ?? attributes.id;
   if (values["lp-pipe"] !== undefined) {
     if (compactPipe !== null && compactPipe !== values["lp-pipe"]) {
       attributes.diagnostics.push(diagnostic("RM105", "Compact and lp-pipe definition pipelines conflict.", source));
@@ -491,11 +547,44 @@ const modernFence = (node, source) => {
   }
   if (compactPipe !== null) values.pipe = compactPipe;
   if (values["lp-for"] !== undefined) values.chunk = values["lp-for"];
+  const listingChunk = renderedAnchor?.startsWith("lst-lp-")
+    ? renderedAnchor.slice("lst-lp-".length)
+    : null;
+  const explicitPiece = values["lp-id"] ??
+    values["ravel-id"] ??
+    (typeof cellOptions["ravel-piece"] === "string"
+      ? cellOptions["ravel-piece"]
+      : undefined);
+  if (explicitPiece !== undefined) {
+    if (listingChunk !== null && listingChunk !== explicitPiece) {
+      attributes.diagnostics.push(diagnostic(
+        "RM105",
+        "Quarto listing label and lp-id declare conflicting piece identities.",
+        source
+      ));
+    }
+    values.chunk = explicitPiece;
+  } else if (listingChunk !== null) {
+    values.chunk = listingChunk;
+  }
   if (attributes.id?.startsWith("lp-")) attributes.id = attributes.id.slice(3);
 
   return {
     language,
     attributes,
+    renderedAnchor,
+    executable,
+    executionOwner: values["ravel-execution-owner"] ??
+      (typeof cellOptions["ravel-execution-owner"] === "string"
+        ? cellOptions["ravel-execution-owner"]
+        : executable
+          ? "quarto"
+          : null),
+    cellOptions,
+    listingLabel: renderedAnchor?.startsWith("lst-")
+      ? renderedAnchor
+      : null,
+    listingCaption: cellListingCaption ?? values["lst-cap"] ?? null,
     named: attributes.classes.includes("lp-piece") || attributes.id !== null ||
       Object.hasOwn(values, "chunk"),
     append: attributes.classes.includes("lp-fragment")
@@ -658,7 +747,14 @@ const modernMarkdownToMapInternal = (text, options = {}) => {
       directives.push(...parseDirectiveFence(block, documentId, starts, uri, diagnostics));
       continue;
     }
-    const declaration = modernFence(node, block.fenceSource);
+    const cell = quartoExecutableFence(node)
+      ? quartoCellBody(block, starts, uri, diagnostics)
+      : { options: {}, block };
+    const declaration = modernFence(
+      node,
+      block.fenceSource,
+      cell.options
+    );
     const { attributes, language } = declaration;
     diagnostics.push(...attributes.diagnostics);
     const classes = new Set(attributes.classes);
@@ -668,6 +764,25 @@ const modernMarkdownToMapInternal = (text, options = {}) => {
       continue;
     }
     if (excluded) continue;
+    if (declaration.executable &&
+        !["quarto", "ravel"].includes(declaration.executionOwner)) {
+      diagnostics.push(diagnostic(
+        "RM140",
+        "A Quarto executable cell requires execution owner quarto or ravel.",
+        block.fenceSource
+      ));
+      continue;
+    }
+    if (declaration.executable &&
+        declaration.executionOwner === "quarto" &&
+        classes.has("run")) {
+      diagnostics.push(diagnostic(
+        "RM140",
+        "Quarto and Ravel cannot both own execution of one cell.",
+        block.fenceSource
+      ));
+      continue;
+    }
 
     if (declaration.named) {
       if (declaration.append && !Object.hasOwn(attributes.values, "chunk")) {
@@ -693,18 +808,44 @@ const modernMarkdownToMapInternal = (text, options = {}) => {
         diagnostics.push(diagnostic("RM106", "Duplicate modern Markdown piece declaration: " + id + ".", block.fenceSource));
         continue;
       } else {
-        const displayName = attributes.values["lp-title"] ?? chunkName;
+        const displayName = declaration.listingCaption ??
+          attributes.values["lp-title"] ??
+          chunkName;
         chunk = modernChunk(documentId, {
           chunk: chunkName,
           displayName,
           pipe: attributes.values.pipe ?? null,
-          anchor: attributes.id ? "lp-" + attributes.id : null,
+          anchor: declaration.renderedAnchor,
           source: block.fenceSource
         }, diagnostics);
+        if (declaration.listingLabel || declaration.listingCaption ||
+            declaration.executable) {
+          chunk.metadata.data.ravel.quarto = {
+            ...(declaration.listingLabel
+              ? { listingLabel: declaration.listingLabel }
+              : {}),
+            ...(declaration.listingCaption
+              ? { listingCaption: declaration.listingCaption }
+              : {}),
+            ...(declaration.executable
+              ? {
+                  executable: true,
+                  executionOwner: declaration.executionOwner,
+                  cellOptions: declaration.cellOptions
+                }
+              : {})
+          };
+        }
         chunks.push(chunk);
         chunksById.set(chunk.id, chunk);
       }
-      appendModernFragment(chunk, block, language, block.fenceSource, diagnostics);
+      appendModernFragment(
+        chunk,
+        cell.block,
+        language,
+        block.fenceSource,
+        diagnostics
+      );
       setModernFenceMetadata(chunk, attributes, language, block.fenceSource, diagnostics);
       continue;
     }

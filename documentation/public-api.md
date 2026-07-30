@@ -80,6 +80,24 @@ Use this package at adapter, editor, and host boundaries.
   contents cannot declare pieces.
 - The older `data-lp-*` and `lp-document` spellings remain accepted aliases.
 
+## `@pieceful/ravel-quarto`
+
+- `prepareQuartoRender(text, options)` parses `.qmd` through modern Markdown,
+  validates and resolves the Ravel graph, and returns temporary decorated
+  source without invoking Quarto or an execution engine.
+- Native `#lst-lp-*` labels, `lst-cap`, and `lp-id` map to one semantic piece,
+  one visible Quarto listing caption, and one rendered anchor.
+- Generated `Uses`, `Used by`, and piece-index Markdown links target those
+  native anchors. Invalid graphs remain undecorated.
+- `sourceMap` maps authored temporary-source regions exactly and marks inserted
+  graph prose as generated. `cacheKeyMaterial` includes authored source,
+  prepared source, adapter format, and bridge version.
+- `decorateQuartoMarkdown(text, map, program, options)` exposes the pure
+  decoration stage for hosts that already own graph construction.
+- `weaveQuartoExecutions(text, map, program)` replaces Quarto-owned cell source
+  with resolved code while preserving cell options and provenance. Ravel-owned
+  cells receive an `eval: false` guard.
+
 ## `@pieceful/ravel-myst`
 
 - `mystToMap(text, options)` scans canonical `{ravel:piece}` directives, their

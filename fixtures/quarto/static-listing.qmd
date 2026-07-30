@@ -1,0 +1,18 @@
+---
+title: "Ravel Quarto listings"
+engine: markdown
+ravel:
+  document: quarto-static
+---
+
+# Visible Ravel pieces
+
+The main program is shown in @lst-lp-main and its helper in @lst-lp-helper.
+
+```{#lst-lp-main .javascript .lp-piece lp-id="main" lst-cap="Main program" lp-pipe="trim()"}
+console.log(_"helper");
+```
+
+```{#lst-lp-helper .javascript .lp-piece lst-cap="Helper"}
+const helper = "ready";
+```

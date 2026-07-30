@@ -234,6 +234,94 @@ test("modern Pandoc fences support named declarations and explicit append fragme
   assert.equal(map.chunks[0].metadata.data.ravel.renderedAnchor, "lp-helper");
 });
 
+test("modern Markdown recognizes native Quarto listing labels and captions", () => {
+  const source = [
+    "```{#lst-lp-main .javascript .lp-piece lp-id=\"main\" lst-cap=\"Main program\" lp-pipe=\"trim()\"}",
+    "  console.log(_\"helper\");  ",
+    "```",
+    "",
+    "See @lst-lp-main.",
+    ""
+  ].join("\n");
+  const { map, diagnostics } = modernMarkdownToMap(source, {
+    uri: "listing.qmd",
+    document: "listing"
+  });
+
+  assert.deepEqual(diagnostics, []);
+  assert.deepEqual(validateRavelMap(map), []);
+  assert.equal(map.chunks[0].id, "listing::main");
+  assert.equal(map.chunks[0].name, "Main program");
+  assert.equal(
+    map.chunks[0].metadata.data.ravel.renderedAnchor,
+    "lst-lp-main"
+  );
+  assert.deepEqual(map.chunks[0].metadata.data.ravel.quarto, {
+    listingLabel: "lst-lp-main",
+    listingCaption: "Main program"
+  });
+  assert.deepEqual(map.chunks[0].definitionPipeline, [{
+    name: "trim",
+    arguments: []
+  }]);
+
+  const inferred = modernMarkdownToMap([
+    "```{#lst-lp-helper .javascript .lp-piece lst-cap=\"Helper\"}",
+    "helper();",
+    "```",
+    ""
+  ].join("\n"), {
+    uri: "inferred.qmd",
+    document: "inferred"
+  });
+  assert.deepEqual(inferred.diagnostics, []);
+  assert.equal(inferred.map.chunks[0].id, "inferred::helper");
+});
+
+test("modern Markdown separates Quarto cell options and execution ownership", () => {
+  const source = [
+    "```{python .lp-piece #lp-analysis lp-id=\"analysis\" ravel-execution-owner=\"quarto\"}",
+    "#| lst-label: lst-lp-analysis",
+    "#| lst-cap: Analysis",
+    "#| echo: true",
+    "",
+    "print(_\"prepared-data\")",
+    "```",
+    ""
+  ].join("\n");
+  const { map, diagnostics } = modernMarkdownToMap(source, {
+    uri: "cell.qmd",
+    document: "cell"
+  });
+
+  assert.deepEqual(diagnostics, []);
+  assert.equal(map.chunks[0].id, "cell::analysis");
+  assert.equal(map.chunks[0].body, "\nprint(_\"prepared-data\")\n");
+  assert.equal(map.chunks[0].metadata.language, "python");
+  assert.deepEqual(map.chunks[0].metadata.data.ravel.quarto, {
+    listingLabel: "lst-lp-analysis",
+    listingCaption: "Analysis",
+    executable: true,
+    executionOwner: "quarto",
+    cellOptions: {
+      "lst-label": "lst-lp-analysis",
+      "lst-cap": "Analysis",
+      echo: true
+    }
+  });
+
+  const conflict = modernMarkdownToMap(source.replace(
+    ".lp-piece",
+    ".lp-piece .run"
+  ), {
+    uri: "conflict.qmd",
+    document: "conflict"
+  });
+  assert.ok(conflict.diagnostics.some((entry) =>
+    entry.code === "RM140" && entry.message.includes("both own execution")
+  ));
+});
+
 test("modern Markdown diagnoses incompatible fragment languages", () => {
   const source = [
     "## Mixed",
