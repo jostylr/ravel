@@ -704,7 +704,7 @@ const parseChunkFragments = (raw) => {
         referenceAliases: referenceSyntax.aliases
       }
     : {});
-  if (!Array.isArray(raw.fragments) || raw.fragments.length < 2 ||
+  if (!Array.isArray(raw.fragments) || raw.fragments.length === 0 ||
       raw.fragments.some((fragment) => typeof fragment?.body !== "string" || !fragment.source) ||
       raw.fragments.map((fragment) => fragment.body).join("") !== raw.body) {
     return parsed;
@@ -721,16 +721,41 @@ const parseChunkFragments = (raw) => {
     start: source.range.start.offset - syntheticStart,
     end: source.range.end.offset - syntheticStart
   });
+  const fragmentSlice = (fragment, start, end) =>
+    fragment.precision === "coarse"
+      ? fragment.source
+      : span(
+          fragment.source,
+          fragment.body,
+          start - fragment.start,
+          end - fragment.start
+        );
   const remapLocation = (source) => {
     const range = relativeRange(source);
-    const fragment = fragments.find((entry) => range.start >= entry.start && range.end <= entry.end);
-    if (!fragment) return source;
-    return span(
-      fragment.source,
-      fragment.body,
-      range.start - fragment.start,
-      range.end - fragment.start
+    const overlapping = fragments.filter((entry) =>
+      range.start < entry.end && range.end > entry.start
     );
+    if (!overlapping.length) return source;
+    const first = overlapping[0];
+    const last = overlapping.at(-1);
+    const firstSlice = fragmentSlice(
+      first,
+      Math.max(range.start, first.start),
+      Math.min(range.end, first.end)
+    );
+    const lastSlice = fragmentSlice(
+      last,
+      Math.max(range.start, last.start),
+      Math.min(range.end, last.end)
+    );
+    if (firstSlice.uri !== lastSlice.uri) return firstSlice;
+    return {
+      uri: firstSlice.uri,
+      range: {
+        start: firstSlice.range.start,
+        end: lastSlice.range.end
+      }
+    };
   };
   const remapSources = (value) => {
     if (!value || typeof value !== "object") return value;
@@ -755,7 +780,8 @@ const parseChunkFragments = (raw) => {
       nodes.push({
         type: "literal",
         value: raw.body.slice(start, end),
-        source: span(fragment.source, fragment.body, start - fragment.start, end - fragment.start)
+        source: fragmentSlice(fragment, start, end),
+        precision: fragment.precision ?? "exact"
       });
     }
   }
@@ -1353,7 +1379,13 @@ export const transformGraph = (pretransform, options = {}) => {
 
   const evaluateNode = (node, owner) => {
     if (node.type === "literal") {
-      return sourceSegment(node.value, node.source, owner.definition.id, "literal");
+      return sourceSegment(
+        node.value,
+        node.source,
+        owner.definition.id,
+        "literal",
+        node.precision ?? "exact"
+      );
     }
     if (node.type === "delay") return evaluateDelay(node, owner);
     const value = evaluateExpression(node, owner);

@@ -19,6 +19,7 @@
   "dependencies": {
     "@pieceful/ravel-asciidoc": "0.1.1",
     "@pieceful/ravel-core": "0.1.1",
+    "@pieceful/ravel-html": "0.1.1",
     "@pieceful/ravel-markdown": "0.1.1",
     "@pieceful/ravel-markdown-litpro": "0.1.1",
     "@pieceful/ravel-map": "0.1.1",

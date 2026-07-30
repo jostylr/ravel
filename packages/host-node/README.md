@@ -41,6 +41,11 @@ Section and block pieces retain exact source bodies, pipelines, native
 cross-reference navigation, and `ravel::` graph directives. Loading does not
 invoke Asciidoctor or expand includes.
 
+HTML sources use `.html`, `.htm`, or `adapter = "html"`. Semantic sections and
+figures retain visible names, decoded code, native navigation, pipelines, and
+directive links. Loading uses authored source with scripting disabled; it
+never constructs a browser DOM or observes runtime mutations.
+
 Org sources use `.org` or `adapter = "org"`. TOML can select
 `references = "org-noweb"`, `"underscore-quote"`, or `"both"`, enable
 Ravel-only use-site pipes with `noweb_pipes = true`, and assign Babel

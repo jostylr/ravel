@@ -38,6 +38,8 @@ website:
             href: myst.md
           - text: "AsciiDoc"
             href: asciidoc.md
+          - text: "HTML"
+            href: html.md
           - text: "Pipes and directives"
             href: pipes-and-directives.md
           - text: "Provenance maps"
@@ -72,6 +74,7 @@ website:
           - org.md
           - myst.md
           - asciidoc.md
+          - html.md
           - live-execution.md
           - chunk-syntax.md
           - pipes-and-directives.md

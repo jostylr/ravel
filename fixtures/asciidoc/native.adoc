@@ -1,6 +1,8 @@
 = Ravel AsciiDoc fixture
 :ravel-document: native
 
+include::shared.adoc[]
+
 [#lp-main]
 == Main program | trim()
 

@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>ravel-map-schema – Ravel</title>
+<title>html – Ravel</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -108,12 +108,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 <meta property="og:title" content="Ravel">
+<meta property="og:description" content="A source-mapped literate programming engine for weaving and unraveling programs.">
 <meta property="og:image" content="https://ravel.jostylr.com/og.png">
 <meta property="og:site_name" content="Ravel">
 <meta property="og:locale" content="en_US">
 <meta property="og:image:height" content="630">
 <meta property="og:image:width" content="1200">
 <meta name="twitter:title" content="Ravel">
+<meta name="twitter:description" content="A source-mapped literate programming engine for weaving and unraveling programs.">
 <meta name="twitter:image" content="https://ravel.jostylr.com/og.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image-height" content="630">
@@ -228,7 +230,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./contracts-and-configuration.html">Reference</a></li><li class="breadcrumb-item"><a href="./ravel-map-schema.html">Ravel Map schema guide</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./markdown-fences.html">Language</a></li><li class="breadcrumb-item"><a href="./html.html">HTML</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -324,7 +326,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./html.html" class="sidebar-item-text sidebar-link">
+  <a href="./html.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">HTML</span></a>
   </div>
 </li>
@@ -371,7 +373,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./ravel-map-schema.html" class="sidebar-item-text sidebar-link active">
+  <a href="./ravel-map-schema.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Ravel Map schema guide</span></a>
   </div>
 </li>
@@ -452,246 +454,85 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#ravel-map-schema-guide" id="toc-ravel-map-schema-guide" class="nav-link active" data-scroll-target="#ravel-map-schema-guide">Ravel Map schema guide</a>
+  <li><a href="#html" id="toc-html" class="nav-link active" data-scroll-target="#html">HTML</a>
   <ul class="collapse">
-  <li><a href="#purpose" id="toc-purpose" class="nav-link" data-scroll-target="#purpose">Purpose</a></li>
-  <li><a href="#canonical-shape" id="toc-canonical-shape" class="nav-link" data-scroll-target="#canonical-shape">Canonical shape</a></li>
-  <li><a href="#top-level-fields" id="toc-top-level-fields" class="nav-link" data-scroll-target="#top-level-fields">Top-level fields</a></li>
-  <li><a href="#chunk-fields" id="toc-chunk-fields" class="nav-link" data-scroll-target="#chunk-fields">Chunk fields</a></li>
-  <li><a href="#chunks-emitted-from-pipes" id="toc-chunks-emitted-from-pipes" class="nav-link" data-scroll-target="#chunks-emitted-from-pipes">Chunks emitted from pipes</a></li>
-  <li><a href="#directives" id="toc-directives" class="nav-link" data-scroll-target="#directives">Directives</a></li>
-  <li><a href="#positions-and-errors" id="toc-positions-and-errors" class="nav-link" data-scroll-target="#positions-and-errors">Positions and errors</a></li>
-  <li><a href="#profiles-are-adapter-policy" id="toc-profiles-are-adapter-policy" class="nav-link" data-scroll-target="#profiles-are-adapter-policy">Profiles are adapter policy</a></li>
-  <li><a href="#versioning" id="toc-versioning" class="nav-link" data-scroll-target="#versioning">Versioning</a></li>
+  <li><a href="#semantic-pieces" id="toc-semantic-pieces" class="nav-link" data-scroll-target="#semantic-pieces">Semantic pieces</a></li>
+  <li><a href="#entities-and-source-maps" id="toc-entities-and-source-maps" class="nav-link" data-scroll-target="#entities-and-source-maps">Entities and source maps</a></li>
+  <li><a href="#navigation-and-graph-directives" id="toc-navigation-and-graph-directives" class="nav-link" data-scroll-target="#navigation-and-graph-directives">Navigation and graph directives</a></li>
+  <li><a href="#safety-boundary" id="toc-safety-boundary" class="nav-link" data-scroll-target="#safety-boundary">Safety boundary</a></li>
   </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/jostylr/ravel/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
-<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./contracts-and-configuration.html">Reference</a></li><li class="breadcrumb-item"><a href="./ravel-map-schema.html">Ravel Map schema guide</a></li></ol></nav></header>
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./markdown-fences.html">Language</a></li><li class="breadcrumb-item"><a href="./html.html">HTML</a></li></ol></nav></header>
 
 
 
 
-<section id="ravel-map-schema-guide" class="level1">
-<h1>Ravel Map schema guide</h1>
-<section id="purpose" class="level2">
-<h2 class="anchored" data-anchor-id="purpose">Purpose</h2>
-<p>A Ravel Map is the JSON contract between a format/profile adapter and Ravel core. It says what chunks a source document contains, where they came from, and which structural declarations/effects the adapter found. It does not parse the language inside a chunk body; the chunk parser does that.</p>
-<pre><code>Markdown profile ─┐
-AsciiDoc profile ─┼→ Ravel Map → Ravel core
-Rix block model ──┘</code></pre>
+<section id="html" class="level1">
+<h1>HTML</h1>
+<p><code>@pieceful/ravel-html</code> maps authored HTML directly into a Ravel Map. It parses source with scripting disabled and source locations enabled; it never creates a browser DOM, executes document scripts, observes mutations, follows links, executes code, or writes outputs.</p>
+<p>The adapter uses parse5’s location-preserving HTML parser. Its location mode attaches source offsets to explicit nodes while leaving parser-inserted nodes without invented source locations. See the official <a href="https://parse5.js.org/interfaces/parse5.ParserOptions.html">parse5 parser options</a> and the <a href="https://html.spec.whatwg.org/multipage/parsing.html">WHATWG parsing model</a>.</p>
+<section id="semantic-pieces" class="level2">
+<h2 class="anchored" data-anchor-id="semantic-pieces">Semantic pieces</h2>
+<p>A section owns every descendant <code>pre &gt; code</code> fragment whose nearest piece ancestor is that section:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode html code-with-copy"><code class="sourceCode html"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">meta</span><span class="ot"> name</span><span class="op">=</span><span class="st">"ravel-document"</span><span class="ot"> content</span><span class="op">=</span><span class="st">"greeting"</span><span class="dt">&gt;</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">section</span><span class="ot"> id</span><span class="op">=</span><span class="st">"lp-main"</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="ot">         data-ravel-piece</span><span class="op">=</span><span class="st">"main | normalize-eol() | trim()"</span><span class="dt">&gt;</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&lt;</span><span class="kw">h2</span><span class="dt">&gt;</span>Main program <span class="dt">&lt;</span><span class="kw">code</span><span class="dt">&gt;</span>main<span class="dt">&lt;/</span><span class="kw">code</span><span class="dt">&gt;&lt;/</span><span class="kw">h2</span><span class="dt">&gt;</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&lt;</span><span class="kw">p</span><span class="dt">&gt;</span>The entry point delegates formatting.<span class="dt">&lt;/</span><span class="kw">p</span><span class="dt">&gt;</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&lt;</span><span class="kw">pre</span><span class="dt">&gt;&lt;</span><span class="kw">code</span><span class="ot"> class</span><span class="op">=</span><span class="st">"language-javascript"</span><span class="dt">&gt;</span>console.log(_"helper");<span class="dt">&lt;/</span><span class="kw">code</span><span class="dt">&gt;&lt;/</span><span class="kw">pre</span><span class="dt">&gt;</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;/</span><span class="kw">section</span><span class="dt">&gt;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>A figure is a self-contained visible piece:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode html code-with-copy"><code class="sourceCode html"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">figure</span><span class="ot"> id</span><span class="op">=</span><span class="st">"lp-helper"</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ot">        data-ravel-piece</span><span class="op">=</span><span class="st">"helper"</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ot">        data-ravel-language</span><span class="op">=</span><span class="st">"javascript"</span><span class="dt">&gt;</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&lt;</span><span class="kw">figcaption</span><span class="dt">&gt;</span>Helper <span class="dt">&lt;</span><span class="kw">code</span><span class="dt">&gt;</span>helper<span class="dt">&lt;/</span><span class="kw">code</span><span class="dt">&gt;&lt;/</span><span class="kw">figcaption</span><span class="dt">&gt;</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&lt;</span><span class="kw">pre</span><span class="dt">&gt;&lt;</span><span class="kw">code</span><span class="dt">&gt;</span>export const helper = true;<span class="dt">&lt;/</span><span class="kw">code</span><span class="dt">&gt;&lt;/</span><span class="kw">pre</span><span class="dt">&gt;</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;/</span><span class="kw">figure</span><span class="dt">&gt;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The heading or <code>figcaption</code> supplies the visible display name. The nested <code>code</code> label may show the semantic name without becoming part of that display name. Nested pieces own their own code and are excluded from the outer piece.</p>
+<p><code>data-ravel-pipe</code>, <code>data-ravel-language</code>, <code>data-ravel-run</code>, and <code>data-ravel-provider</code> supply explicit metadata. A pipeline may instead follow the piece name after a pipe. <code>data-lp-*</code> and <code>lp-document</code> remain compatibility aliases.</p>
 </section>
-<section id="canonical-shape" class="level2">
-<h2 class="anchored" data-anchor-id="canonical-shape">Canonical shape</h2>
-<pre><code>{
-  "version": 1,
-  "document": {
-    "id": "greeting",
-    "uri": "file:///project/greeting.md",
-    "format": "markdown+ravel-v1"
-  },
-  "chunks": [
-    {
-      "id": "greeting::main",
-      "identity": {
-        "document": "greeting",
-        "chunk": "main",
-        "minor": null,
-        "type": null
-      },
-      "name": "Main program",
-      "body": "console.log(_\"format-greeting\");\n",
-      "definitionPipeline": [],
-      "metadata": { "language": "javascript", "tags": ["entrypoint"] },
-      "source": { "uri": "file:///project/greeting.md", "range": "…" }
-    }
-  ],
-  "directives": []
-}</code></pre>
-<p>The canonical interchange form uses objects rather than positional arrays. The original tuple idea—name, pipeline, body, metadata, position—is the right information, but object keys make schema evolution and diagnostics safer. A compact tuple encoding can later be a cache/transport optimization without becoming the public contract.</p>
+<section id="entities-and-source-maps" class="level2">
+<h2 class="anchored" data-anchor-id="entities-and-source-maps">Entities and source maps</h2>
+<p>HTML text content decodes character references:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode html code-with-copy"><code class="sourceCode html"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">pre</span><span class="dt">&gt;&lt;</span><span class="kw">code</span><span class="dt">&gt;</span>if (left <span class="dv">&amp;lt;</span> right <span class="dv">&amp;amp;&amp;amp;</span> ready) run();<span class="dt">&lt;/</span><span class="kw">code</span><span class="dt">&gt;&lt;/</span><span class="kw">pre</span><span class="dt">&gt;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Ravel emits <code>if (left &lt; right &amp;&amp; ready) run();</code>. Ordinary text retains exact UTF-16 source mapping. Each decoded entity becomes a coarse fragment covering its complete authored reference, so provenance never claims that one output character corresponds byte-for-byte to <code>&amp;lt;</code> or <code>&amp;#60;</code>.</p>
+<p>The same treatment applies to HTML newline normalization. Native Unicode text that requires no adaptation remains exact.</p>
 </section>
-<section id="top-level-fields" class="level2">
-<h2 class="anchored" data-anchor-id="top-level-fields">Top-level fields</h2>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 33%">
-<col style="width: 33%">
-<col style="width: 33%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Field</th>
-<th>Required</th>
-<th>Meaning</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>version</td>
-<td>yes</td>
-<td>Positive integer schema version.</td>
-</tr>
-<tr class="even">
-<td>document</td>
-<td>yes</td>
-<td>Source identity and adapter format/profile.</td>
-</tr>
-<tr class="odd">
-<td>chunks</td>
-<td>yes</td>
-<td>Ordered source chunks; order preserves narrative provenance.</td>
-</tr>
-<tr class="even">
-<td>directives</td>
-<td>no</td>
-<td>Adapter-discovered structural/effect declarations.</td>
-</tr>
-<tr class="odd">
-<td>metadata</td>
-<td>no</td>
-<td>Document-level adapter metadata.</td>
-</tr>
-</tbody>
-</table>
+<section id="navigation-and-graph-directives" class="level2">
+<h2 class="anchored" data-anchor-id="navigation-and-graph-directives">Navigation and graph directives</h2>
+<p>Ordinary anchors navigate the rendered source and do not compose code:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode html code-with-copy"><code class="sourceCode html"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">a</span><span class="ot"> href</span><span class="op">=</span><span class="st">"#lp-helper"</span><span class="dt">&gt;</span>Read the helper<span class="dt">&lt;/</span><span class="kw">a</span><span class="dt">&gt;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Graph effects remain visible standard elements:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode html code-with-copy"><code class="sourceCode html"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">a</span><span class="ot"> href</span><span class="op">=</span><span class="st">"shared.html"</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="ot">   data-ravel-effect</span><span class="op">=</span><span class="st">"read"</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="ot">   data-ravel-as</span><span class="op">=</span><span class="st">"shared"</span><span class="dt">&gt;</span>Read shared pieces<span class="dt">&lt;/</span><span class="kw">a</span><span class="dt">&gt;</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">data</span><span class="ot"> value</span><span class="op">=</span><span class="st">"main.min.js"</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="ot">      data-ravel-effect</span><span class="op">=</span><span class="st">"derive"</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="ot">      data-ravel-from</span><span class="op">=</span><span class="st">"main"</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="ot">      data-ravel-using</span><span class="op">=</span><span class="st">"minify()"</span><span class="dt">&gt;</span>Derive the minified program<span class="dt">&lt;/</span><span class="kw">data</span><span class="dt">&gt;</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">a</span><span class="ot"> href</span><span class="op">=</span><span class="st">"dist/main.js"</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="ot">   data-ravel-effect</span><span class="op">=</span><span class="st">"write"</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="ot">   data-ravel-from</span><span class="op">=</span><span class="st">"main"</span><span class="dt">&gt;</span>Write the program<span class="dt">&lt;/</span><span class="kw">a</span><span class="dt">&gt;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>These become portable <code>in</code>, <code>create</code>, and <code>out</code> directives. Parsing performs none of their effects.</p>
 </section>
-<section id="chunk-fields" class="level2">
-<h2 class="anchored" data-anchor-id="chunk-fields">Chunk fields</h2>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 33%">
-<col style="width: 33%">
-<col style="width: 33%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Field</th>
-<th>Required</th>
-<th>Meaning</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>id</td>
-<td>yes</td>
-<td>Canonical serialized identity, unique within the joined graph.</td>
-</tr>
-<tr class="even">
-<td>identity</td>
-<td>yes</td>
-<td>Explicit <code>document</code>, <code>chunk</code>, <code>minor</code>, and <code>type</code> fields (each identifier or <code>null</code>).</td>
-</tr>
-<tr class="odd">
-<td>name</td>
-<td>no</td>
-<td>Human-facing display label.</td>
-</tr>
-<tr class="even">
-<td>body</td>
-<td>yes</td>
-<td>Raw chunk text for the Ravel chunk parser.</td>
-</tr>
-<tr class="odd">
-<td>definitionPipeline</td>
-<td>no</td>
-<td>Transform calls declared by the adapter/profile.</td>
-</tr>
-<tr class="even">
-<td>metadata.language</td>
-<td>no</td>
-<td>Language/display hint; never executable by itself.</td>
-</tr>
-<tr class="odd">
-<td>metadata.tags</td>
-<td>no</td>
-<td>Labels for hosts, searches, and profiles.</td>
-</tr>
-<tr class="even">
-<td>metadata.data</td>
-<td>no</td>
-<td>JSON data owned by a profile/plugin namespace.</td>
-</tr>
-<tr class="odd">
-<td>source</td>
-<td>yes</td>
-<td>URI and inclusive/exclusive source range.</td>
-</tr>
-<tr class="even">
-<td>fragments</td>
-<td>no</td>
-<td>Fine-grained source ranges if a chunk joins multiple regions.</td>
-</tr>
-</tbody>
-</table>
-<p>Body is intentionally raw. The map can be inspected, saved, diffed, or created by an editor without implementing composition syntax.</p>
-<p>Each fragment contains <code>body</code> and <code>source</code>, plus optional <code>precision = "exact" | "coarse"</code>. Exact fragments retain a one-to-one UTF-16 mapping. Coarse fragments honestly cover transformations performed while adapting source, such as decoding one HTML character reference from several authored characters.</p>
-<p><code>id</code> must exactly equal the canonical serialization of <code>identity</code>, such as <code>guide::parser:preamble.javascript</code>. <code>guide::</code> denotes a document-root chunk; <code>guide::.javascript</code> and <code>guide:::preamble.javascript</code> are valid root variants. For an intentionally global chunk, set <code>identity.document</code> to <code>null</code> and use a non-null <code>chunk</code>; for example, the canonical ID <code>shared</code> has identity <code>{ "document": null, "chunk": "shared", "minor": null, "type": null }</code>. Adapters must provide all four keys rather than infer them from an ambiguous string later.</p>
-</section>
-<section id="chunks-emitted-from-pipes" class="level2">
-<h2 class="anchored" data-anchor-id="chunks-emitted-from-pipes">Chunks emitted from pipes</h2>
-<p>The map is the input to chunk parsing, not the result of it. A body expression may use the core <code>emit</code> pipe step to declare a derived chunk. The parser records that declaration, then the graph-expansion phase adds a generated chunk to the Ravel Program. Emission preserves the owner’s document and base chunk, and its suffix controls only minor and type (for example <code>emit(".js")</code>). The generated chunk has the normal chunk fields plus provenance pointing to the emitting expression.</p>
-<p>This is deliberately not an adapter concern and is not written back into the source map. A Markdown, AsciiDoc, or Rix adapter only needs to preserve the raw body and its range; it does not need to recognize <code>emit</code>.</p>
-</section>
-<section id="directives" class="level2">
-<h2 class="anchored" data-anchor-id="directives">Directives</h2>
-<p>Directives are separate because they often declare a graph edge or effect rather than contribute text. The initial directive set is:</p>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 33%">
-<col style="width: 33%">
-<col style="width: 33%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Kind</th>
-<th>Required fields</th>
-<th>Meaning</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>in</td>
-<td>target</td>
-<td>Load the named Markdown or JSON Ravel Map relative to this map and merge its chunks before transformation.</td>
-</tr>
-<tr class="even">
-<td>out</td>
-<td>name and from</td>
-<td>Make the completed fully qualified source chunk a deliverable under file-like name.</td>
-</tr>
-<tr class="odd">
-<td>create</td>
-<td>document, name, compose</td>
-<td>Create a document-local generated definition from staged composition IR.</td>
-</tr>
-<tr class="even">
-<td>alias</td>
-<td>document, name, reference</td>
-<td>Create an alternate document-local graph name whose provenance retains its target.</td>
-</tr>
-</tbody>
-</table>
-<p><code>compose</code> is an ordered array of <code>append</code>, <code>newline</code>, <code>pipe</code>, and <code>pass</code> nodes. Adapters preserve their source ranges and produce this portable IR; core owns resolution, staged accumulator evaluation, local <code>emit</code> expansion, and cycle diagnostics. A Markdown <code>ravel</code> fence is the first source-language spelling of these declarations. It is an adapter feature, not a special Markdown rule in core.</p>
-<p>An out directive is a plan, not an automatic write. A Node host writes its deliverables under an explicit output directory and rejects absolute or directory-escaping names. A directive records its kind, source range, optional name/from/target, arguments, and metadata.</p>
-<p>Unsupported directive forms are adapter diagnostics; hosts execute only the explicitly supported <code>in</code> and <code>out</code> effects.</p>
-</section>
-<section id="positions-and-errors" class="level2">
-<h2 class="anchored" data-anchor-id="positions-and-errors">Positions and errors</h2>
-<p>Positions are zero-based line, column, and UTF-16 offset values. Ranges start inclusively and end exclusively. UTF-16 offsets align with JavaScript, TypeScript, Monaco, and LSP conventions. The chunk parser later adds ranges for references and transforms inside body.</p>
-</section>
-<section id="profiles-are-adapter-policy" class="level2">
-<h2 class="anchored" data-anchor-id="profiles-are-adapter-policy">Profiles are adapter policy</h2>
-<p>The document format identifies the profile that produced the map. For example, markdown+ravel-v1 may require explicit chunk attributes, while markdown+litpro-compat-v1 may interpret heading depth and old link conventions. Both produce this schema. H5/H6-as-child-block is profile policy, not a Ravel core rule.</p>
-</section>
-<section id="versioning" class="level2">
-<h2 class="anchored" data-anchor-id="versioning">Versioning</h2>
-<p>Version changes only for incompatible map-shape changes. Optional namespaced metadata is the preferred extension mechanism. Adapters reject map versions they cannot understand rather than guessing semantics.</p>
-<p>The schema is published with <code>@pieceful/ravel-map</code>, both as the portable <code>RAVEL_MAP_SCHEMA</code> JavaScript export and as the JSON module <code>@pieceful/ravel-map/schema</code>. The repository copy at <code>schemas/ravel-map.schema.json</code> is checked against that packaged artifact in the public map-contract test.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { RAVEL_MAP_SCHEMA<span class="op">,</span> validateRavelMap } <span class="im">from</span> <span class="st">"@pieceful/ravel-map"</span><span class="op">;</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> diagnostics <span class="op">=</span> <span class="fu">validateRavelMap</span>(map<span class="op">,</span> { <span class="dt">uri</span><span class="op">:</span> <span class="st">"editor-buffer.ravel-map.json"</span> })<span class="op">;</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(RAVEL_MAP_SCHEMA<span class="op">.</span><span class="at">$id</span><span class="op">,</span> diagnostics)<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>See the example in examples/greeting.ravel-map.json.</p>
+<section id="safety-boundary" class="level2">
+<h2 class="anchored" data-anchor-id="safety-boundary">Safety boundary</h2>
+<p>Only authored source structure participates. JavaScript strings that contain piece-like markup cannot create pieces, and the adapter deliberately does not traverse <code>&lt;template&gt;</code> contents because they are not visible by default. Duplicate element IDs and duplicate semantic piece IDs are diagnosed.</p>
+<p><code>.html</code> and <code>.htm</code> select the adapter automatically in the Node host. TOML may select it for another extension:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="dt">version</span> <span class="op">=</span> <span class="dv">1</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="kw">[[files]]</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="dt">path</span> <span class="op">=</span> <span class="st">"program.txt"</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="dt">adapter</span> <span class="op">=</span> <span class="st">"html"</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="dt">run</span> <span class="op">=</span> <span class="cn">true</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="dt">provider</span> <span class="op">=</span> <span class="st">"quickjs-wasm-worker"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The checked-in <code>fixtures/html/native.html</code> fixture covers sections, figures, nesting, entities, Unicode, native navigation, composition references, graph directives, scripts, and templates.</p>
 
 
 </section>

@@ -83,3 +83,37 @@ test("map validation accepts boolean run metadata and rejects other run values",
     entry.message.includes("metadata.data.ravel.provider must be a non-empty string")
   ));
 });
+
+test("map validation accepts exact and coarse fragment precision", () => {
+  const point = { line: 0, column: 0, offset: 0 };
+  const base = {
+    version: 1,
+    document: { id: "html", uri: "source.html", format: "html+ravel-v1" },
+    chunks: [{
+      id: "html::main",
+      identity: {
+        document: "html",
+        chunk: "main",
+        minor: null,
+        type: null
+      },
+      body: "<",
+      source: { uri: "source.html", range: { start: point, end: point } },
+      fragments: [{
+        body: "<",
+        source: {
+          uri: "source.html",
+          range: { start: point, end: point }
+        },
+        precision: "coarse"
+      }]
+    }]
+  };
+  assert.deepEqual(validateRavelMap(base), []);
+
+  const invalid = structuredClone(base);
+  invalid.chunks[0].fragments[0].precision = "approximate";
+  assert.ok(validateRavelMap(invalid).some((entry) =>
+    entry.message.includes("precision must be exact or coarse")
+  ));
+});

@@ -54,6 +54,7 @@ const expectedPackages = new Set([
   "@pieceful/ravel",
   "@pieceful/ravel-asciidoc",
   "@pieceful/ravel-core",
+  "@pieceful/ravel-html",
   "@pieceful/ravel-host-node",
   "@pieceful/ravel-js-live",
   "@pieceful/ravel-map",
@@ -127,6 +128,7 @@ try {
   await run(process.execPath, ["--input-type=module", "--eval", [
     'const asciidoc = await import("@pieceful/ravel-asciidoc");',
     'const core = await import("@pieceful/ravel-core");',
+    'const html = await import("@pieceful/ravel-html");',
     'const live = await import("@pieceful/ravel-js-live");',
     'const liveNode = await import("@pieceful/ravel-js-live/node");',
     'await import("@pieceful/ravel-markdown");',
@@ -141,6 +143,7 @@ try {
     'if (map.RAVEL_MAP_SCHEMA.$id !== map.RAVEL_MAP_SCHEMA_ID) process.exit(1);',
     'const point = { line: 0, column: 0, offset: 0 };',
     'if (asciidoc.asciidocToMap("[#lp-main]\\n== Main\\n\\n[source,text]\\n----\\nok\\n----\\n", { document: "smoke" }).map.chunks[0].body !== "ok\\n") process.exit(1);',
+    'if (html.htmlToMap("<figure data-ravel-piece=\\"main\\"><figcaption>Main</figcaption><pre><code>ok</code></pre></figure>", { document: "smoke" }).map.chunks[0].body !== "ok") process.exit(1);',
     'if (noweb.nowebToMap("<<main>>=\\nok\\n@\\n", { document: "smoke" }).map.chunks[0].body !== "ok\\n") process.exit(1);',
     'if (org.orgToMap("#+NAME: main\\n#+BEGIN_SRC text\\nok\\n#+END_SRC\\n", { document: "smoke" }).map.chunks[0].body !== "ok\\n") process.exit(1);',
     'if (myst.mystToMap("```{ravel:piece} main\\n:caption: Main\\n\\nok\\n```\\n", { document: "smoke" }).map.chunks[0].body !== "ok\\n") process.exit(1);',

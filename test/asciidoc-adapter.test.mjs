@@ -20,6 +20,8 @@ test("AsciiDoc scans section, block, and container pieces losslessly", async () 
 
   assert.deepEqual(adapted.diagnostics, []);
   assert.deepEqual(validateRavelMap(adapted.map), []);
+  assert.equal(adapted.surface.includes.length, 1);
+  assert.equal(adapted.surface.includes[0].target, "shared.adoc");
   assert.deepEqual(adapted.map.chunks.map((chunk) => chunk.id), [
     "native::main",
     "native::format-greeting",

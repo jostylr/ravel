@@ -73,6 +73,12 @@ becoming the public contract.
 Body is intentionally raw. The map can be inspected, saved, diffed, or created
 by an editor without implementing composition syntax.
 
+Each fragment contains `body` and `source`, plus optional
+`precision = "exact" | "coarse"`. Exact fragments retain a one-to-one UTF-16
+mapping. Coarse fragments honestly cover transformations performed while
+adapting source, such as decoding one HTML character reference from several
+authored characters.
+
 `id` must exactly equal the canonical serialization of `identity`, such as
 `guide::parser:preamble.javascript`. `guide::` denotes a document-root chunk;
 `guide::.javascript` and `guide:::preamble.javascript` are valid root variants.

@@ -85,7 +85,12 @@
       "additionalProperties": false,
       "properties": {
         "body": { "type": "string" },
-        "source": { "$ref": "#/$defs/source" }
+        "source": { "$ref": "#/$defs/source" },
+        "precision": {
+          "type": "string",
+          "enum": ["exact", "coarse"],
+          "default": "exact"
+        }
       }
     },
     "chunk": {

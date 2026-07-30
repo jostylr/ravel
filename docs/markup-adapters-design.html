@@ -175,6 +175,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="dropdown-text">AsciiDoc</span></a>
   </li>  
         <li>
+    <a class="dropdown-item" href="./html.html">
+ <span class="dropdown-text">HTML</span></a>
+  </li>  
+        <li>
     <a class="dropdown-item" href="./pipes-and-directives.html">
  <span class="dropdown-text">Pipes and directives</span></a>
   </li>  
@@ -316,6 +320,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <div class="sidebar-item-container"> 
   <a href="./asciidoc.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">AsciiDoc</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./html.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">HTML</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -542,7 +552,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>In rendered documents, every piece must have a visible display name and a stable anchor. A format integration should also show <code>uses</code> and <code>used by</code> links generated from the resolved graph.</li>
 <li>The canonical Quarto block form uses Quarto code-listing labels and captions. This addresses the invisible-fence-name problem without inventing a second presentation system.</li>
 <li>AsciiDoc should initially support a section form and an attributed source block form. Its native block titles, IDs, roles, custom attributes, and cross references are a good fit.</li>
-<li>HTML should use ordinary semantic elements plus <code>data-lp-*</code> attributes. Custom elements may enhance the result but are not the canonical source representation.</li>
+<li>HTML should use ordinary semantic elements plus <code>data-ravel-*</code> attributes, with <code>data-lp-*</code> accepted as a compatibility spelling. Custom elements may enhance the result but are not the canonical source representation.</li>
 <li>Org and noweb are first-class input adapters. Org maps Babel names, <code>noweb-ref</code> groups, and noweb references into the Piece Document. The noweb adapter supports strict-compatible and pipe-extended dialects.</li>
 <li>MyST Markdown remains a high-value later adapter for directive-oriented scientific documents and notebooks.</li>
 </ol>
@@ -723,7 +733,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tr class="odd">
 <td>HTML</td>
 <td>n/a</td>
-<td><code>data-lp-pipe="trim()"</code></td>
+<td><code>data-ravel-pipe="trim()"</code></td>
 </tr>
 </tbody>
 </table>
@@ -1126,11 +1136,11 @@ ravel::read[target=shared.adoc,as=shared]</code></pre>
 <p>HTML is both a useful authoring format and an important rendered interchange format. The canonical source form should be valid, meaningful HTML even when no Ravel script is installed.</p>
 <section id="section-form-1" class="level3">
 <h3 class="anchored" data-anchor-id="section-form-1">Section form</h3>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="sourceCode html code-with-copy"><code class="sourceCode html"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">meta</span><span class="ot"> name</span><span class="op">=</span><span class="st">"lp-document"</span><span class="ot"> content</span><span class="op">=</span><span class="st">"greeting"</span><span class="dt">&gt;</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="sourceCode html code-with-copy"><code class="sourceCode html"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">meta</span><span class="ot"> name</span><span class="op">=</span><span class="st">"ravel-document"</span><span class="ot"> content</span><span class="op">=</span><span class="st">"greeting"</span><span class="dt">&gt;</span></span>
 <span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">section</span><span class="ot"> id</span><span class="op">=</span><span class="st">"lp-main"</span></span>
-<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a><span class="ot">         data-lp-piece</span><span class="op">=</span><span class="st">"main"</span></span>
-<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a><span class="ot">         data-lp-pipe</span><span class="op">=</span><span class="st">"normalize-eol()"</span><span class="dt">&gt;</span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a><span class="ot">         data-ravel-piece</span><span class="op">=</span><span class="st">"main"</span></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a><span class="ot">         data-ravel-pipe</span><span class="op">=</span><span class="st">"normalize-eol()"</span><span class="dt">&gt;</span></span>
 <span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&lt;</span><span class="kw">h2</span><span class="dt">&gt;</span>Main program <span class="dt">&lt;</span><span class="kw">code</span><span class="dt">&gt;</span>main<span class="dt">&lt;/</span><span class="kw">code</span><span class="dt">&gt;&lt;/</span><span class="kw">h2</span><span class="dt">&gt;</span></span>
 <span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&lt;</span><span class="kw">p</span><span class="dt">&gt;</span>The entry point delegates formatting.<span class="dt">&lt;/</span><span class="kw">p</span><span class="dt">&gt;</span></span>
 <span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&lt;</span><span class="kw">pre</span><span class="dt">&gt;&lt;</span><span class="kw">code</span><span class="ot"> class</span><span class="op">=</span><span class="st">"language-javascript"</span><span class="dt">&gt;</span>console.log(_"format-greeting");<span class="dt">&lt;/</span><span class="kw">code</span><span class="dt">&gt;&lt;/</span><span class="kw">pre</span><span class="dt">&gt;</span></span>
@@ -1139,17 +1149,17 @@ ravel::read[target=shared.adoc,as=shared]</code></pre>
 <section id="block-form-1" class="level3">
 <h3 class="anchored" data-anchor-id="block-form-1">Block form</h3>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb28"><pre class="sourceCode html code-with-copy"><code class="sourceCode html"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">figure</span><span class="ot"> id</span><span class="op">=</span><span class="st">"lp-main"</span></span>
-<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="ot">        data-lp-piece</span><span class="op">=</span><span class="st">"main"</span></span>
-<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a><span class="ot">        data-lp-language</span><span class="op">=</span><span class="st">"javascript"</span></span>
-<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a><span class="ot">        data-lp-pipe</span><span class="op">=</span><span class="st">"normalize-eol()"</span><span class="dt">&gt;</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="ot">        data-ravel-piece</span><span class="op">=</span><span class="st">"main"</span></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a><span class="ot">        data-ravel-language</span><span class="op">=</span><span class="st">"javascript"</span></span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a><span class="ot">        data-ravel-pipe</span><span class="op">=</span><span class="st">"normalize-eol()"</span><span class="dt">&gt;</span></span>
 <span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&lt;</span><span class="kw">figcaption</span><span class="dt">&gt;</span>Main program <span class="dt">&lt;</span><span class="kw">code</span><span class="dt">&gt;</span>main<span class="dt">&lt;/</span><span class="kw">code</span><span class="dt">&gt;&lt;/</span><span class="kw">figcaption</span><span class="dt">&gt;</span></span>
 <span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&lt;</span><span class="kw">pre</span><span class="dt">&gt;&lt;</span><span class="kw">code</span><span class="ot"> class</span><span class="op">=</span><span class="st">"language-javascript"</span><span class="dt">&gt;</span>console.log(_"format-greeting");<span class="dt">&lt;/</span><span class="kw">code</span><span class="dt">&gt;&lt;/</span><span class="kw">pre</span><span class="dt">&gt;</span></span>
 <span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;/</span><span class="kw">figure</span><span class="dt">&gt;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Both forms make the display name visible, provide a native anchor, and degrade well. Standard elements carry accessibility and rendering semantics; <code>data-lp-*</code> carries private Ravel metadata.</p>
+<p>Both forms make the display name visible, provide a native anchor, and degrade well. Standard elements carry accessibility and rendering semantics; <code>data-ravel-*</code> carries private Ravel metadata. The adapter also accepts <code>data-lp-*</code> and <code>lp-document</code> as compatibility spellings for older designs.</p>
 <p>Directives use ordinary links with explicit data:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb29"><pre class="sourceCode html code-with-copy"><code class="sourceCode html"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">a</span><span class="ot"> href</span><span class="op">=</span><span class="st">"dist/greeting.js"</span></span>
-<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="ot">   data-lp-effect</span><span class="op">=</span><span class="st">"write"</span></span>
-<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a><span class="ot">   data-lp-from</span><span class="op">=</span><span class="st">"main"</span><span class="dt">&gt;</span>Write the entry point<span class="dt">&lt;/</span><span class="kw">a</span><span class="dt">&gt;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="ot">   data-ravel-effect</span><span class="op">=</span><span class="st">"write"</span></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a><span class="ot">   data-ravel-from</span><span class="op">=</span><span class="st">"main"</span><span class="dt">&gt;</span>Write the entry point<span class="dt">&lt;/</span><span class="kw">a</span><span class="dt">&gt;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Derived pieces may use a visible <code>&lt;a&gt;</code> or <code>&lt;data&gt;</code> element, but effects that identify an external resource should remain links.</p>
 </section>
 <section id="parsing-and-safety" class="level3">
@@ -1379,7 +1389,7 @@ ravel::read[target=shared.adoc,as=shared]</code></pre>
 <tr class="even">
 <td>HTML section/block</td>
 <td>heading or figcaption</td>
-<td><code>data-lp-piece</code></td>
+<td><code>data-ravel-piece</code></td>
 <td>descendant <code>pre &gt; code</code></td>
 </tr>
 <tr class="odd">
@@ -1546,7 +1556,7 @@ ravel::read[target=shared.adoc,as=shared]</code></pre>
 <li>Org using <code>#+NAME</code>, <code>:noweb-ref</code>, and <code>#+LP_PIPE</code>;</li>
 <li>Quarto using native <code>lst-*</code> captions;</li>
 <li>AsciiDoc section form;</li>
-<li>HTML <code>&lt;figure data-lp-piece&gt;</code> form.</li>
+<li>HTML <code>&lt;figure data-ravel-piece&gt;</code> form.</li>
 </ul>
 <p>Compare their normalized Piece Documents and rendered navigation. That small vertical slice will test the adapter boundary, visible naming, graph links, and source maps before committing to more grammars.</p>
 </section>

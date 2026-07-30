@@ -142,6 +142,10 @@ ul.task-list li input[type="checkbox"] {
  <span class="dropdown-text">AsciiDoc</span></a>
   </li>  
         <li>
+    <a class="dropdown-item" href="./html.html">
+ <span class="dropdown-text">HTML</span></a>
+  </li>  
+        <li>
     <a class="dropdown-item" href="./pipes-and-directives.html">
  <span class="dropdown-text">Pipes and directives</span></a>
   </li>  
@@ -287,6 +291,12 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="./html.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">HTML</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="./live-execution.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Live execution (0.2 development)</span></a>
   </div>
@@ -417,6 +427,7 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#piecefulravel-noweb" id="toc-piecefulravel-noweb" class="nav-link" data-scroll-target="#piecefulravel-noweb"><code>@pieceful/ravel-noweb</code></a></li>
   <li><a href="#piecefulravel-org" id="toc-piecefulravel-org" class="nav-link" data-scroll-target="#piecefulravel-org"><code>@pieceful/ravel-org</code></a></li>
   <li><a href="#piecefulravel-asciidoc" id="toc-piecefulravel-asciidoc" class="nav-link" data-scroll-target="#piecefulravel-asciidoc"><code>@pieceful/ravel-asciidoc</code></a></li>
+  <li><a href="#piecefulravel-html" id="toc-piecefulravel-html" class="nav-link" data-scroll-target="#piecefulravel-html"><code>@pieceful/ravel-html</code></a></li>
   <li><a href="#piecefulravel-myst" id="toc-piecefulravel-myst" class="nav-link" data-scroll-target="#piecefulravel-myst"><code>@pieceful/ravel-myst</code></a></li>
   <li><a href="#piecefulravel-myst-plugin" id="toc-piecefulravel-myst-plugin" class="nav-link" data-scroll-target="#piecefulravel-myst-plugin"><code>@pieceful/ravel-myst-plugin</code></a></li>
   <li><a href="#piecefulravel-core" id="toc-piecefulravel-core" class="nav-link" data-scroll-target="#piecefulravel-core"><code>@pieceful/ravel-core</code></a></li>
@@ -487,6 +498,16 @@ ul.task-list li input[type="checkbox"] {
 <li>Section-title and <code>lp-pipe</code> definition pipelines use the shared typed grammar and run once after fragment concatenation.</li>
 <li><code>ravel-run</code> and <code>ravel-provider</code> attributes retain live intent as inert metadata. Parsing invokes neither Asciidoctor nor a language runtime.</li>
 <li><code>surface.includes</code> records AsciiDoc include declarations without reading undeclared files.</li>
+</ul>
+</section>
+<section id="piecefulravel-html" class="level2">
+<h2 class="anchored" data-anchor-id="piecefulravel-html"><code>@pieceful/ravel-html</code></h2>
+<ul>
+<li><code>htmlToMap(text, options)</code> parses authored HTML with scripting disabled and returns <code>{ map, diagnostics, surface }</code>.</li>
+<li>Semantic <code>section</code> and <code>figure</code> elements use <code>data-ravel-piece</code>; visible headings or captions provide display names and descendant <code>pre &gt; code</code> elements provide fragments.</li>
+<li><code>data-ravel-pipe</code>, language, live metadata, native anchor links, and visible <code>read</code>, <code>derive</code>, and <code>write</code> elements map to the shared contracts.</li>
+<li>Character references are decoded while fragment precision preserves honest source-to-value provenance. Scripts, runtime mutations, and template contents cannot declare pieces.</li>
+<li>The older <code>data-lp-*</code> and <code>lp-document</code> spellings remain accepted aliases.</li>
 </ul>
 </section>
 <section id="piecefulravel-myst" class="level2">

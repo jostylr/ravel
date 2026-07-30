@@ -13,7 +13,7 @@ export interface RavelChunkMetadata {
   data?: { ravel?: { run?: boolean; provider?: string; [key: string]: unknown }; [key: string]: unknown };
   [key: string]: unknown;
 }
-export interface RavelChunk { id: string; identity: ChunkIdentity; body: string; source: SourceLocation; name?: string; definitionPipeline?: unknown[]; metadata?: RavelChunkMetadata; fragments?: Array<{ body: string; source: SourceLocation }>; }
+export interface RavelChunk { id: string; identity: ChunkIdentity; body: string; source: SourceLocation; name?: string; definitionPipeline?: unknown[]; metadata?: RavelChunkMetadata; fragments?: Array<{ body: string; source: SourceLocation; precision?: "exact" | "coarse" }>; }
 export interface RavelDirective { kind: "in" | "out" | "create" | "alias"; source: SourceLocation; name?: string; from?: string; target?: string; document?: string; compose?: unknown[]; reference?: string; metadata?: Record<string, unknown>; }
 export interface RavelMap { version: 1; document: { id: string; uri: string; format: string }; chunks: RavelChunk[]; directives?: RavelDirective[]; metadata?: Record<string, unknown>; }
 export const RAVEL_MAP_VERSION: 1;

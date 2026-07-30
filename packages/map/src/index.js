@@ -116,6 +116,14 @@ export const validateRavelMap = (map, { uri } = {}) => {
         if (!Array.isArray(chunk.fragments)) report(path + ".fragments", "must be an array.");
         else for (const [fragmentIndex, fragment] of chunk.fragments.entries()) {
           if (!isObject(fragment) || typeof fragment.body !== "string" || !validSource(fragment.source)) report(path + ".fragments[" + fragmentIndex + "]", "must contain a string body and valid source.");
+          else if (fragment.precision !== undefined &&
+              fragment.precision !== "exact" &&
+              fragment.precision !== "coarse") {
+            report(
+              path + ".fragments[" + fragmentIndex + "].precision",
+              "must be exact or coarse."
+            );
+          }
         }
       }
     }

@@ -570,12 +570,12 @@ Exit criteria:
 - [ ] Enable Asciidoctor source mapping and pair its block AST with lossless
       rescanning for metadata, block ends, literal bodies, inline references,
       pipelines, and included-file URIs.
-- [ ] Implement HTML section and figure forms using semantic elements,
-      `data-lp-*` metadata, visible headings/captions, `pre > code` fragments,
+- [x] Implement HTML section and figure forms using semantic elements,
+      `data-ravel-*` metadata, visible headings/captions, `pre > code` fragments,
       native anchors, and explicit directive links.
-- [ ] Parse HTML without scripting, ignore runtime DOM mutation, and preserve
+- [x] Parse HTML without scripting, ignore runtime DOM mutation, and preserve
       source-to-value mappings while decoding character entities in code.
-- [ ] Add include/entity/Unicode/nesting fixtures and prove that neither
+- [x] Add include/entity/Unicode/nesting fixtures and prove that neither
       adapter parses rendered HTML as a substitute for source structure.
 
 Exit criteria:

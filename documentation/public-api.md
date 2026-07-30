@@ -66,6 +66,20 @@ Use this package at adapter, editor, and host boundaries.
 - `surface.includes` records AsciiDoc include declarations without reading
   undeclared files.
 
+## `@pieceful/ravel-html`
+
+- `htmlToMap(text, options)` parses authored HTML with scripting disabled and
+  returns `{ map, diagnostics, surface }`.
+- Semantic `section` and `figure` elements use `data-ravel-piece`; visible
+  headings or captions provide display names and descendant `pre > code`
+  elements provide fragments.
+- `data-ravel-pipe`, language, live metadata, native anchor links, and visible
+  `read`, `derive`, and `write` elements map to the shared contracts.
+- Character references are decoded while fragment precision preserves honest
+  source-to-value provenance. Scripts, runtime mutations, and template
+  contents cannot declare pieces.
+- The older `data-lp-*` and `lp-document` spellings remain accepted aliases.
+
 ## `@pieceful/ravel-myst`
 
 - `mystToMap(text, options)` scans canonical `{ravel:piece}` directives, their

@@ -33,7 +33,8 @@ chunk in earlier LitPro writing. A source document may contain many pieces.
 8. AsciiDoc should initially support a section form and an attributed source
    block form. Its native block titles, IDs, roles, custom attributes, and
    cross references are a good fit.
-9. HTML should use ordinary semantic elements plus `data-lp-*` attributes.
+9. HTML should use ordinary semantic elements plus `data-ravel-*` attributes,
+   with `data-lp-*` accepted as a compatibility spelling.
    Custom elements may enhance the result but are not the canonical source
    representation.
 10. Org and noweb are first-class input adapters. Org maps Babel names,
@@ -181,7 +182,7 @@ would interfere with the host parser:
 | AsciiDoc | <code>== Main &#124; trim()</code> | `lp-pipe="trim()"` block attribute |
 | Org | <code>#+LP_NAME: main &#124; trim()</code> | adjacent `#+LP_PIPE:` keyword |
 | noweb-plus | <code>&lt;&lt;main &#124; trim()&gt;&gt;=</code> | `@ %ravel pipeline ...` pragma |
-| HTML | n/a | `data-lp-pipe="trim()"` |
+| HTML | n/a | `data-ravel-pipe="trim()"` |
 
 The two spellings must normalize to the same pipeline AST. Supplying both with
 different values is an error.
@@ -774,11 +775,11 @@ Ravel script is installed.
 ### Section form
 
 ```html
-<meta name="lp-document" content="greeting">
+<meta name="ravel-document" content="greeting">
 
 <section id="lp-main"
-         data-lp-piece="main"
-         data-lp-pipe="normalize-eol()">
+         data-ravel-piece="main"
+         data-ravel-pipe="normalize-eol()">
   <h2>Main program <code>main</code></h2>
   <p>The entry point delegates formatting.</p>
   <pre><code class="language-javascript">console.log(_"format-greeting");</code></pre>
@@ -789,9 +790,9 @@ Ravel script is installed.
 
 ```html
 <figure id="lp-main"
-        data-lp-piece="main"
-        data-lp-language="javascript"
-        data-lp-pipe="normalize-eol()">
+        data-ravel-piece="main"
+        data-ravel-language="javascript"
+        data-ravel-pipe="normalize-eol()">
   <figcaption>Main program <code>main</code></figcaption>
   <pre><code class="language-javascript">console.log(_"format-greeting");</code></pre>
 </figure>
@@ -799,14 +800,15 @@ Ravel script is installed.
 
 Both forms make the display name visible, provide a native anchor, and degrade
 well. Standard elements carry accessibility and rendering semantics;
-`data-lp-*` carries private Ravel metadata.
+`data-ravel-*` carries private Ravel metadata. The adapter also accepts
+`data-lp-*` and `lp-document` as compatibility spellings for older designs.
 
 Directives use ordinary links with explicit data:
 
 ```html
 <a href="dist/greeting.js"
-   data-lp-effect="write"
-   data-lp-from="main">Write the entry point</a>
+   data-ravel-effect="write"
+   data-ravel-from="main">Write the entry point</a>
 ```
 
 Derived pieces may use a visible `<a>` or `<data>` element, but effects that
@@ -1118,7 +1120,7 @@ The following declarations must yield equivalent semantic pieces:
 | Quarto listing | `lst-cap` | `lp-id` or `lst-lp-*` | listing/cell body |
 | AsciiDoc section | section title before pipe | `#lp-*` or inferred slug | source blocks in section |
 | AsciiDoc block | block title | `lp-id` / `#lp-*` | source block/container descendants |
-| HTML section/block | heading or figcaption | `data-lp-piece` | descendant `pre > code` |
+| HTML section/block | heading or figcaption | `data-ravel-piece` | descendant `pre > code` |
 | MyST | directive caption | directive label | directive body |
 | Org | `#+NAME` or `#+LP_NAME` | declared name / `:noweb-ref` | source block body |
 | noweb | chunk definition | text inside `<<...>>=` before pipe | chunk body |
@@ -1224,7 +1226,7 @@ Prototype the same five-piece example in:
 - Org using `#+NAME`, `:noweb-ref`, and `#+LP_PIPE`;
 - Quarto using native `lst-*` captions;
 - AsciiDoc section form;
-- HTML `<figure data-lp-piece>` form.
+- HTML `<figure data-ravel-piece>` form.
 
 Compare their normalized Piece Documents and rendered navigation. That small
 vertical slice will test the adapter boundary, visible naming, graph links, and

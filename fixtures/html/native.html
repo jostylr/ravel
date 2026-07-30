@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="ravel-document" content="native">
+  <title>Ravel HTML fixture</title>
+</head>
+<body>
+  <section id="lp-main"
+           data-ravel-piece="main | trim()">
+    <h2>Main program <code>main</code></h2>
+    <p>The entry point delegates formatting.</p>
+
+    <pre><code class="language-javascript">const comparison = 1 &lt; 2;
+const helper = _"helper";
+</code></pre>
+
+    <figure id="lp-helper"
+            data-lp-piece="helper"
+            data-lp-language="javascript">
+      <figcaption>Helper <code>helper</code></figcaption>
+      <pre><code>const value = "help";
+</code></pre>
+    </figure>
+
+    <pre><code class="language-javascript">console.log(comparison, helper, "π");
+</code></pre>
+  </section>
+
+  <figure id="lp-bundle"
+          data-ravel-piece="bundle"
+          data-ravel-language="text">
+    <figcaption>Bundled text <code>bundle</code></figcaption>
+    <pre><code> first &amp; second </code></pre>
+  </figure>
+
+  <p>
+    See <a href="#lp-main">Main program</a> and
+    <a href="#lp-helper">Helper</a>.
+  </p>
+
+  <data value="bundle-clean.text"
+        data-ravel-effect="derive"
+        data-ravel-from="bundle"
+        data-ravel-using="trim()">Derive the clean bundle</data>
+  <a href="dist/bundle.txt"
+     data-ravel-effect="write"
+     data-ravel-from="bundle-clean.text">Write the clean bundle</a>
+
+  <script>
+    document.body.innerHTML +=
+      '<section data-ravel-piece="runtime"><pre><code>ignored</code></pre></section>';
+  </script>
+  <template>
+    <section data-ravel-piece="hidden">
+      <h2>Hidden template piece</h2>
+      <pre><code>ignored</code></pre>
+    </section>
+  </template>
+</body>
+</html>
