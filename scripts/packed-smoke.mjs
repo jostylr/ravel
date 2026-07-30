@@ -57,7 +57,8 @@ const expectedPackages = new Set([
   "@pieceful/ravel-js-live",
   "@pieceful/ravel-map",
   "@pieceful/ravel-markdown",
-  "@pieceful/ravel-markdown-litpro"
+  "@pieceful/ravel-markdown-litpro",
+  "@pieceful/ravel-noweb"
 ]);
 
 const publicWorkspacePaths = [];
@@ -125,11 +126,13 @@ try {
     'const liveNode = await import("@pieceful/ravel-js-live/node");',
     'await import("@pieceful/ravel-markdown");',
     'await import("@pieceful/ravel-markdown-litpro");',
+    'const noweb = await import("@pieceful/ravel-noweb");',
     'await import("@pieceful/ravel-host-node");',
     'const map = await import("@pieceful/ravel-map");',
     'await import("@pieceful/ravel");',
     'if (map.RAVEL_MAP_SCHEMA.$id !== map.RAVEL_MAP_SCHEMA_ID) process.exit(1);',
     'const point = { line: 0, column: 0, offset: 0 };',
+    'if (noweb.nowebToMap("<<main>>=\\nok\\n@\\n", { document: "smoke" }).map.chunks[0].body !== "ok\\n") process.exit(1);',
     'const provider = live.createJavaScriptLiveProvider({ modules: {',
     '"@ravel/math": "export const twice = (value) => value * 2;"',
     '} });',

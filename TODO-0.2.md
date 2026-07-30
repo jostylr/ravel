@@ -594,10 +594,10 @@ Exit criteria:
 - [ ] Support `<<name | pipeline>>` only under the configured extended Org
       reference policy and emit a portability diagnostic because unmodified
       Babel treats the pipe as part of the block ID.
-- [ ] Implement a small lossless noweb scanner for documentation chunks,
+- [x] Implement a small lossless noweb scanner for documentation chunks,
       `<<name>>=` definitions, repeated definitions, `<<name>>` references,
       `@` terminators, exact offsets, and configured/inferred languages.
-- [ ] Implement strict `noweb` and extended `noweb-plus` dialects. In
+- [x] Implement strict `noweb` and extended `noweb-plus` dialects. In
       `noweb-plus`, split definition and reference names at the first unescaped
       pipe; also support the classic-compatible Pieceful pipeline pragma.
 - [ ] Implement the MyST `{piece}` directive with name-and-pipeline argument,

@@ -1,0 +1,9 @@
+Extended syntax keeps pipelines beside visible names.
+
+<<main | trim()>>=
+  <<message | trim()>>
+@
+
+<<message>>=
+  hello
+@

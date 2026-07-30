@@ -6,10 +6,21 @@ export interface RavelProgram { version?: number; deliverables: Record<string, {
 export interface LiveModuleDeclaration { specifier: string; from: string; source?: SourceLocation; }
 export interface LiveConfiguration { modules: LiveModuleDeclaration[]; resources: Record<string, string>; }
 export interface BuildInput { pretransform: unknown; outputDirectory?: string; rootDirectory: string; buildOptions?: { clean: boolean; backup: boolean | string }; live?: LiveConfiguration; }
+export interface SourceAdapterOptions {
+  document?: string;
+  mode?: "opt-in" | "primary";
+  profile?: "fences" | "modern" | "litpro";
+  adapter?: "markdown" | "markdown-litpro" | "noweb";
+  dialect?: "litpro-2017" | "pieceful-2020" | "litpro-plus" | "noweb" | "noweb-plus";
+  references?: "noweb" | "underscore-quote" | "both";
+  language?: string;
+  run?: boolean;
+  provider?: string;
+}
 export class RavelInputError extends Error { diagnostics: Diagnostic[]; }
-export function loadPretransformGraph(entryPath: string, options?: { document?: string; mode?: "opt-in" | "primary" }): Promise<unknown>;
+export function loadPretransformGraph(entryPath: string, options?: SourceAdapterOptions): Promise<unknown>;
 export function loadTomlBuild(configPath: string): Promise<BuildInput>;
-export function loadBuildInput(inputPath: string, options?: { document?: string; mode?: "opt-in" | "primary" }): Promise<BuildInput>;
+export function loadBuildInput(inputPath: string, options?: SourceAdapterOptions): Promise<BuildInput>;
 export function planDeliverables(program: RavelProgram, outputDirectory: string): { version: 1; outputDirectory: string; manifest: string; deliverables: Array<Record<string, unknown>> };
 export function planStaleDeliverables(program: RavelProgram, outputDirectory: string, options?: { rootDirectory?: string; staleSince?: string }): Promise<Array<Record<string, unknown>>>;
 export function writeDeliverables(program: RavelProgram, outputDirectory: string, options?: { rootDirectory?: string }): Promise<string[]>;

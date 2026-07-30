@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>filesystem-safety – Ravel</title>
+<title>markdown-litpro – Ravel</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -22,6 +22,41 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -179,7 +214,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./contracts-and-configuration.html">Reference</a></li><li class="breadcrumb-item"><a href="./filesystem-safety.html">Filesystem safety and trust boundaries</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./markdown-fences.html">Language</a></li><li class="breadcrumb-item"><a href="./markdown-litpro.html">LitPro Markdown</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -245,7 +280,7 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./markdown-litpro.html" class="sidebar-item-text sidebar-link">
+  <a href="./markdown-litpro.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">LitPro Markdown</span></a>
   </div>
 </li>
@@ -310,7 +345,7 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./filesystem-safety.html" class="sidebar-item-text sidebar-link active">
+  <a href="./filesystem-safety.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Filesystem safety and trust boundaries</span></a>
   </div>
 </li>
@@ -379,51 +414,112 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#filesystem-safety-and-trust-boundaries" id="toc-filesystem-safety-and-trust-boundaries" class="nav-link active" data-scroll-target="#filesystem-safety-and-trust-boundaries">Filesystem safety and trust boundaries</a>
+  <li><a href="#litpro-markdown" id="toc-litpro-markdown" class="nav-link active" data-scroll-target="#litpro-markdown">LitPro Markdown</a>
   <ul class="collapse">
-  <li><a href="#project-root" id="toc-project-root" class="nav-link" data-scroll-target="#project-root">Project root</a></li>
-  <li><a href="#authorized-writes" id="toc-authorized-writes" class="nav-link" data-scroll-target="#authorized-writes">Authorized writes</a></li>
-  <li><a href="#clean-refresh-and-backups" id="toc-clean-refresh-and-backups" class="nav-link" data-scroll-target="#clean-refresh-and-backups">Clean, refresh, and backups</a></li>
-  <li><a href="#what-this-does-not-protect" id="toc-what-this-does-not-protect" class="nav-link" data-scroll-target="#what-this-does-not-protect">What this does not protect</a></li>
+  <li><a href="#heading-structure" id="toc-heading-structure" class="nav-link" data-scroll-target="#heading-structure">Heading structure</a></li>
+  <li><a href="#dialects" id="toc-dialects" class="nav-link" data-scroll-target="#dialects">Dialects</a></li>
+  <li><a href="#directives-and-live-blocks" id="toc-directives-and-live-blocks" class="nav-link" data-scroll-target="#directives-and-live-blocks">Directives and live blocks</a></li>
+  <li><a href="#node-host-configuration" id="toc-node-host-configuration" class="nav-link" data-scroll-target="#node-host-configuration">Node host configuration</a></li>
   </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/jostylr/ravel/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
-<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./contracts-and-configuration.html">Reference</a></li><li class="breadcrumb-item"><a href="./filesystem-safety.html">Filesystem safety and trust boundaries</a></li></ol></nav></header>
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./markdown-fences.html">Language</a></li><li class="breadcrumb-item"><a href="./markdown-litpro.html">LitPro Markdown</a></li></ol></nav></header>
 
 
 
 
-<section id="filesystem-safety-and-trust-boundaries" class="level1">
-<h1>Filesystem safety and trust boundaries</h1>
-<p>Ravel’s portable graph evaluator is static: it parses documents, resolves chunks, applies its documented string transforms, and plans outputs. It does not execute document JavaScript, shell commands, network requests, or arbitrary user code. Filesystem access is supplied only by <code>@pieceful/ravel-host-node</code> and the CLI.</p>
-<section id="project-root" class="level2">
-<h2 class="anchored" data-anchor-id="project-root">Project root</h2>
-<p>For a direct input, the input’s containing directory is the default root. For a TOML project, the configuration’s containing directory is the root. <code>--root</code> may select an explicit root. Every configured source, imported map, output, manifest, provenance map, and default backup path is resolved beneath that root.</p>
-<p>Paths that escape the root with <code>..</code>, absolute paths, or a symbolic-link hop are rejected. This includes output paths: a project cannot use an <code>out</code> directive to overwrite an arbitrary file, nor can a symlinked output directory redirect a build outside the project. These checks are intentional policy, not merely convenience validation.</p>
-</section>
-<section id="authorized-writes" class="level2">
-<h2 class="anchored" data-anchor-id="authorized-writes">Authorized writes</h2>
-<p><code>ravel check</code> and <code>ravel inspect</code> perform no output writes. <code>ravel build</code> writes only declared deliverables and its managed metadata in the chosen output directory. Ravel stages a build before committing it so a source or evaluation error does not leave the manifest claiming that a partial build succeeded.</p>
-<p>The Node host writes:</p>
+<section id="litpro-markdown" class="level1">
+<h1>LitPro Markdown</h1>
+<p><code>@pieceful/ravel-markdown-litpro</code> is the independent compatibility adapter for historical LitPro and Pieceful CommonMark documents. It intentionally preserves the old heading model instead of treating it as a mode of modern Markdown.</p>
+<section id="heading-structure" class="level2">
+<h2 class="anchored" data-anchor-id="heading-structure">Heading structure</h2>
+<p>The default <code>legacy</code> heading mode interprets:</p>
 <ul>
-<li>declared deliverables;</li>
-<li><code>&lt;deliverable&gt;.ravelmap</code> provenance sidecars;</li>
-<li><code>.ravelmap</code>, the aggregate provenance bundle;</li>
-<li><code>.ravel-manifest.json</code> and <code>.manifest.txt</code>; and</li>
-<li>an explicitly requested backup ZIP.</li>
+<li>H1-H4 as peer major pieces;</li>
+<li>H5 as a child of the latest major, written <code>major/child</code>;</li>
+<li>H6 as a grandchild, written <code>major/child/grandchild</code>;</li>
+<li>an H6 without an H5 as <code>major//grandchild</code>;</li>
+<li><code>[minor]()</code> as <code>current/path:minor</code>;</li>
+<li><code>[^]()</code> as a return from a minor to the active heading piece.</li>
 </ul>
-<p>All are identified by the manifest after a successful build.</p>
+<p>Repeated headings and repeated minor links reopen the same piece and concatenate their code blocks in source order. Both fenced and indented Markdown code blocks are fragments.</p>
+<p>Legacy relative references remain structural:</p>
+<pre class="text"><code>_"./child"
+_"../sibling"
+_"../../major"
+_":minor"
+_"../:minor"
+_"other-document::major/child:minor"</code></pre>
+<p>Heading display text is retained. Its semantic components are normalized to lowercase hyphenated IDs so they can cross the Ravel Map boundary, while slash and colon structure remains intact.</p>
 </section>
-<section id="clean-refresh-and-backups" class="level2">
-<h2 class="anchored" data-anchor-id="clean-refresh-and-backups">Clean, refresh, and backups</h2>
-<p>Ravel never treats an output directory as disposable just because it was passed to a command. <code>--clean</code> removes only files listed in the preceding manifest, then builds afresh. <code>refresh</code> removes only retained stale managed files and updates the manifest. Both commands support <code>--dry-run</code>.</p>
-<p><code>--backup [path.zip]</code> snapshots the current managed output before a build that would replace it. A named archive must be new. Without a name, Ravel derives a name under <code>backups/</code> below the project root from the output directory and the previous manifest’s Unix timestamp. Backup creation requires a valid prior manifest so it cannot accidentally archive or legitimize an unrelated tree.</p>
+<section id="dialects" class="level2">
+<h2 class="anchored" data-anchor-id="dialects">Dialects</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Dialect</th>
+<th>Heading pipelines</th>
+<th>Repeated pipelines</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>litpro-2017</code></td>
+<td>diagnosed and disabled</td>
+<td>disabled</td>
+</tr>
+<tr class="even">
+<td><code>pieceful-2020</code></td>
+<td>enabled</td>
+<td>accumulated in declaration order</td>
+</tr>
+<tr class="odd">
+<td><code>litpro-plus</code></td>
+<td>enabled</td>
+<td>must agree; applied once after concatenation</td>
+</tr>
+</tbody>
+</table>
+<p><code>litpro-plus</code> is the default. The configurable heading modes are <code>legacy</code>, <code>flat</code>, and <code>none</code>. With <code>none</code>, headings are narrative and an explicit <code>language lp:name | pipeline()</code> fence can still declare a piece.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">lp</span><span class="kw">:</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">adapter</span><span class="kw">:</span><span class="at"> markdown-litpro</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">document</span><span class="kw">:</span><span class="at"> book</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">dialect</span><span class="kw">:</span><span class="at"> litpro-plus</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">headings</span><span class="kw">:</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">mode</span><span class="kw">:</span><span class="at"> legacy</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">major</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="dv">1</span><span class="kw">,</span><span class="at"> </span><span class="dv">2</span><span class="kw">,</span><span class="at"> </span><span class="dv">3</span><span class="kw">,</span><span class="at"> </span><span class="dv">4</span><span class="kw">]</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">child</span><span class="kw">:</span><span class="at"> </span><span class="dv">5</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">grandchild</span><span class="kw">:</span><span class="at"> </span><span class="dv">6</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">pipelines</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
-<section id="what-this-does-not-protect" class="level2">
-<h2 class="anchored" data-anchor-id="what-this-does-not-protect">What this does not protect</h2>
-<p>The project root is trusted input. A build reads the source files and TOML configuration you select; review them before building an untrusted checkout. Ravel’s containment policy does not make hostile source content harmless to a downstream compiler, runtime, deployment system, or a person who later executes the generated artifacts. Treat generated code as code from its source authors.</p>
+<section id="directives-and-live-blocks" class="level2">
+<h2 class="anchored" data-anchor-id="directives-and-live-blocks">Directives and live blocks</h2>
+<p>Historical <code>save:</code> and <code>out:</code> links become portable <code>out</code> plans. <code>load:</code> links become <code>in</code> plans and preserve their aliases for the Node host. Other legacy directives and <code>&lt;!--+ ... --&gt;</code> instructions are retained as inert metadata; the adapter never evaluates them or grants filesystem, shell, network, or JavaScript authority.</p>
+<p>Fences may use <code>.run</code> and <code>provider=...</code>. As with every Ravel adapter, those fields are execution declarations only. Parsing does not run the code.</p>
+<p>Counted substitutions such as <code>\1_"piece"</code> use the core definition-phase delay mechanism and retain source locations.</p>
+</section>
+<section id="node-host-configuration" class="level2">
+<h2 class="anchored" data-anchor-id="node-host-configuration">Node host configuration</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="dt">version</span> <span class="op">=</span> <span class="dv">1</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="kw">[[files]]</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="dt">path</span> <span class="op">=</span> <span class="st">"book.md"</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="dt">adapter</span> <span class="op">=</span> <span class="st">"markdown-litpro"</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="dt">dialect</span> <span class="op">=</span> <span class="st">"litpro-2017"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The package is browser-safe and can also be called directly:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { litproMarkdownToMap } <span class="im">from</span> <span class="st">"@pieceful/ravel-markdown-litpro"</span><span class="op">;</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> { map<span class="op">,</span> diagnostics<span class="op">,</span> surface } <span class="op">=</span> <span class="fu">litproMarkdownToMap</span>(source<span class="op">,</span> {</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">uri</span><span class="op">:</span> <span class="st">"book.md"</span><span class="op">,</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">dialect</span><span class="op">:</span> <span class="st">"litpro-plus"</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 
 
 </section>

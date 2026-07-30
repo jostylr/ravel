@@ -29,6 +29,13 @@ Historical projects select the independent LitPro adapter with
 adapter and dialect while loading their declared input; parsing never performs
 other legacy effects.
 
+Noweb sources use `.nw` or `.noweb`, or may be selected explicitly with
+`adapter = "noweb"`. TOML accepts `dialect = "noweb"` or `"noweb-plus"`,
+`references = "noweb"`, `"underscore-quote"`, or `"both"`, and an optional
+`language`. `run = true` and `provider = "..."` retain live execution intent
+as chunk metadata; loading never executes a noweb chunk or writes tangled
+output.
+
 Requires Node.js 22 or newer. This package is intentionally Node-specific;
 browser and Bun hosts should supply their own I/O boundary around
 `@pieceful/ravel-core`.

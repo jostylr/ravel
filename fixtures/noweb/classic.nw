@@ -1,0 +1,17 @@
+The entry point has two source fragments.
+
+@ %pieceful language main.js | javascript
+@ %pieceful output main.js | dist/main.js
+<<main.js>>=
+console.log(<<message>>);
+@
+
+The second definition is concatenated in source order.
+
+<<main.js>>=
+console.log("done");
+@
+
+<<message>>=
+hello
+@

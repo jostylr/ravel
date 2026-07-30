@@ -33,10 +33,22 @@ Use this package at adapter, editor, and host boundaries.
 - `isLitproMarkdown(text)` detects an explicit `lp.adapter: markdown-litpro`
   front-matter selection without making a host parse Markdown configuration.
 
+## `@pieceful/ravel-noweb`
+
+- `nowebToMap(text, options)` losslessly scans ordinary noweb or the extended
+  `noweb-plus` dialect and returns `{ map, diagnostics, surface }`.
+- `options.references` selects `noweb`, `underscore-quote`, or `both`.
+- `options.language` and `options.languages` supply languages that classic
+  noweb declarations do not encode; recognizable filename extensions are
+  inferred when neither is present.
+- `options.run` and `options.provider` retain live intent as metadata only.
+
 ## `@pieceful/ravel-core`
 
 - `parseChunkId` and `formatChunkId` convert canonical chunk identities.
 - `parseChunk` parses an individual chunk body into portable syntax data.
+  Adapters may opt into lossless noweb delimiters and provide authored-name to
+  semantic-ID aliases without rewriting the body.
 - `parseDefinitionPipeline` gives source adapters the shared definition-time
   transform grammar without evaluating a pipeline.
 - `combineMaps(maps)` constructs the pre-transform graph.

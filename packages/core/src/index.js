@@ -557,14 +557,57 @@ const applyContinuationIndentMapped = (value, indentation, source, chunk) => {
   return concatMapped(...parts);
 };
 
-export const parseChunk = (body, source) => {
+const firstUnescapedPipe = (value) => {
+  let escaped = false;
+  for (let index = 0; index < value.length; index += 1) {
+    if (escaped) escaped = false;
+    else if (value[index] === "\\") escaped = true;
+    else if (value[index] === "|") return index;
+  }
+  return -1;
+};
+
+const nowebExpression = (value, options) => {
+  const pipe = options.nowebPlus ? firstUnescapedPipe(value) : -1;
+  const authoredName = (pipe === -1 ? value : value.slice(0, pipe)).trim().replace(/\\\|/g, "|");
+  const canonicalName = options.referenceAliases?.[authoredName] ?? authoredName;
+  return pipe === -1
+    ? canonicalName
+    : canonicalName + " | " + value.slice(pipe + 1).trim();
+};
+
+export const parseChunk = (body, source, options = {}) => {
   const nodes = [];
   const diagnostics = [];
   let literalStart = 0;
   let index = 0;
 
   while (index < body.length) {
-    const counted = body[index] === "\\"
+    if (options.nowebReferences && body.startsWith("<<", index)) {
+      const end = body.indexOf(">>", index + 2);
+      if (end === -1) {
+        diagnostics.push(diagnostic("RV110", "Unterminated noweb chunk reference.", span(source, body, index, body.length)));
+        break;
+      }
+      if (literalStart < index) {
+        nodes.push({ type: "literal", value: body.slice(literalStart, index), source: span(source, body, literalStart, index) });
+      }
+      const authored = body.slice(index + 2, end);
+      const expression = nowebExpression(authored, options);
+      const parsed = parseExpression(expression, source, index + 2, diagnostics);
+      if (parsed) {
+        nodes.push({
+          ...parsed,
+          authoredReference: authored,
+          source: span(source, body, index + 2, end),
+          continuationIndent: continuationIndentAt(body, index)
+        });
+      }
+      index = end + 2;
+      literalStart = index;
+      continue;
+    }
+    const counted = options.underscoreReferences !== false && body[index] === "\\"
       ? /^\\([1-9][0-9]*)_(["'`])/.exec(body.slice(index))
       : null;
     if (counted) {
@@ -609,7 +652,8 @@ export const parseChunk = (body, source) => {
       index += 3;
       continue;
     }
-    if (body[index] !== "_" || !["\"", "'", "`"].includes(body[index + 1])) {
+    if (options.underscoreReferences === false ||
+        body[index] !== "_" || !["\"", "'", "`"].includes(body[index + 1])) {
       index += 1;
       continue;
     }
@@ -650,7 +694,15 @@ export const parseChunk = (body, source) => {
 };
 
 const parseChunkFragments = (raw) => {
-  const parsed = parseChunk(raw.body, raw.source);
+  const referenceSyntax = raw.metadata?.data?.ravel?.referenceSyntax;
+  const parsed = parseChunk(raw.body, raw.source, referenceSyntax && typeof referenceSyntax === "object"
+    ? {
+        nowebReferences: referenceSyntax.noweb === true,
+        nowebPlus: referenceSyntax.dialect === "noweb-plus",
+        underscoreReferences: referenceSyntax.underscore !== false,
+        referenceAliases: referenceSyntax.aliases
+      }
+    : {});
   if (!Array.isArray(raw.fragments) || raw.fragments.length < 2 ||
       raw.fragments.some((fragment) => typeof fragment?.body !== "string" || !fragment.source) ||
       raw.fragments.map((fragment) => fragment.body).join("") !== raw.body) {

@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>filesystem-safety – Ravel</title>
+<title>noweb – Ravel</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -22,6 +22,41 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -179,7 +214,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./contracts-and-configuration.html">Reference</a></li><li class="breadcrumb-item"><a href="./filesystem-safety.html">Filesystem safety and trust boundaries</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./markdown-fences.html">Language</a></li><li class="breadcrumb-item"><a href="./noweb.html">noweb</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -251,7 +286,7 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./noweb.html" class="sidebar-item-text sidebar-link">
+  <a href="./noweb.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">noweb</span></a>
   </div>
 </li>
@@ -310,7 +345,7 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./filesystem-safety.html" class="sidebar-item-text sidebar-link active">
+  <a href="./filesystem-safety.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Filesystem safety and trust boundaries</span></a>
   </div>
 </li>
@@ -379,51 +414,80 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#filesystem-safety-and-trust-boundaries" id="toc-filesystem-safety-and-trust-boundaries" class="nav-link active" data-scroll-target="#filesystem-safety-and-trust-boundaries">Filesystem safety and trust boundaries</a>
+  <li><a href="#noweb" id="toc-noweb" class="nav-link active" data-scroll-target="#noweb">noweb</a>
   <ul class="collapse">
-  <li><a href="#project-root" id="toc-project-root" class="nav-link" data-scroll-target="#project-root">Project root</a></li>
-  <li><a href="#authorized-writes" id="toc-authorized-writes" class="nav-link" data-scroll-target="#authorized-writes">Authorized writes</a></li>
-  <li><a href="#clean-refresh-and-backups" id="toc-clean-refresh-and-backups" class="nav-link" data-scroll-target="#clean-refresh-and-backups">Clean, refresh, and backups</a></li>
-  <li><a href="#what-this-does-not-protect" id="toc-what-this-does-not-protect" class="nav-link" data-scroll-target="#what-this-does-not-protect">What this does not protect</a></li>
+  <li><a href="#classic-syntax" id="toc-classic-syntax" class="nav-link" data-scroll-target="#classic-syntax">Classic syntax</a></li>
+  <li><a href="#noweb-plus" id="toc-noweb-plus" class="nav-link" data-scroll-target="#noweb-plus">noweb-plus</a></li>
+  <li><a href="#node-host-configuration" id="toc-node-host-configuration" class="nav-link" data-scroll-target="#node-host-configuration">Node host configuration</a></li>
   </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/jostylr/ravel/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
-<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./contracts-and-configuration.html">Reference</a></li><li class="breadcrumb-item"><a href="./filesystem-safety.html">Filesystem safety and trust boundaries</a></li></ol></nav></header>
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./markdown-fences.html">Language</a></li><li class="breadcrumb-item"><a href="./noweb.html">noweb</a></li></ol></nav></header>
 
 
 
 
-<section id="filesystem-safety-and-trust-boundaries" class="level1">
-<h1>Filesystem safety and trust boundaries</h1>
-<p>Ravel’s portable graph evaluator is static: it parses documents, resolves chunks, applies its documented string transforms, and plans outputs. It does not execute document JavaScript, shell commands, network requests, or arbitrary user code. Filesystem access is supplied only by <code>@pieceful/ravel-host-node</code> and the CLI.</p>
-<section id="project-root" class="level2">
-<h2 class="anchored" data-anchor-id="project-root">Project root</h2>
-<p>For a direct input, the input’s containing directory is the default root. For a TOML project, the configuration’s containing directory is the root. <code>--root</code> may select an explicit root. Every configured source, imported map, output, manifest, provenance map, and default backup path is resolved beneath that root.</p>
-<p>Paths that escape the root with <code>..</code>, absolute paths, or a symbolic-link hop are rejected. This includes output paths: a project cannot use an <code>out</code> directive to overwrite an arbitrary file, nor can a symlinked output directory redirect a build outside the project. These checks are intentional policy, not merely convenience validation.</p>
+<section id="noweb" class="level1">
+<h1>noweb</h1>
+<p><code>@pieceful/ravel-noweb</code> is a small, lossless scanner for classic noweb source. It maps documentation, definitions, repeated fragments, references, and terminators into the same Ravel Map and graph used by the Markdown adapters. It does not invoke <code>notangle</code>, <code>noweave</code>, TeX, or an execution provider.</p>
+<section id="classic-syntax" class="level2">
+<h2 class="anchored" data-anchor-id="classic-syntax">Classic syntax</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode noweb code-with-copy"><code class="sourceCode noweb"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>The entry point delegates construction of its message.</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="re">&lt;&lt;main.js&gt;&gt;=</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>console<span class="op">.</span>log<span class="op">(</span><span class="re">&lt;&lt;message&gt;&gt;</span><span class="op">);</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="re">@</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="re">&lt;&lt;message&gt;&gt;=</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>hello</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="re">@</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><code>&lt;&lt;name&gt;&gt;=</code> starts a definition, <code>@</code> on its own line returns to documentation, and <code>&lt;&lt;name&gt;&gt;</code> inside code is a reference. Repeating the same definition concatenates its exact body segments in source order. The documentation immediately before each declaration is retained as narrative metadata and in the adapter’s surface map.</p>
+<p>The strict <code>noweb</code> dialect does not split pipes. Therefore <code>&lt;&lt;name | trim()&gt;&gt;=</code> is a classic chunk literally named <code>name | trim()</code>.</p>
+<p>Classic noweb declarations contain no source language. The adapter uses, in order, a matching pragma, per-name configuration, a default configured language, or a recognizable filename extension such as <code>.js</code>.</p>
 </section>
-<section id="authorized-writes" class="level2">
-<h2 class="anchored" data-anchor-id="authorized-writes">Authorized writes</h2>
-<p><code>ravel check</code> and <code>ravel inspect</code> perform no output writes. <code>ravel build</code> writes only declared deliverables and its managed metadata in the chosen output directory. Ravel stages a build before committing it so a source or evaluation error does not leave the manifest claiming that a partial build succeeded.</p>
-<p>The Node host writes:</p>
-<ul>
-<li>declared deliverables;</li>
-<li><code>&lt;deliverable&gt;.ravelmap</code> provenance sidecars;</li>
-<li><code>.ravelmap</code>, the aggregate provenance bundle;</li>
-<li><code>.ravel-manifest.json</code> and <code>.manifest.txt</code>; and</li>
-<li>an explicitly requested backup ZIP.</li>
-</ul>
-<p>All are identified by the manifest after a successful build.</p>
+<section id="noweb-plus" class="level2">
+<h2 class="anchored" data-anchor-id="noweb-plus">noweb-plus</h2>
+<p>The <code>noweb-plus</code> dialect splits the first unescaped pipe and uses the shared typed pipeline grammar:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode noweb code-with-copy"><code class="sourceCode noweb"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="re">&lt;&lt;main | trim()&gt;&gt;=</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="re">&lt;&lt;message | trim()&gt;&gt;</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="re">@</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>This spelling is deliberately an extension. Each extended definition or reference produces a portability warning because classic noweb treats the pipe and pipeline text as part of the chunk name. Repeated definitions may declare a pipeline only when their normalized pipelines agree, and the pipeline runs once after all fragments have been concatenated.</p>
+<p>For source that must remain consumable by classic noweb, use a documentation pragma and enable underscore-quote references:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode noweb code-with-copy"><code class="sourceCode noweb"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>@ %pieceful pipeline main | trim()</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="re">&lt;&lt;main&gt;&gt;=</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>_<span class="st">"message | indent(2)"</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="re">@</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The pragma is attached to the next matching definition. Other inert planning pragmas are:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode noweb code-with-copy"><code class="sourceCode noweb"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>@ %pieceful language main | javascript</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>@ %pieceful output main | dist/main.js</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>@ %pieceful run main | provider=quickjs-wasm-worker</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>An output pragma creates an <code>out</code> directive. A run pragma records live metadata. Parsing performs neither operation.</p>
 </section>
-<section id="clean-refresh-and-backups" class="level2">
-<h2 class="anchored" data-anchor-id="clean-refresh-and-backups">Clean, refresh, and backups</h2>
-<p>Ravel never treats an output directory as disposable just because it was passed to a command. <code>--clean</code> removes only files listed in the preceding manifest, then builds afresh. <code>refresh</code> removes only retained stale managed files and updates the manifest. Both commands support <code>--dry-run</code>.</p>
-<p><code>--backup [path.zip]</code> snapshots the current managed output before a build that would replace it. A named archive must be new. Without a name, Ravel derives a name under <code>backups/</code> below the project root from the output directory and the previous manifest’s Unix timestamp. Backup creation requires a valid prior manifest so it cannot accidentally archive or legitimize an unrelated tree.</p>
-</section>
-<section id="what-this-does-not-protect" class="level2">
-<h2 class="anchored" data-anchor-id="what-this-does-not-protect">What this does not protect</h2>
-<p>The project root is trusted input. A build reads the source files and TOML configuration you select; review them before building an untrusted checkout. Ravel’s containment policy does not make hostile source content harmless to a downstream compiler, runtime, deployment system, or a person who later executes the generated artifacts. Treat generated code as code from its source authors.</p>
+<section id="node-host-configuration" class="level2">
+<h2 class="anchored" data-anchor-id="node-host-configuration">Node host configuration</h2>
+<p><code>.nw</code> and <code>.noweb</code> inputs select this adapter automatically. A TOML build can make all policy explicit:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="dt">version</span> <span class="op">=</span> <span class="dv">1</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="kw">[[files]]</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="dt">path</span> <span class="op">=</span> <span class="st">"program.nw"</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="dt">adapter</span> <span class="op">=</span> <span class="st">"noweb"</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="dt">dialect</span> <span class="op">=</span> <span class="st">"noweb-plus"</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="dt">references</span> <span class="op">=</span> <span class="st">"both"</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="dt">language</span> <span class="op">=</span> <span class="st">"javascript"</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="dt">run</span> <span class="op">=</span> <span class="cn">true</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="dt">provider</span> <span class="op">=</span> <span class="st">"quickjs-wasm-worker"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The portable API is:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { nowebToMap } <span class="im">from</span> <span class="st">"@pieceful/ravel-noweb"</span><span class="op">;</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> { map<span class="op">,</span> diagnostics<span class="op">,</span> surface } <span class="op">=</span> <span class="fu">nowebToMap</span>(source<span class="op">,</span> {</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">uri</span><span class="op">:</span> <span class="st">"program.nw"</span><span class="op">,</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">document</span><span class="op">:</span> <span class="st">"program"</span><span class="op">,</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">dialect</span><span class="op">:</span> <span class="st">"noweb-plus"</span><span class="op">,</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">references</span><span class="op">:</span> <span class="st">"both"</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><code>surface.definitions</code> and <code>surface.references</code> retain exact authored ranges, including the visible <code>&lt;&lt;…&gt;&gt;</code> reference delimiters. The core receives an opt-in reference syntax description so it can build the ordinary reference AST while leaving each chunk body byte-for-byte as authored.</p>
 
 
 </section>

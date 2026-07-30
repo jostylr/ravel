@@ -30,6 +30,8 @@ website:
             href: markdown-fences.md
           - text: "LitPro Markdown"
             href: markdown-litpro.md
+          - text: "noweb"
+            href: noweb.md
           - text: "Pipes and directives"
             href: pipes-and-directives.md
           - text: "Provenance maps"
@@ -60,6 +62,7 @@ website:
         contents:
           - markdown-fences.md
           - markdown-litpro.md
+          - noweb.md
           - live-execution.md
           - chunk-syntax.md
           - pipes-and-directives.md

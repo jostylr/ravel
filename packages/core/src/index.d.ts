@@ -81,7 +81,13 @@ export interface LiveProgramResult {
 }
 export function formatChunkId(identity: ChunkIdentity): string;
 export function parseChunkId(input: string, options?: { reference?: boolean }): ChunkIdentity | null;
-export function parseChunk(body: string, source: SourceLocation): { nodes: unknown[]; diagnostics: Diagnostic[] };
+export interface ChunkReferenceSyntaxOptions {
+  nowebReferences?: boolean;
+  nowebPlus?: boolean;
+  underscoreReferences?: boolean;
+  referenceAliases?: Record<string, string>;
+}
+export function parseChunk(body: string, source: SourceLocation, options?: ChunkReferenceSyntaxOptions): { nodes: unknown[]; diagnostics: Diagnostic[] };
 export function parseDefinitionPipeline(text: string, source: SourceLocation): { pipeline: TransformCall[]; diagnostics: Diagnostic[] };
 export function combineMaps(maps: RavelMap[]): PretransformGraph;
 export function transformGraph(graph: PretransformGraph, options?: {

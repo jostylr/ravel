@@ -243,6 +243,50 @@ test("Node host selects markdown-litpro and its dialect from TOML", async () => 
   }
 });
 
+test("Node host loads noweb extensions and TOML noweb-plus settings", async () => {
+  const sandbox = await mkdtemp(join(tmpdir(), "ravel-noweb-host-"));
+  const input = join(sandbox, "program.nw");
+  const config = join(sandbox, "ravel.toml");
+  try {
+    await writeFile(input, [
+      "<<main | trim()>>=",
+      "  <<message | trim()>>  ",
+      "@",
+      "<<message>>=",
+      "  hello  ",
+      "@",
+      ""
+    ].join("\n"));
+    await writeFile(config, [
+      "version = 1",
+      "",
+      "[[files]]",
+      "path = \"program.nw\"",
+      "adapter = \"noweb\"",
+      "dialect = \"noweb-plus\"",
+      "references = \"both\"",
+      "language = \"javascript\"",
+      "run = true",
+      "provider = \"quickjs-wasm-worker\"",
+      ""
+    ].join("\n"));
+
+    const direct = await loadBuildInput(input);
+    assert.equal(direct.pretransform.documents[0].format, "noweb-v1");
+    assert.equal(direct.pretransform.chunks[0].id, "program::main-trim");
+
+    const loaded = await loadBuildInput(config);
+    assert.equal(loaded.pretransform.documents[0].format, "noweb-plus-v1");
+    assert.equal(loaded.pretransform.chunks[0].metadata.language, "javascript");
+    assert.equal(loaded.pretransform.chunks[0].metadata.data.ravel.run, true);
+    assert.equal(loaded.pretransform.chunks[0].metadata.data.ravel.provider, "quickjs-wasm-worker");
+    const program = transformGraph(loaded.pretransform);
+    assert.equal(program.chunks["program::main"].value, "hello");
+  } finally {
+    await rm(sandbox, { recursive: true, force: true });
+  }
+});
+
 test("LitPro load directives retain the adapter and document alias", async () => {
   const sandbox = await mkdtemp(join(tmpdir(), "ravel-litpro-load-"));
   const entry = join(sandbox, "entry.md");

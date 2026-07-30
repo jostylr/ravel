@@ -11,6 +11,7 @@ import {
 import { markdownToMap } from "@pieceful/ravel-markdown";
 import { isLitproMarkdown, litproMarkdownToMap } from "@pieceful/ravel-markdown-litpro";
 import { assertRavelMap } from "@pieceful/ravel-map";
+import { nowebToMap } from "@pieceful/ravel-noweb";
 
 const missing = (error) => error?.code === "ENOENT";
 
@@ -201,6 +202,19 @@ const loadMarkdownFile = async (path, options = {}) => {
   });
 };
 
+const loadNowebFile = async (path, options = {}) => {
+  const text = await readInputText(path, "noweb input", "RM201");
+  return nowebToMap(text, {
+    uri: path,
+    document: options.document,
+    dialect: options.dialect,
+    references: options.references,
+    language: options.language,
+    run: options.run,
+    provider: options.provider
+  });
+};
+
 const collectPretransformMaps = async (entryPath, entryOptions = {}, scope) => {
   const activeScope = scope ?? await createInputScope(dirname(resolve(entryPath)));
   const visited = new Set();
@@ -216,6 +230,11 @@ const collectPretransformMaps = async (entryPath, entryOptions = {}, scope) => {
     let map;
     if (extension === ".json") {
       map = await readMap(absolutePath);
+    } else if (extension === ".nw" || extension === ".noweb" || options.adapter === "noweb") {
+      const result = await loadNowebFile(absolutePath, options);
+      map = result.map;
+      diagnostics.push(...result.diagnostics);
+      assertRavelMap(map, { uri: absolutePath });
     } else if (extension === ".md" || extension === ".markdown" || extension === ".mdown" || extension === ".qmd") {
       const result = await loadMarkdownFile(absolutePath, {
         ...options,
@@ -225,7 +244,7 @@ const collectPretransformMaps = async (entryPath, entryOptions = {}, scope) => {
       diagnostics.push(...result.diagnostics);
       assertRavelMap(map, { uri: absolutePath });
     } else {
-      throw inputError("RH101", "Ravel input must be a .json map or Markdown/Quarto file.", absolutePath);
+      throw inputError("RH101", "Ravel input must be a .json map, Markdown/Quarto file, or noweb source.", absolutePath);
     }
     for (const directive of map.directives ?? []) {
       if (directive.kind !== "in") continue;
@@ -358,7 +377,10 @@ export const loadTomlBuild = async (configPath) => {
   const live = await loadLiveConfiguration(config.live, scope, absoluteConfig);
   const results = await Promise.all(config.files.map(async (file, index) => {
     if (!file || typeof file !== "object") throw inputError("RC102", "files[" + index + "] must be a table.", absoluteConfig);
-    reportUnknownKeys(file, new Set(["path", "document", "mode", "profile", "adapter", "dialect"]), "files[" + index + "]", absoluteConfig);
+    reportUnknownKeys(file, new Set([
+      "path", "document", "mode", "profile", "adapter", "dialect",
+      "references", "language", "run", "provider"
+    ]), "files[" + index + "]", absoluteConfig);
     const path = requireConfigString(file.path, "files[" + index + "].path", absoluteConfig);
     if (file.document !== undefined) requireConfigString(file.document, "files[" + index + "].document", absoluteConfig);
     const mode = file.mode ?? "opt-in";
@@ -368,19 +390,39 @@ export const loadTomlBuild = async (configPath) => {
       throw inputError("RC102", "files[" + index + "].profile must be fences, modern, or litpro.", absoluteConfig);
     }
     const adapter = file.adapter;
-    if (adapter !== undefined && !["markdown", "markdown-litpro"].includes(adapter)) {
-      throw inputError("RC102", "files[" + index + "].adapter must be markdown or markdown-litpro.", absoluteConfig);
+    if (adapter !== undefined && !["markdown", "markdown-litpro", "noweb"].includes(adapter)) {
+      throw inputError("RC102", "files[" + index + "].adapter must be markdown, markdown-litpro, or noweb.", absoluteConfig);
     }
     const dialect = file.dialect;
-    if (dialect !== undefined && !["litpro-2017", "pieceful-2020", "litpro-plus"].includes(dialect)) {
-      throw inputError("RC102", "files[" + index + "].dialect is not a supported LitPro dialect.", absoluteConfig);
+    const supportedDialects = adapter === "noweb"
+      ? ["noweb", "noweb-plus"]
+      : ["litpro-2017", "pieceful-2020", "litpro-plus"];
+    if (dialect !== undefined && !supportedDialects.includes(dialect)) {
+      throw inputError("RC102", "files[" + index + "].dialect is not supported by its adapter.", absoluteConfig);
+    }
+    const references = file.references;
+    if (references !== undefined && !["noweb", "underscore-quote", "both"].includes(references)) {
+      throw inputError("RC102", "files[" + index + "].references must be noweb, underscore-quote, or both.", absoluteConfig);
+    }
+    if (file.language !== undefined) requireConfigString(file.language, "files[" + index + "].language", absoluteConfig);
+    if (file.run !== undefined && typeof file.run !== "boolean") {
+      throw inputError("RC102", "files[" + index + "].run must be true or false.", absoluteConfig);
+    }
+    if (file.provider !== undefined) requireConfigString(file.provider, "files[" + index + "].provider", absoluteConfig);
+    if ((references !== undefined || file.language !== undefined || file.run !== undefined || file.provider !== undefined) &&
+        adapter !== "noweb") {
+      throw inputError("RC102", "noweb reference, language, run, and provider settings require adapter = \"noweb\".", absoluteConfig);
     }
     return collectPretransformMaps(resolve(baseDirectory, path), {
       document: file.document,
       mode,
       profile,
       adapter,
-      dialect
+      dialect,
+      references,
+      language: file.language,
+      run: file.run,
+      provider: file.provider
     }, scope);
   }));
   const pretransform = combineMaps(results.flatMap((result) => result.maps));
@@ -407,11 +449,12 @@ export const loadTomlBuild = async (configPath) => {
   };
 };
 
-/** Load a JSON map, one Markdown/Quarto document, or a Ravel TOML build run. */
+/** Load a JSON map, one markup source document, or a Ravel TOML build run. */
 export const loadBuildInput = async (inputPath, options = {}) => {
   const extension = extname(inputPath).toLowerCase();
   if (extension === ".toml") return loadTomlBuild(inputPath);
-  if (extension === ".md" || extension === ".markdown" || extension === ".mdown" || extension === ".qmd") {
+  if (extension === ".md" || extension === ".markdown" || extension === ".mdown" || extension === ".qmd" ||
+      extension === ".nw" || extension === ".noweb") {
     const rootDirectory = dirname(resolve(inputPath));
     return {
       pretransform: await loadPretransformGraph(resolve(inputPath), options),
@@ -426,7 +469,7 @@ export const loadBuildInput = async (inputPath, options = {}) => {
       rootDirectory: dirname(resolve(inputPath))
     };
   }
-  throw inputError("RH101", "Ravel input must be a .json map, Markdown/Quarto document, or .toml build config.", inputPath);
+  throw inputError("RH101", "Ravel input must be a .json map, supported markup document, or .toml build config.", inputPath);
 };
 
 const safeDestination = (outputDirectory, name) => {
