@@ -171,6 +171,16 @@ export const explorerStyles = Object.freeze([
     }
   },
   {
+    selector: ".search-match",
+    style: {
+      "border-color": "#ffffff",
+      "border-width": 4,
+      "overlay-color": "#ffffff",
+      "overlay-opacity": 0.1,
+      "overlay-padding": 7
+    }
+  },
+  {
     selector: "edge",
     style: {
       "curve-style": "taxi",

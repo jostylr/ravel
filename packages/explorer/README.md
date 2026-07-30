@@ -66,3 +66,16 @@ await view.ready;
 Folding remains a projection operation so collapsed boundary edges retain Ravel
 edge kinds and counts. The renderer does not depend on the unmaintained
 Cytoscape expand/collapse extension.
+
+## FizzBuzz browser harness
+
+From the repository root:
+
+```sh
+npm run build:explorer-demo
+python3 -m http.server 4173 --directory browser-test
+```
+
+Open `http://localhost:4173/explorer.html`. The build derives the snapshot from
+the real migration project; the browser never reads the workspace or runs a
+transform.

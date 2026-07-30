@@ -326,6 +326,17 @@ npm run test:pack           # pack, install, import, and build through tarballs
 npm run build:site          # render Quarto docs and bundle the browser playground
 ```
 
+To explore the real FizzBuzz graph in a browser:
+
+```sh
+npm run build:explorer-demo
+python3 -m http.server 4173 --directory browser-test
+```
+
+Then open `http://localhost:4173/explorer.html`. The page offers overview,
+dependency, and full derivation lenses; search; source-aware details; document
+folding; and upstream/downstream focus.
+
 The browser test downloads a Playwright Chromium binary on first use. CI installs
 that binary explicitly before running the same command.
 

@@ -97,6 +97,17 @@ const chunkNodeId = (id) => "chunk:" + id;
 const documentNodeId = (id) => "document:" + id;
 const deliverableNodeId = (name) => "deliverable:" + name;
 
+const chunkLabel = (chunk, fallback) => {
+  const identity = chunk?.identity;
+  if (!identity?.chunk) return chunk?.name ?? fallback;
+  const stem = identity.minor
+    ? identity.chunk + ":" + identity.minor
+    : identity.chunk;
+  return identity.type && !stem.endsWith("." + identity.type)
+    ? stem + "." + identity.type
+    : stem;
+};
+
 const normalizeFocus = (context, focus) => {
   const program = context.program;
   const chunks = new Set(Object.keys(program?.chunks ?? {}));
@@ -343,7 +354,7 @@ export const createExplorerSnapshot = (programOrContext, options = {}) => {
     addCandidate(candidates, {
       id: chunkNodeId(id),
       kind: "chunk",
-      label: chunk.name ?? id,
+      label: chunkLabel(chunk, id),
       parent,
       source: chunk.source,
       language: chunk.metadata?.language,

@@ -74,6 +74,19 @@ try {
       return value === "passed" || value === "failed";
     }, expected, { timeout: 10_000 });
     const outcome = await page.locator(expected.selector).evaluate((element, attribute) => element.dataset[attribute], expected.attribute);
+
+    if (expected.path === "explorer.html" && outcome === "passed") {
+      await page.selectOption("#lens", "derivation");
+      await page.fill("#search", "program:main");
+      await page.press("#search", "Enter");
+      await page.waitForFunction(() =>
+        document.querySelector("#details h1")?.textContent === "program:main.js"
+      );
+      await page.click("#upstream");
+      await page.waitForFunction(() =>
+        document.querySelector("#project-label")?.textContent.includes("upstream of program:main.js")
+      );
+    }
     await page.close();
 
     if (outcome !== "passed" || browserErrors.length) {

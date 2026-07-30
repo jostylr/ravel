@@ -70,4 +70,8 @@ test("FizzBuzz projects chunks, definition pipes, compose directives, emits, ali
       transforms: 3
     }
   );
+  assert.equal(
+    first.nodes.find(({ id }) => id === "chunk:fizzbuzz::program:main.js")?.label,
+    "program:main.js"
+  );
 });

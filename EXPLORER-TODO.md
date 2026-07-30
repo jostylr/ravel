@@ -67,19 +67,22 @@ Goal: validate navigation, folding, and layout against real Ravel graphs.
 - [x] Build a minimal browser entry point that accepts an `ExplorerSnapshot`.
 - [x] Render typed node and edge styles with text labels and non-color
       distinctions.
-- [ ] Add pan, zoom, fit, minimap, and reset-layout controls.
+- [x] Add pan, zoom, fit, and reset-layout controls.
+- [ ] Add a minimap for larger visible projections.
 - [x] Add document compound nodes and aggregated edges on collapse.
 - [ ] Add search over canonical ID, label, document, language/type, tags,
       transform name, deliverable, and diagnostic code.
-- [ ] Add overview and dependency lenses.
+- [x] Add overview, dependency, and derivation lenses.
+- [x] Add all-depth upstream and downstream focus from the current selection.
 - [ ] Add ancestor/descendant depth controls, path-between, and impact-on-output.
-- [ ] Add a selection details panel with source, metadata, dependencies,
-      references, and diagnostics.
+- [x] Add a selection details panel with source, metadata, and typed
+      relationships.
+- [ ] Add diagnostic details to selection once diagnostic nodes are projected.
 - [ ] Add a synchronized list/table representation of the visible graph.
 - [ ] Preserve selection and expanded groups when a focused snapshot grows.
 - [ ] Move layout off the main UI path and support cancellation.
-- [x] Add a developer harness that loads checked-in snapshots without running a
-      filesystem host.
+- [x] Add a developer harness whose build derives a FizzBuzz snapshot before
+      the browser starts, without giving the browser filesystem access.
 - [ ] Measure layout, search, expansion, and interaction time for 1k and 10k
       synthetic entities.
 - [x] Record the Cytoscape/ELK prototype decisions and revise the visible-node
