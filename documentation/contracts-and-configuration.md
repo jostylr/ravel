@@ -54,8 +54,10 @@ name = "cool.csv"                # exact load("cool.csv") name
 path = "data/cool.csv"           # UTF-8 file below the project root
 ```
 
-Markup entries may select `adapter = "markdown"`, `"markdown-litpro"`,
-`"myst"`, `"noweb"`, or `"org"`. Org entries additionally accept
+Markup entries may select `adapter = "asciidoc"`, `"markdown"`,
+`"markdown-litpro"`, `"myst"`, `"noweb"`, or `"org"`. AsciiDoc uses
+`.adoc` or `.asciidoc` automatically and may retain `run` and `provider`
+metadata. Org entries additionally accept
 `references = "org-noweb" | "underscore-quote" | "both"`,
 `noweb_pipes = true | false`, and
 `execution_owner = "org" | "ravel"`. See [Org and Babel](org.md) for the

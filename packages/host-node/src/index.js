@@ -8,6 +8,7 @@ import {
   createDeliverableProvenanceMap,
   provenanceMapVersion
 } from "@pieceful/ravel-core";
+import { asciidocToMap } from "@pieceful/ravel-asciidoc";
 import { markdownToMap } from "@pieceful/ravel-markdown";
 import { isLitproMarkdown, litproMarkdownToMap } from "@pieceful/ravel-markdown-litpro";
 import { assertRavelMap } from "@pieceful/ravel-map";
@@ -241,6 +242,16 @@ const loadMystFile = async (path, options = {}) => {
   });
 };
 
+const loadAsciiDocFile = async (path, options = {}) => {
+  const text = await readInputText(path, "AsciiDoc input", "RM201");
+  return asciidocToMap(text, {
+    uri: path,
+    document: options.document,
+    run: options.run,
+    provider: options.provider
+  });
+};
+
 const collectPretransformMaps = async (entryPath, entryOptions = {}, scope) => {
   const activeScope = scope ?? await createInputScope(dirname(resolve(entryPath)));
   const visited = new Set();
@@ -259,6 +270,12 @@ const collectPretransformMaps = async (entryPath, entryOptions = {}, scope) => {
       map = await readMap(absolutePath);
     } else if (mystExtension || options.adapter === "myst") {
       const result = await loadMystFile(absolutePath, options);
+      map = result.map;
+      diagnostics.push(...result.diagnostics);
+      assertRavelMap(map, { uri: absolutePath });
+    } else if (extension === ".adoc" || extension === ".asciidoc" ||
+        options.adapter === "asciidoc") {
+      const result = await loadAsciiDocFile(absolutePath, options);
       map = result.map;
       diagnostics.push(...result.diagnostics);
       assertRavelMap(map, { uri: absolutePath });
@@ -427,13 +444,13 @@ export const loadTomlBuild = async (configPath) => {
       throw inputError("RC102", "files[" + index + "].profile must be fences, modern, or litpro.", absoluteConfig);
     }
     const adapter = file.adapter;
-    if (adapter !== undefined && !["markdown", "markdown-litpro", "myst", "noweb", "org"].includes(adapter)) {
-      throw inputError("RC102", "files[" + index + "].adapter must be markdown, markdown-litpro, myst, noweb, or org.", absoluteConfig);
+    if (adapter !== undefined && !["asciidoc", "markdown", "markdown-litpro", "myst", "noweb", "org"].includes(adapter)) {
+      throw inputError("RC102", "files[" + index + "].adapter must be asciidoc, markdown, markdown-litpro, myst, noweb, or org.", absoluteConfig);
     }
     const dialect = file.dialect;
     const supportedDialects = adapter === "noweb"
       ? ["noweb", "noweb-plus"]
-      : adapter === "org" || adapter === "myst"
+      : adapter === "asciidoc" || adapter === "org" || adapter === "myst"
         ? []
         : ["litpro-2017", "pieceful-2020", "litpro-plus"];
     if (dialect !== undefined && !supportedDialects.includes(dialect)) {
@@ -478,8 +495,8 @@ export const loadTomlBuild = async (configPath) => {
       throw inputError("RC102", "references requires adapter = \"noweb\" or \"org\".", absoluteConfig);
     }
     if ((file.run !== undefined || file.provider !== undefined) &&
-        !["noweb", "org", "myst"].includes(adapter)) {
-      throw inputError("RC102", "run and provider settings require adapter = \"noweb\", \"org\", or \"myst\".", absoluteConfig);
+        !["asciidoc", "noweb", "org", "myst"].includes(adapter)) {
+      throw inputError("RC102", "run and provider settings require adapter = \"asciidoc\", \"noweb\", \"org\", or \"myst\".", absoluteConfig);
     }
     return collectPretransformMaps(resolve(baseDirectory, path), {
       document: file.document,
@@ -524,7 +541,8 @@ export const loadBuildInput = async (inputPath, options = {}) => {
   const extension = extname(inputPath).toLowerCase();
   if (extension === ".toml") return loadTomlBuild(inputPath);
   if (extension === ".md" || extension === ".markdown" || extension === ".mdown" || extension === ".qmd" ||
-      extension === ".nw" || extension === ".noweb" || extension === ".org") {
+      extension === ".nw" || extension === ".noweb" || extension === ".org" ||
+      extension === ".adoc" || extension === ".asciidoc") {
     const rootDirectory = dirname(resolve(inputPath));
     return {
       pretransform: await loadPretransformGraph(resolve(inputPath), options),

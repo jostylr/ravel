@@ -730,14 +730,14 @@ The adapter takes descendant source blocks as fragments and excludes nested
 The native-looking canonical form is a small set of block macros:
 
 ```asciidoc
-lp::write[target=dist/greeting.js,from=main]
+ravel::write[target=dist/greeting.js,from=main]
 
-lp::derive[target=widget.browser,from=widget,using="minify()"]
+ravel::derive[target=widget.browser,from=widget,using="minify()"]
 
-lp::read[target=shared.adoc,as=shared]
+ravel::read[target=shared.adoc,as=shared]
 ```
 
-`lp` is the block-macro name and `write`, `derive`, or `read` is its target.
+`ravel` is the block-macro name and `write`, `derive`, or `read` is its target.
 An Asciidoctor extension renders each macro as visible prose/a link and records
 its attributes. The standalone adapter recognizes exactly the same grammar
 without requiring Asciidoctor to perform an effect.
@@ -1207,7 +1207,7 @@ Quarto adds golden renders for HTML and PDF showing:
 5. Should the Quarto bridge always number pieces as listings, or support an
    unnumbered `Piece: main` caption style?
 6. Should AsciiDoc retain the single generic block macro
-   (`lp::write[target=...]`), or use a styled delimited block for directives
+   (`ravel::write[target=...]`), or use a styled delimited block for directives
    that need richer visible prose?
 7. Should `<<name | pipeline>>` be enabled by `noweb-plus`/Org configuration
    only, or recognized with a portability warning whenever encountered?

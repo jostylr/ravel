@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>provenance-maps – Ravel</title>
+<title>asciidoc – Ravel</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -226,7 +226,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./contracts-and-configuration.html">Reference</a></li><li class="breadcrumb-item"><a href="./provenance-maps.html">Generated-output provenance maps</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./markdown-fences.html">Language</a></li><li class="breadcrumb-item"><a href="./asciidoc.html">AsciiDoc</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -316,7 +316,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./asciidoc.html" class="sidebar-item-text sidebar-link">
+  <a href="./asciidoc.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">AsciiDoc</span></a>
   </div>
 </li>
@@ -369,7 +369,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./provenance-maps.html" class="sidebar-item-text sidebar-link active">
+  <a href="./provenance-maps.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Generated-output provenance maps</span></a>
   </div>
 </li>
@@ -444,129 +444,90 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#generated-output-provenance-maps" id="toc-generated-output-provenance-maps" class="nav-link active" data-scroll-target="#generated-output-provenance-maps">Generated-output provenance maps</a>
+  <li><a href="#asciidoc" id="toc-asciidoc" class="nav-link active" data-scroll-target="#asciidoc">AsciiDoc</a>
   <ul class="collapse">
-  <li><a href="#version-1-shape" id="toc-version-1-shape" class="nav-link" data-scroll-target="#version-1-shape">Version 1 shape</a></li>
-  <li><a href="#exact-and-coarse-mappings" id="toc-exact-and-coarse-mappings" class="nav-link" data-scroll-target="#exact-and-coarse-mappings">Exact and coarse mappings</a></li>
-  <li><a href="#javascript-queries" id="toc-javascript-queries" class="nav-link" data-scroll-target="#javascript-queries">JavaScript queries</a></li>
-  <li><a href="#cli-queries" id="toc-cli-queries" class="nav-link" data-scroll-target="#cli-queries">CLI queries</a></li>
-  <li><a href="#current-boundary" id="toc-current-boundary" class="nav-link" data-scroll-target="#current-boundary">Current boundary</a></li>
+  <li><a href="#section-owned-pieces" id="toc-section-owned-pieces" class="nav-link" data-scroll-target="#section-owned-pieces">Section-owned pieces</a></li>
+  <li><a href="#self-contained-blocks-and-containers" id="toc-self-contained-blocks-and-containers" class="nav-link" data-scroll-target="#self-contained-blocks-and-containers">Self-contained blocks and containers</a></li>
+  <li><a href="#navigation-and-composition" id="toc-navigation-and-composition" class="nav-link" data-scroll-target="#navigation-and-composition">Navigation and composition</a></li>
+  <li><a href="#visible-graph-directives" id="toc-visible-graph-directives" class="nav-link" data-scroll-target="#visible-graph-directives">Visible graph directives</a></li>
+  <li><a href="#node-host-configuration" id="toc-node-host-configuration" class="nav-link" data-scroll-target="#node-host-configuration">Node host configuration</a></li>
   </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/jostylr/ravel/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
-<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./contracts-and-configuration.html">Reference</a></li><li class="breadcrumb-item"><a href="./provenance-maps.html">Generated-output provenance maps</a></li></ol></nav></header>
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./markdown-fences.html">Language</a></li><li class="breadcrumb-item"><a href="./asciidoc.html">AsciiDoc</a></li></ol></nav></header>
 
 
 
 
-<section id="generated-output-provenance-maps" class="level1">
-<h1>Generated-output provenance maps</h1>
-<p>Ravel records how generated text relates to its literate sources. A successful managed build writes two equivalent views:</p>
-<ul>
-<li><code>&lt;deliverable&gt;.ravelmap</code> is the sidecar for one generated file.</li>
-<li><code>.ravelmap</code> is the build bundle and embeds every sidecar map.</li>
-</ul>
-<p>The version-2 output manifest identifies the aggregate map in <code>provenance</code> and the corresponding sidecar in each deliverable entry. These are managed build artifacts: backups include them, <code>--clean</code> removes them, and stale deliverables retain their sidecars until <code>ravel refresh</code> removes both.</p>
-<section id="version-1-shape" class="level2">
-<h2 class="anchored" data-anchor-id="version-1-shape">Version 1 shape</h2>
-<p>A sidecar has this top-level shape:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"version"</span><span class="fu">:</span> <span class="dv">1</span><span class="fu">,</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"kind"</span><span class="fu">:</span> <span class="st">"ravel-provenance-map"</span><span class="fu">,</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"generated"</span><span class="fu">:</span> <span class="fu">{</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">"uri"</span><span class="fu">:</span> <span class="st">"dist/program.js"</span><span class="fu">,</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">"length"</span><span class="fu">:</span> <span class="dv">42</span><span class="fu">,</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">"offsetEncoding"</span><span class="fu">:</span> <span class="st">"utf-16"</span></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"from"</span><span class="fu">:</span> <span class="st">"guide::program.javascript"</span><span class="fu">,</span></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"segments"</span><span class="fu">:</span> <span class="ot">[]</span></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p><code>generated.start</code> and <code>generated.end</code> in each segment are a half-open range in UTF-16 code units. This is the indexing used by JavaScript strings and by many editor protocols. A segment contains:</p>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 50%">
-<col style="width: 50%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Field</th>
-<th>Meaning</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><code>generated</code></td>
-<td>Half-open range in the generated deliverable.</td>
-</tr>
-<tr class="even">
-<td><code>source</code></td>
-<td>Original relative URI and source range, or <code>null</code> for content with no source.</td>
-</tr>
-<tr class="odd">
-<td><code>chunk</code></td>
-<td>The chunk whose content contributed this range.</td>
-</tr>
-<tr class="even">
-<td><code>kind</code></td>
-<td>The operation represented by the segment, such as <code>literal</code>, <code>transform</code>, or <code>compose-newline</code>.</td>
-</tr>
-<tr class="odd">
-<td><code>precision</code></td>
-<td><code>exact</code> when character offsets correspond, otherwise <code>coarse</code>.</td>
-</tr>
-<tr class="even">
-<td><code>via</code></td>
-<td>Ordered derivation steps from the contributing chunk toward the deliverable.</td>
-</tr>
-<tr class="odd">
-<td><code>origins</code></td>
-<td>Original input spans retained by a coarse transform, when applicable.</td>
-</tr>
-</tbody>
-</table>
-<p>For a nested substitution, <code>via</code> retains each authored reference. A leaf inserted into a middle chunk and then a main chunk therefore records both reference sites rather than only a flat dependency list.</p>
-<p>The aggregate has <code>kind: "ravel-provenance-bundle"</code> and a deterministic <code>maps</code> array containing complete sidecar objects. A consumer may use only the nearby sidecar or load one build-level file without losing information.</p>
+<section id="asciidoc" class="level1">
+<h1>AsciiDoc</h1>
+<p><code>@pieceful/ravel-asciidoc</code> maps native AsciiDoc sections, source blocks, containers, cross references, and visible directive macros into a Ravel Map. It is a lossless standalone adapter: parsing does not invoke Asciidoctor, expand includes, execute code, or write outputs.</p>
+<p>AsciiDoc element attributes can carry IDs, roles, and arbitrary extension metadata. Asciidoctor’s sourcemap records block starts but not complete ranges for metadata and inline elements, so Ravel retains exact ranges with its own scanner. See the official <a href="https://docs.asciidoctor.org/asciidoc/latest/attributes/element-attributes/">element-attribute guide</a> and <a href="https://docs.asciidoctor.org/asciidoctor/latest/api/sourcemap/">sourcemap documentation</a>.</p>
+<section id="section-owned-pieces" class="level2">
+<h2 class="anchored" data-anchor-id="section-owned-pieces">Section-owned pieces</h2>
+<p>An <code>lp-*</code> section ID marks a piece. Its title before the first unescaped pipe is the visible name, and source/listing blocks remain its fragments until the next piece section:</p>
+<pre class="asciidoc"><code>[#lp-main]
+== Main program | normalize-eol() | trim()
+
+[source,javascript]
+----
+console.log(_"format-greeting");
+----</code></pre>
+<p>The section anchor becomes a native AsciiDoc cross-reference target and the semantic ID <code>main</code>. The definition pipeline runs once after all owned fragments are concatenated.</p>
 </section>
-<section id="exact-and-coarse-mappings" class="level2">
-<h2 class="anchored" data-anchor-id="exact-and-coarse-mappings">Exact and coarse mappings</h2>
-<p>Direct literal text and ordinary chunk substitutions preserve exact character correspondence. Continuation indentation and the built-in <code>indent</code> transform retain exact spans for original characters and mark only inserted padding coarse. <code>trim</code>, <code>dedent</code>, and <code>concat</code> preserve exact spans for surviving characters. Greedy Markdown chunks retain separate spans for their non-contiguous fenced fragments.</p>
-<p>An arbitrary transform is allowed to reorder, remove, or synthesize text. Ravel consequently emits a coarse segment for its output, identifies the transform site, and retains its contributing <code>origins</code> instead of inventing a character-exact relationship. Synthesized composition newlines are likewise coarse. A future custom-transform protocol may let external transforms return their own precise segment maps.</p>
-<p>This distinction is also the safety boundary for eventual bidirectional editing: an editor can offer exact navigation or editing for exact segments and warn or decline when the selected text crosses a coarse segment.</p>
+<section id="self-contained-blocks-and-containers" class="level2">
+<h2 class="anchored" data-anchor-id="self-contained-blocks-and-containers">Self-contained blocks and containers</h2>
+<p>A titled source block can own itself:</p>
+<pre class="asciidoc"><code>.Greeting formatter
+[source#lp-format-greeting,javascript,role=lp-piece,lp-id=format-greeting]
+----
+const formatGreeting = "hello";
+----</code></pre>
+<p>An example/open container can own several descendant source blocks:</p>
+<pre class="asciidoc"><code>.Main program
+[#lp-main,role=lp-piece,lp-id=main,lp-pipe="trim()"]
+====
+[source,javascript]
+----
+const first = true;
+----
+
+[source,javascript]
+----
+console.log(first);
+----
+====</code></pre>
+<p>Nested piece containers and self-owned blocks are excluded from their outer piece. Fragment languages must agree. <code>ravel-run=true</code> and <code>ravel-provider=...</code> retain live intent as inert metadata.</p>
 </section>
-<section id="javascript-queries" class="level2">
-<h2 class="anchored" data-anchor-id="javascript-queries">JavaScript queries</h2>
-<p><code>@pieceful/ravel-core</code> exports:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> {</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  createBuildProvenanceMap<span class="op">,</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  createDeliverableProvenanceMap<span class="op">,</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  explainGeneratedOffset<span class="op">,</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  generatedRangesForSource<span class="op">,</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  generatedRangesForSourceRange<span class="op">,</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  sourceAtGeneratedOffset</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>} <span class="im">from</span> <span class="st">"@pieceful/ravel-core"</span><span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p><code>sourceAtGeneratedOffset(map, offset)</code> returns the containing segment. It also returns <code>sourceOffset</code> when correspondence is exact.</p>
-<p><code>generatedRangesForSource(map, uri, offset)</code> returns every corresponding range in that deliverable. Reused chunks may produce several results. Exact results include <code>generatedOffset</code>; coarse results expose only the containing generated range. <code>generatedRangesForSourceRange</code> performs the same lookup for a half-open source range and clips exact generated ranges to the overlap.</p>
-<p><code>explainGeneratedOffset(program, deliverable, offset)</code> adds the contributing definition, authored reference steps, and dependency path to a forward lookup. Reverse queries also search retained transform origins, returning an honest coarse result when character correspondence was destroyed.</p>
-<p>The constructors are useful for in-memory hosts. The Node host uses the same functions to serialize sidecars and the aggregate bundle.</p>
+<section id="navigation-and-composition" class="level2">
+<h2 class="anchored" data-anchor-id="navigation-and-composition">Navigation and composition</h2>
+<p>AsciiDoc’s native cross references navigate the rendered document:</p>
+<pre class="asciidoc"><code>See &lt;&lt;lp-main,Main program&gt;&gt;.
+See xref:lp-format-greeting[Greeting formatter].</code></pre>
+<p>They are recorded in <code>surface.navigation</code> and do not splice code. Underscore-quote references inside source bodies remain Ravel composition:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode javascript code-with-copy"><code class="sourceCode javascript"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(_<span class="st">"format-greeting | trim()"</span>)<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
-<section id="cli-queries" class="level2">
-<h2 class="anchored" data-anchor-id="cli-queries">CLI queries</h2>
-<p>Inspect a generated position directly from the source project:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">ravel</span> inspect ravel.toml <span class="dt">\</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--provenance</span> dist/program.js <span class="dt">\</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--generated-offset</span> 218</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Run the reverse lookup with the URI and UTF-16 offset reported in a map:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">ravel</span> inspect ravel.toml <span class="dt">\</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--provenance</span> dist/program.js <span class="dt">\</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--source-uri</span> guide.md <span class="dt">\</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">--source-offset</span> 84</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Add <code>--json</code> for the complete segment, definition, references, dependency path, or reverse matches.</p>
+<section id="visible-graph-directives" class="level2">
+<h2 class="anchored" data-anchor-id="visible-graph-directives">Visible graph directives</h2>
+<p>Ravel graph operations use conspicuous block macros:</p>
+<pre class="asciidoc"><code>ravel::read[target=shared.adoc,as=shared]
+ravel::derive[target=widget.browser,from=widget,using="minify()"]
+ravel::write[target=dist/greeting.js,from=main]</code></pre>
+<p><code>read</code>, <code>derive</code>, and <code>write</code> map to portable <code>in</code>, <code>create</code>, and <code>out</code> directives. The adapter records them but performs no effect. An Asciidoctor extension may later give these macros richer rendered presentation without changing their Ravel meaning.</p>
 </section>
-<section id="current-boundary" class="level2">
-<h2 class="anchored" data-anchor-id="current-boundary">Current boundary</h2>
-<p>Version 1 now supplies level-2 coverage across every evaluator path, level-3 source detail through ordinary composition and mapping-aware built-ins, and exact forward/reverse navigation for unchanged characters. This is the useful navigation subset of level 4. Editing generated content back into source and a precise-map return protocol for external transforms remain post-0.1 work.</p>
+<section id="node-host-configuration" class="level2">
+<h2 class="anchored" data-anchor-id="node-host-configuration">Node host configuration</h2>
+<p><code>.adoc</code> and <code>.asciidoc</code> select the adapter automatically. TOML can select it for another extension:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="dt">version</span> <span class="op">=</span> <span class="dv">1</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="kw">[[files]]</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="dt">path</span> <span class="op">=</span> <span class="st">"program.txt"</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="dt">adapter</span> <span class="op">=</span> <span class="st">"asciidoc"</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="dt">run</span> <span class="op">=</span> <span class="cn">true</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="dt">provider</span> <span class="op">=</span> <span class="st">"quickjs-wasm-worker"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The checked-in <code>fixtures/asciidoc/native.adoc</code> fixture covers all three piece forms, exact fragments, pipelines, native navigation, composition references, and graph directives.</p>
 
 
 </section>

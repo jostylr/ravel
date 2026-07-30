@@ -54,6 +54,18 @@ Use this package at adapter, editor, and host boundaries.
 - `options.executionOwner` selects `org` or `ravel`. Execution and tangling
   requests without one owner are diagnosed, and parsing performs neither.
 
+## `@pieceful/ravel-asciidoc`
+
+- `asciidocToMap(text, options)` scans section-owned pieces, attributed source
+  blocks, multi-fragment containers, native cross references, and `ravel::`
+  graph-directive macros, returning `{ map, diagnostics, surface }`.
+- Section-title and `lp-pipe` definition pipelines use the shared typed
+  grammar and run once after fragment concatenation.
+- `ravel-run` and `ravel-provider` attributes retain live intent as inert
+  metadata. Parsing invokes neither Asciidoctor nor a language runtime.
+- `surface.includes` records AsciiDoc include declarations without reading
+  undeclared files.
+
 ## `@pieceful/ravel-myst`
 
 - `mystToMap(text, options)` scans canonical `{ravel:piece}` directives, their

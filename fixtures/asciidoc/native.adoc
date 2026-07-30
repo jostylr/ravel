@@ -1,0 +1,44 @@
+= Ravel AsciiDoc fixture
+:ravel-document: native
+
+[#lp-main]
+== Main program | trim()
+
+The main program uses the formatter.
+
+[source,javascript]
+----
+const greeting = _"format-greeting";
+----
+
+[source,javascript]
+----
+console.log(greeting);
+----
+
+.Greeting formatter
+[source#lp-format-greeting,javascript,role=lp-piece,lp-id=format-greeting]
+----
+const formatGreeting = "hello";
+----
+
+.Bundled fragments
+[#lp-bundle,role=lp-piece,lp-id=bundle,lp-pipe="trim()"]
+====
+The container owns both source blocks.
+
+[source,text]
+----
+ first
+----
+
+[source,text]
+----
+second 
+----
+====
+
+See <<lp-main,Main program>> and xref:lp-format-greeting[formatter].
+
+ravel::derive[target=bundle-clean.text,from=bundle,using="trim()"]
+ravel::write[target=dist/bundle.txt,from=bundle-clean.text]

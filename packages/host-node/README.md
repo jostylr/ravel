@@ -36,9 +36,14 @@ Noweb sources use `.nw` or `.noweb`, or may be selected explicitly with
 as chunk metadata; loading never executes a noweb chunk or writes tangled
 output.
 
+AsciiDoc sources use `.adoc`, `.asciidoc`, or `adapter = "asciidoc"`.
+Section and block pieces retain exact source bodies, pipelines, native
+cross-reference navigation, and `ravel::` graph directives. Loading does not
+invoke Asciidoctor or expand includes.
+
 Org sources use `.org` or `adapter = "org"`. TOML can select
 `references = "org-noweb"`, `"underscore-quote"`, or `"both"`, enable
-Pieceful-only use-site pipes with `noweb_pipes = true`, and assign Babel
+Ravel-only use-site pipes with `noweb_pipes = true`, and assign Babel
 authority with `execution_owner = "org"` or `"ravel"`. The host retains
 Babel header arguments, result artifacts, and tangle requests as data; loading
 does not invoke Emacs or Babel.

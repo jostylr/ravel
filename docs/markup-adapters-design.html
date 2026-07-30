@@ -171,6 +171,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="dropdown-text">MyST Markdown</span></a>
   </li>  
         <li>
+    <a class="dropdown-item" href="./asciidoc.html">
+ <span class="dropdown-text">AsciiDoc</span></a>
+  </li>  
+        <li>
     <a class="dropdown-item" href="./pipes-and-directives.html">
  <span class="dropdown-text">Pipes and directives</span></a>
   </li>  
@@ -306,6 +310,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <div class="sidebar-item-container"> 
   <a href="./myst.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">MyST Markdown</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./asciidoc.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">AsciiDoc</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -1090,12 +1100,12 @@ console.log("done");
 <section id="asciidoc-directives" class="level3">
 <h3 class="anchored" data-anchor-id="asciidoc-directives">AsciiDoc directives</h3>
 <p>The native-looking canonical form is a small set of block macros:</p>
-<pre class="asciidoc"><code>lp::write[target=dist/greeting.js,from=main]
+<pre class="asciidoc"><code>ravel::write[target=dist/greeting.js,from=main]
 
-lp::derive[target=widget.browser,from=widget,using="minify()"]
+ravel::derive[target=widget.browser,from=widget,using="minify()"]
 
-lp::read[target=shared.adoc,as=shared]</code></pre>
-<p><code>lp</code> is the block-macro name and <code>write</code>, <code>derive</code>, or <code>read</code> is its target. An Asciidoctor extension renders each macro as visible prose/a link and records its attributes. The standalone adapter recognizes exactly the same grammar without requiring Asciidoctor to perform an effect.</p>
+ravel::read[target=shared.adoc,as=shared]</code></pre>
+<p><code>ravel</code> is the block-macro name and <code>write</code>, <code>derive</code>, or <code>read</code> is its target. An Asciidoctor extension renders each macro as visible prose/a link and records its attributes. The standalone adapter recognizes exactly the same grammar without requiring Asciidoctor to perform an effect.</p>
 <p>This syntax is preferable to hiding directives in comments or overloading ordinary links. It also makes effects conspicuous in the source.</p>
 </section>
 <section id="implementation-choices-and-limitations" class="level3">
@@ -1521,7 +1531,7 @@ lp::read[target=shared.adoc,as=shared]</code></pre>
 <li>Is an inferred heading ID acceptable without a diagnostic in an explicitly selected legacy-style document?</li>
 <li>Should <code>#lp-main</code> alone mark a named-fence declaration, or must <code>.lp-piece</code> always be present? Requiring the class is less magical.</li>
 <li>Should the Quarto bridge always number pieces as listings, or support an unnumbered <code>Piece: main</code> caption style?</li>
-<li>Should AsciiDoc retain the single generic block macro (<code>lp::write[target=...]</code>), or use a styled delimited block for directives that need richer visible prose?</li>
+<li>Should AsciiDoc retain the single generic block macro (<code>ravel::write[target=...]</code>), or use a styled delimited block for directives that need richer visible prose?</li>
 <li>Should <code>&lt;&lt;name | pipeline&gt;&gt;</code> be enabled by <code>noweb-plus</code>/Org configuration only, or recognized with a portability warning whenever encountered?</li>
 <li>Which system owns execution in an Org or notebook workflow? The default should be the native host, with Ravel limited to pure graph assembly.</li>
 </ol>

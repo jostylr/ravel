@@ -334,6 +334,61 @@ test("Node host loads Org extensions and TOML ownership/reference settings", asy
   }
 });
 
+test("Node host loads AsciiDoc extensions and explicit TOML adapter settings", async () => {
+  const sandbox = await mkdtemp(join(tmpdir(), "ravel-asciidoc-host-"));
+  const input = join(sandbox, "program.adoc");
+  const ordinary = join(sandbox, "explicit.txt");
+  const config = join(sandbox, "ravel.toml");
+  const source = [
+    ".Main",
+    "[source#lp-main,javascript,role=lp-piece,lp-id=main]",
+    "----",
+    "export default 42;",
+    "----",
+    ""
+  ].join("\n");
+  try {
+    await writeFile(input, source);
+    await writeFile(ordinary, source);
+    await writeFile(config, [
+      "version = 1",
+      "",
+      "[[files]]",
+      "path = \"explicit.txt\"",
+      "adapter = \"asciidoc\"",
+      "run = true",
+      "provider = \"quickjs-wasm-worker\"",
+      ""
+    ].join("\n"));
+
+    const direct = await loadBuildInput(input);
+    assert.equal(
+      direct.pretransform.documents[0].format,
+      "asciidoc+ravel-v1"
+    );
+    assert.equal(
+      direct.pretransform.chunks[0].metadata.data.ravel.run,
+      undefined
+    );
+
+    const loaded = await loadBuildInput(config);
+    assert.equal(
+      loaded.pretransform.documents[0].format,
+      "asciidoc+ravel-v1"
+    );
+    assert.equal(
+      loaded.pretransform.chunks[0].metadata.data.ravel.run,
+      true
+    );
+    assert.equal(
+      loaded.pretransform.chunks[0].metadata.data.ravel.provider,
+      "quickjs-wasm-worker"
+    );
+  } finally {
+    await rm(sandbox, { recursive: true, force: true });
+  }
+});
+
 test("Node host loads .myst.md directly and explicit MyST TOML execution settings", async () => {
   const sandbox = await mkdtemp(join(tmpdir(), "ravel-myst-host-"));
   const input = join(sandbox, "program.myst.md");

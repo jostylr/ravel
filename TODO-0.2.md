@@ -563,10 +563,10 @@ Exit criteria:
 
 ### D4. Implement AsciiDoc and HTML
 
-- [ ] Implement AsciiDoc section-owned and attributed-block forms using native
+- [x] Implement AsciiDoc section-owned and attributed-block forms using native
       section IDs, block titles, source languages, roles, custom attributes,
-      cross-references, and `lp` directive macros.
-- [ ] Support compact section-name pipelines and `lp-pipe` block attributes.
+      cross-references, and `ravel` directive macros.
+- [x] Support compact section-name pipelines and `lp-pipe` block attributes.
 - [ ] Enable Asciidoctor source mapping and pair its block AST with lossless
       rescanning for metadata, block ends, literal bodies, inline references,
       pipelines, and included-file URIs.

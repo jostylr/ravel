@@ -138,6 +138,10 @@ ul.task-list li input[type="checkbox"] {
  <span class="dropdown-text">MyST Markdown</span></a>
   </li>  
         <li>
+    <a class="dropdown-item" href="./asciidoc.html">
+ <span class="dropdown-text">AsciiDoc</span></a>
+  </li>  
+        <li>
     <a class="dropdown-item" href="./pipes-and-directives.html">
  <span class="dropdown-text">Pipes and directives</span></a>
   </li>  
@@ -277,6 +281,12 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="./asciidoc.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">AsciiDoc</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="./live-execution.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Live execution (0.2 development)</span></a>
   </div>
@@ -406,6 +416,7 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#piecefulravel-markdown-litpro" id="toc-piecefulravel-markdown-litpro" class="nav-link" data-scroll-target="#piecefulravel-markdown-litpro"><code>@pieceful/ravel-markdown-litpro</code></a></li>
   <li><a href="#piecefulravel-noweb" id="toc-piecefulravel-noweb" class="nav-link" data-scroll-target="#piecefulravel-noweb"><code>@pieceful/ravel-noweb</code></a></li>
   <li><a href="#piecefulravel-org" id="toc-piecefulravel-org" class="nav-link" data-scroll-target="#piecefulravel-org"><code>@pieceful/ravel-org</code></a></li>
+  <li><a href="#piecefulravel-asciidoc" id="toc-piecefulravel-asciidoc" class="nav-link" data-scroll-target="#piecefulravel-asciidoc"><code>@pieceful/ravel-asciidoc</code></a></li>
   <li><a href="#piecefulravel-myst" id="toc-piecefulravel-myst" class="nav-link" data-scroll-target="#piecefulravel-myst"><code>@pieceful/ravel-myst</code></a></li>
   <li><a href="#piecefulravel-myst-plugin" id="toc-piecefulravel-myst-plugin" class="nav-link" data-scroll-target="#piecefulravel-myst-plugin"><code>@pieceful/ravel-myst-plugin</code></a></li>
   <li><a href="#piecefulravel-core" id="toc-piecefulravel-core" class="nav-link" data-scroll-target="#piecefulravel-core"><code>@pieceful/ravel-core</code></a></li>
@@ -467,6 +478,15 @@ ul.task-list li input[type="checkbox"] {
 <li><code>#+NAME</code> and <code>#+LP_NAME</code> declare individual pieces; <code>:noweb-ref</code> contributes the same source body to a repeated aggregate piece.</li>
 <li><code>options.references</code> selects <code>org-noweb</code>, <code>underscore-quote</code>, or <code>both</code>; <code>options.nowebPipes</code> explicitly enables piped Org-noweb uses.</li>
 <li><code>options.executionOwner</code> selects <code>org</code> or <code>ravel</code>. Execution and tangling requests without one owner are diagnosed, and parsing performs neither.</li>
+</ul>
+</section>
+<section id="piecefulravel-asciidoc" class="level2">
+<h2 class="anchored" data-anchor-id="piecefulravel-asciidoc"><code>@pieceful/ravel-asciidoc</code></h2>
+<ul>
+<li><code>asciidocToMap(text, options)</code> scans section-owned pieces, attributed source blocks, multi-fragment containers, native cross references, and <code>ravel::</code> graph-directive macros, returning <code>{ map, diagnostics, surface }</code>.</li>
+<li>Section-title and <code>lp-pipe</code> definition pipelines use the shared typed grammar and run once after fragment concatenation.</li>
+<li><code>ravel-run</code> and <code>ravel-provider</code> attributes retain live intent as inert metadata. Parsing invokes neither Asciidoctor nor a language runtime.</li>
+<li><code>surface.includes</code> records AsciiDoc include declarations without reading undeclared files.</li>
 </ul>
 </section>
 <section id="piecefulravel-myst" class="level2">

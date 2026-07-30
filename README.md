@@ -32,6 +32,7 @@ examples live at [ravel.jostylr.com](https://ravel.jostylr.com/).
 | [@pieceful/ravel](https://www.npmjs.com/package/@pieceful/ravel) | Node.js CLI for checking, inspecting, and building Ravel projects. |
 | [@pieceful/ravel-core](https://www.npmjs.com/package/@pieceful/ravel-core) | Portable chunk parser, graph evaluator, diagnostics, and provenance engine. |
 | [@pieceful/ravel-map](https://www.npmjs.com/package/@pieceful/ravel-map) | Versioned Ravel Map schema, validation, and diagnostic contract. |
+| [@pieceful/ravel-asciidoc](https://www.npmjs.com/package/@pieceful/ravel-asciidoc) | Lossless AsciiDoc sections, attributed blocks, containers, cross-references, and graph-directive macros. |
 | [@pieceful/ravel-markdown](https://www.npmjs.com/package/@pieceful/ravel-markdown) | Portable adapter that extracts Ravel Maps from Markdown fences and directives. |
 | [@pieceful/ravel-markdown-litpro](https://www.npmjs.com/package/@pieceful/ravel-markdown-litpro) | Historical H1-H6, minor-block, and legacy-directive Markdown adapter. |
 | [@pieceful/ravel-myst](https://www.npmjs.com/package/@pieceful/ravel-myst) | Lossless MyST pieces, native code fallbacks, cross-reference, and notebook-cell adapter. |
