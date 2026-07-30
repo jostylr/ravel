@@ -9,7 +9,12 @@ supported Ravel source document or `ravel.toml` is active. The extension:
 - evaluates the project without writing deliverables;
 - opens a bounded Explorer webview beside the normal editor;
 - reveals a graph entity's source range in the editor;
+- focuses the narrowest graph entity when the editor selection changes;
 - requests authored and evaluated chunk text only after selection.
+
+The webview defaults to a vertical ELK layout for typical editor-column
+dimensions. A toolbar control switches to horizontal layout when that better
+matches the project.
 
 ## Development
 

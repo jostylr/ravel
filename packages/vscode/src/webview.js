@@ -1,10 +1,14 @@
-import { createExplorerView } from "@pieceful/ravel-explorer/browser";
+import {
+  createExplorerView,
+  explorerLayoutOptions
+} from "@pieceful/ravel-explorer/browser";
 
 const vscode = acquireVsCodeApi();
 const byId = (id) => document.getElementById(id);
 const graph = byId("graph");
 const detailsPanel = byId("details");
 const lens = byId("lens");
+const orientation = byId("orientation");
 const search = byId("search");
 const status = byId("status");
 
@@ -51,6 +55,14 @@ const filterSnapshot = (base, currentLens) => {
   };
 };
 
+const layoutOptions = () => ({
+  ...explorerLayoutOptions,
+  elk: {
+    ...explorerLayoutOptions.elk,
+    "elk.direction": orientation.value
+  }
+});
+
 const textPreview = (heading, preview) => preview ? `
   <h2>${escapeHtml(heading)}</h2>
   <pre><code>${escapeHtml(preview.text)}${preview.truncated
@@ -91,11 +103,12 @@ const render = async () => {
   const projected = filterSnapshot(snapshot, lens.value);
   if (!view) {
     view = createExplorerView(graph, projected, {
-      onSelect: requestSelection
+      onSelect: requestSelection,
+      layout: layoutOptions()
     });
     await view.ready;
   } else {
-    await view.update(projected);
+    await view.update(projected, { layout: layoutOptions() });
   }
   status.textContent =
     `${projected.counts.visibleNodes} nodes · ${projected.counts.visibleEdges} edges`;
@@ -109,10 +122,22 @@ window.addEventListener("message", async ({ data: message }) => {
     return;
   }
   if (message.type === "selection/changed") {
+    const visible = filterSnapshot(snapshot, lens.value).nodes
+      .some(({ id }) => id === message.entity.id);
+    if (!visible) {
+      lens.value = "derivation";
+      await render();
+    }
+    view.select(message.entity.id);
     renderDetails(message.entity, message.details, message.revealed);
-    status.textContent = message.revealed
-      ? `Revealed ${message.entity.label ?? message.entity.kind}`
-      : `Selected ${message.entity.label ?? message.entity.kind}`;
+    const label = message.entity.label ?? message.entity.kind;
+    status.textContent = message.origin === "editor"
+      ? `Focused ${label} from editor`
+      : message.origin === "reveal-button"
+        ? `Source editor focused for ${label}`
+        : message.revealed
+          ? `Source highlighted for ${label}`
+          : `Selected ${label}`;
     return;
   }
   if (message.type === "request/error") {
@@ -122,6 +147,10 @@ window.addEventListener("message", async ({ data: message }) => {
 });
 
 lens.addEventListener("change", () => {
+  if (snapshot) void render();
+});
+
+orientation.addEventListener("change", () => {
   if (snapshot) void render();
 });
 

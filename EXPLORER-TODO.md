@@ -115,8 +115,11 @@ Goal: link graph navigation with the ordinary Markdown editor.
 - [x] Send only bounded Explorer snapshots to the webview.
 - [x] Reveal and select exact source ranges from graph selection.
 - [x] Request bounded authored and evaluated chunk text only after selection.
-- [ ] Observe VS Code selections and focus corresponding graph entities.
-- [ ] Add origin tokens and tests preventing editor/webview selection loops.
+- [x] Observe VS Code selections and focus the narrowest corresponding graph
+      entity.
+- [x] Add graph/editor origin handling that suppresses the exact programmatic
+      source selection.
+- [ ] Add VS Code-hosted regression tests for editor/webview selection loops.
 - [ ] Publish Ravel diagnostics through a VS Code diagnostic collection.
 - [x] Add project-load progress.
 - [ ] Add cancellation and a Ravel output channel.

@@ -8,10 +8,14 @@ import {
   createExplorerSnapshot
 } from "@pieceful/ravel-explorer";
 import { loadBuildInput } from "@pieceful/ravel-host-node";
-import { resolveProjectInput } from "./project.js";
+import {
+  findExplorerEntityAtSelection,
+  resolveProjectInput
+} from "./project.js";
 
 let activePanel;
 let activeProject;
+let pendingSourceReveal;
 const webviewRequestTypes = new Set([
   "view/request",
   "entity/select",
@@ -52,16 +56,24 @@ const sourceUri = (project, source) => {
   return contained(project.rootDirectory, path) ? vscode.Uri.file(path) : null;
 };
 
-const revealSource = async (project, source) => {
+const revealSource = async (project, source, { preserveFocus = true } = {}) => {
   const uri = sourceUri(project, source);
   if (!uri) return false;
+  pendingSourceReveal = {
+    uri: uri.toString(),
+    range: source.range,
+    expires: Date.now() + 1_000
+  };
   const document = await vscode.workspace.openTextDocument(uri);
   const editor = await vscode.window.showTextDocument(document, {
     viewColumn: project.sourceColumn,
-    preserveFocus: true,
+    preserveFocus,
     preview: true
   });
-  if (!source.range) return true;
+  if (!source.range) {
+    pendingSourceReveal = undefined;
+    return true;
+  }
   const { start, end } = source.range;
   const range = new vscode.Range(
     new vscode.Position(start.line, start.column),
@@ -113,7 +125,10 @@ const handleMessage = async (panel, message) => {
       const entity = entityFor(activeProject, message.entityId);
       if (!entity) throw new Error("Explorer entity is not present in this revision.");
       const source = entity.source ?? entity.authoredAt;
-      const revealed = await revealSource(activeProject, source);
+      const revealed = await revealSource(activeProject, source, {
+        preserveFocus: message.type === "entity/select"
+      });
+      activeProject.lastEditorEntityId = entity.id;
       const details = createExplorerEntityDetails(
         activeProject.context,
         message.entityId,
@@ -126,7 +141,8 @@ const handleMessage = async (panel, message) => {
         revision: activeProject.snapshot.revision,
         entity,
         details,
-        revealed
+        revealed,
+        origin: message.type === "source/reveal" ? "reveal-button" : "graph"
       });
       return;
     }
@@ -161,6 +177,10 @@ const getHtml = (webview, extensionUri) => {
           <option value="overview">Overview</option>
           <option value="dependencies" selected>Dependencies</option>
           <option value="derivation">Derivation</option>
+        </select>
+        <select id="orientation" aria-label="Layout orientation">
+          <option value="DOWN" selected>Vertical</option>
+          <option value="RIGHT">Horizontal</option>
         </select>
         <input id="search" type="search" aria-label="Find entity"
           placeholder="Find chunk, transform, output…">
@@ -266,11 +286,65 @@ const openExplorer = async (extensionUri, requestedUri) => {
   activePanel.title = `Ravel Explorer · ${activeProject.snapshot.project.label}`;
 };
 
+const editorSelectionChanged = async (event) => {
+  if (!activePanel || !activeProject) return;
+  const uri = event.textEditor.document.uri;
+  if (pendingSourceReveal && Date.now() >= pendingSourceReveal.expires) {
+    pendingSourceReveal = undefined;
+  }
+  if (pendingSourceReveal?.uri === uri.toString()) {
+    const expected = pendingSourceReveal.range;
+    const actual = event.selections[0];
+    if (expected && actual &&
+        actual.start.line === expected.start.line &&
+        actual.start.character === expected.start.column &&
+        actual.end.line === expected.end.line &&
+        actual.end.character === expected.end.column) {
+      pendingSourceReveal = undefined;
+    }
+    return;
+  }
+  if (uri.scheme !== "file" || !contained(activeProject.rootDirectory, uri.fsPath)) return;
+  const source = relative(activeProject.rootDirectory, uri.fsPath).split(sep).join("/");
+  const selection = event.selections[0];
+  if (!selection) return;
+  const entity = findExplorerEntityAtSelection(activeProject.snapshot, source, {
+    start: {
+      line: selection.start.line,
+      column: selection.start.character
+    },
+    end: {
+      line: selection.end.line,
+      column: selection.end.character
+    }
+  });
+  if (!entity || entity.id === activeProject.lastEditorEntityId) return;
+  activeProject.lastEditorEntityId = entity.id;
+  const details = createExplorerEntityDetails(
+    activeProject.context,
+    entity.id,
+    { maxTextLength: 20_000 }
+  );
+  await activePanel.webview.postMessage({
+    version: 1,
+    type: "selection/changed",
+    requestId: "editor-selection-" + Date.now(),
+    revision: activeProject.snapshot.revision,
+    entity,
+    details,
+    revealed: true,
+    origin: "editor"
+  });
+};
+
 export const activate = (context) => {
   context.subscriptions.push(
     vscode.commands.registerCommand("ravel.openExplorer", (uri) =>
       openExplorer(context.extensionUri, uri)
-    )
+    ),
+    vscode.window.onDidChangeTextEditorSelection((event) => {
+      void editorSelectionChanged(event);
+    })
   );
 };
 
