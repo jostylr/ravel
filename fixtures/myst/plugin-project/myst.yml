@@ -1,0 +1,10 @@
+version: 1
+project:
+  id: pieceful-myst-plugin-fixture
+  title: Pieceful MyST plugin fixture
+  toc:
+    - file: index.md
+  plugins:
+    - ../../../packages/myst-plugin/plugin.mjs
+site:
+  template: book-theme

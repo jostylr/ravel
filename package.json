@@ -30,6 +30,7 @@
     "test": "npm run test:node",
     "test:node": "node --test",
     "test:bun": "bun test",
+    "test:myst-plugin": "node scripts/myst-plugin-smoke.mjs",
     "ravel": "node packages/cli/src/index.js",
     "benchmark:assembly": "node examples/benchmark/benchmark-build.mjs",
     "validate:schema": "node scripts/validate-map-example.mjs",

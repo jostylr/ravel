@@ -437,6 +437,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#myst-markdown" id="toc-myst-markdown" class="nav-link active" data-scroll-target="#myst-markdown">MyST Markdown</a>
   <ul class="collapse">
   <li><a href="#piece-directives" id="toc-piece-directives" class="nav-link" data-scroll-target="#piece-directives">Piece directives</a></li>
+  <li><a href="#native-piece-rendering-plugin" id="toc-native-piece-rendering-plugin" class="nav-link" data-scroll-target="#native-piece-rendering-plugin">Native <code>{piece}</code> rendering plugin</a></li>
   <li><a href="#native-no-plugin-fallback" id="toc-native-no-plugin-fallback" class="nav-link" data-scroll-target="#native-no-plugin-fallback">Native no-plugin fallback</a></li>
   <li><a href="#composition-and-document-navigation" id="toc-composition-and-document-navigation" class="nav-link" data-scroll-target="#composition-and-document-navigation">Composition and document navigation</a></li>
   <li><a href="#notebook-cells-and-live-blocks" id="toc-notebook-cells-and-live-blocks" class="nav-link" data-scroll-target="#notebook-cells-and-live-blocks">Notebook cells and live blocks</a></li>
@@ -454,6 +455,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="myst-markdown" class="level1">
 <h1>MyST Markdown</h1>
 <p><code>@pieceful/ravel-myst</code> maps MyST directives, anchors, captions, code, and notebook-cell metadata into a Ravel Map without invoking MyST, Jupyter, or a language runtime. The scanner preserves directive bodies and source ranges exactly.</p>
+<p>The separate <code>@pieceful/ravel-myst-plugin</code> package teaches MyST how to render the custom <code>{piece}</code> directive. Keeping it separate means parsing Ravel source does not require MyST, while a MyST project can opt into native presentation.</p>
 <p>MyST permits both colon and backtick directive fences, arguments after the directive name, and <code>:key: value</code> options. See the official <a href="https://mystmd.org/guide/syntax-overview">syntax overview</a>, <a href="https://mystmd.org/guide/code">code-block guide</a>, and <a href="https://mystmd.org/guide/cross-references">cross-reference guide</a>.</p>
 <section id="piece-directives" class="level2">
 <h2 class="anchored" data-anchor-id="piece-directives">Piece directives</h2>
@@ -467,68 +469,89 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>The argument before the first unescaped pipe is the authored piece name. <code>:label:</code> supplies both the stable MyST anchor and the semantic ID after an optional <code>lp-</code> prefix is removed. <code>:caption:</code> is the visible name and <code>:language:</code> controls highlighting and language metadata. Omitting a label infers the ID from the argument and produces an informational stability diagnostic.</p>
 <p>The pipeline is parsed with Ravel’s shared typed grammar and runs once after all fragments have been concatenated. Both colon and backtick fences work, although MyST recommends backticks for code-like directive bodies.</p>
 </section>
+<section id="native-piece-rendering-plugin" class="level2">
+<h2 class="anchored" data-anchor-id="native-piece-rendering-plugin">Native <code>{piece}</code> rendering plugin</h2>
+<p>Install the adapter and renderer independently:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> install @pieceful/ravel-myst @pieceful/ravel-myst-plugin</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Register the plugin in <code>myst.yml</code>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">project</span><span class="kw">:</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">plugins</span><span class="kw">:</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> node_modules/@pieceful/ravel-myst-plugin/plugin.mjs</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The plugin turns <code>{piece}</code> into standard MyST code, container, caption, and code-cell nodes. MyST therefore supplies syntax highlighting and ordinary label-based cross references. The class <code>pieceful-piece</code> is added for theme customization, the caption defaults to <code>Piece: &lt;name&gt;</code>, and the definition pipeline is displayed beside it unless <code>:show-pipeline: false</code> is set.</p>
+<p>The plugin handles presentation only. It does not construct the Ravel graph, resolve code-composition references, weave outputs, or execute Pieceful live code; those remain the adapter and host’s responsibility.</p>
+</section>
 <section id="native-no-plugin-fallback" class="level2">
 <h2 class="anchored" data-anchor-id="native-no-plugin-fallback">Native no-plugin fallback</h2>
 <p>A MyST installation without a Pieceful plugin can render and cross-reference the built-in code directive directly:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="in">```{code-block} javascript</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="op">:</span>label<span class="op">:</span> lp<span class="op">-</span>format<span class="op">-</span>greeting</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="op">:</span>caption<span class="op">:</span> Greeting formatter</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>function formatGreeting<span class="op">()</span> <span class="op">{</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="st">"hello"</span><span class="op">;</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>See [](#lp-format-greeting).</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="in">```{code-block} javascript</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="op">:</span>label<span class="op">:</span> lp<span class="op">-</span>format<span class="op">-</span>greeting</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="op">:</span>caption<span class="op">:</span> Greeting formatter</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>function formatGreeting<span class="op">()</span> <span class="op">{</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="st">"hello"</span><span class="op">;</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>See [](#lp-format-greeting).</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p><code>{code}</code> is equivalent. Ravel recognizes these native directives only when their label starts with <code>lp-</code>, so ordinary examples remain ordinary MyST content. The label provides the semantic name, and a caption is required for a visible piece name. This fallback intentionally has no Pieceful-only pipeline option.</p>
 </section>
 <section id="composition-and-document-navigation" class="level2">
 <h2 class="anchored" data-anchor-id="composition-and-document-navigation">Composition and document navigation</h2>
 <p>Code composition remains explicit inside a piece:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode javascript code-with-copy"><code class="sourceCode javascript"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(_<span class="st">"format-greeting | trim()"</span>)<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode javascript code-with-copy"><code class="sourceCode javascript"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(_<span class="st">"format-greeting | trim()"</span>)<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>MyST links such as <code>[](#lp-main)</code>, <code>{ref}</code> roles, and <code>@lp-main</code> shorthand are recorded in <code>surface.navigation</code> with exact ranges. They point readers to rendered anchors but never splice code. Underscore-quote uses are recorded in <code>surface.references</code> and are the only MyST form that enters Ravel’s dependency graph.</p>
 </section>
 <section id="notebook-cells-and-live-blocks" class="level2">
 <h2 class="anchored" data-anchor-id="notebook-cells-and-live-blocks">Notebook cells and live blocks</h2>
 <p>MyST’s documented <code>{code-cell}</code> directive, front-matter <code>kernelspec</code>, and cell <code>:tags:</code> are retained:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="an">kernelspec:</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co">  name: python3</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co">  display_name: Python 3</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="in">```{code-cell} python</span></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="op">:</span>label<span class="op">:</span> lp<span class="op">-</span>analysis</span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="op">:</span>caption<span class="op">:</span> Analysis</span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="op">:</span>tags<span class="op">:</span> <span class="op">[</span>hide<span class="op">-</span>output<span class="op">]</span></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>print<span class="op">(</span><span class="st">"hello"</span><span class="op">)</span></span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="an">kernelspec:</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co">  name: python3</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co">  display_name: Python 3</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="in">```{code-cell} python</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="op">:</span>label<span class="op">:</span> lp<span class="op">-</span>analysis</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="op">:</span>caption<span class="op">:</span> Analysis</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="op">:</span>tags<span class="op">:</span> <span class="op">[</span>hide<span class="op">-</span>output<span class="op">]</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>print<span class="op">(</span><span class="st">"hello"</span><span class="op">)</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>The adapter emits an inert <code>myst-code-cell</code> effect plan. MyST owns it by default. A custom <code>{piece}</code> can request the same mapping with <code>:cell:</code>.</p>
-<p>Ravel live execution is deliberately separate. A cell runs through Pieceful only when its owner is explicitly <code>pieceful</code> and <code>run</code> is requested. The portable API is:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { mystToMap } <span class="im">from</span> <span class="st">"@pieceful/ravel-myst"</span><span class="op">;</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> { map<span class="op">,</span> diagnostics<span class="op">,</span> surface } <span class="op">=</span> <span class="fu">mystToMap</span>(source<span class="op">,</span> {</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">uri</span><span class="op">:</span> <span class="st">"program.myst.md"</span><span class="op">,</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">document</span><span class="op">:</span> <span class="st">"program"</span><span class="op">,</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">executionOwner</span><span class="op">:</span> <span class="st">"pieceful"</span><span class="op">,</span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">run</span><span class="op">:</span> <span class="kw">true</span><span class="op">,</span></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">provider</span><span class="op">:</span> <span class="st">"quickjs-wasm-worker"</span></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Ravel live execution is deliberately separate. A cell runs through Pieceful only when its owner is explicitly <code>pieceful</code> and <code>run</code> is requested. Ownership may be selected directly on a piece:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="in">```{piece} analysis</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="in">:language: javascript</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="in">:cell:</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="in">:execution-owner: pieceful</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="in">:run:</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="in">:provider: quickjs-wasm-worker</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="in">export default { answer: 42 };</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The rendering plugin keeps this form static in MyST, while the adapter records the Pieceful live request. The same policy can be supplied through the portable API:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { mystToMap } <span class="im">from</span> <span class="st">"@pieceful/ravel-myst"</span><span class="op">;</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> { map<span class="op">,</span> diagnostics<span class="op">,</span> surface } <span class="op">=</span> <span class="fu">mystToMap</span>(source<span class="op">,</span> {</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">uri</span><span class="op">:</span> <span class="st">"program.myst.md"</span><span class="op">,</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">document</span><span class="op">:</span> <span class="st">"program"</span><span class="op">,</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">executionOwner</span><span class="op">:</span> <span class="st">"pieceful"</span><span class="op">,</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">run</span><span class="op">:</span> <span class="kw">true</span><span class="op">,</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">provider</span><span class="op">:</span> <span class="st">"quickjs-wasm-worker"</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="node-host-configuration" class="level2">
 <h2 class="anchored" data-anchor-id="node-host-configuration">Node host configuration</h2>
 <p>Files ending in <code>.myst.md</code> select this adapter automatically. An ordinary <code>.md</code> file can select it explicitly:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="dt">version</span> <span class="op">=</span> <span class="dv">1</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="kw">[[files]]</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="dt">path</span> <span class="op">=</span> <span class="st">"program.md"</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="dt">adapter</span> <span class="op">=</span> <span class="st">"myst"</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="dt">execution_owner</span> <span class="op">=</span> <span class="st">"pieceful"</span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="dt">run</span> <span class="op">=</span> <span class="cn">true</span></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="dt">provider</span> <span class="op">=</span> <span class="st">"quickjs-wasm-worker"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="dt">version</span> <span class="op">=</span> <span class="dv">1</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="kw">[[files]]</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="dt">path</span> <span class="op">=</span> <span class="st">"program.md"</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="dt">adapter</span> <span class="op">=</span> <span class="st">"myst"</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="dt">execution_owner</span> <span class="op">=</span> <span class="st">"pieceful"</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="dt">run</span> <span class="op">=</span> <span class="cn">true</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="dt">provider</span> <span class="op">=</span> <span class="st">"quickjs-wasm-worker"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p><code>execution_owner = "myst"</code> retains native notebook authority. Parsing never executes a cell, fetches a cross-reference, or renders a document.</p>
-<p>The checked-in <code>fixtures/myst/fallback.myst.md</code> compatibility fixture uses only built-in MyST directives. The richer <code>{piece}</code> fixture is separate because its rendering requires a Pieceful MyST plugin; the source adapter itself does not.</p>
+<p>The checked-in <code>fixtures/myst/fallback.myst.md</code> compatibility fixture uses only built-in MyST directives. <code>fixtures/myst/plugin-project</code> is a native MyST project that exercises visible pipelines, labels, cross references, native cells, and Pieceful-owned cells. Run <code>npm run test:myst-plugin</code> to build and inspect its transformed MyST document.</p>
 
 
 </section>

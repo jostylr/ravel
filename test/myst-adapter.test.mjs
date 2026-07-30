@@ -143,6 +143,28 @@ test("MyST notebook cells preserve native ownership unless Pieceful is explicit"
   assert.equal(pieceful.map.chunks[0].metadata.data.ravel.run, true);
   assert.equal(pieceful.map.chunks[0].metadata.data.ravel.provider, "quickjs-wasm-worker");
   assert.equal(pieceful.map.metadata.plannedEffects[0].owner, "pieceful");
+
+  const directiveOwned = mystToMap([
+    "```{piece} analysis",
+    ":language: javascript",
+    ":caption: Analysis",
+    ":label: lp-analysis",
+    ":cell:",
+    ":execution-owner: pieceful",
+    ":run:",
+    ":provider: quickjs-wasm-worker",
+    "",
+    "export default 42;",
+    "```",
+    ""
+  ].join("\n"), { uri: "owned.myst.md", document: "owned" });
+  assert.deepEqual(directiveOwned.diagnostics, []);
+  assert.equal(directiveOwned.map.chunks[0].metadata.data.ravel.run, true);
+  assert.equal(
+    directiveOwned.map.chunks[0].metadata.data.ravel.provider,
+    "quickjs-wasm-worker"
+  );
+  assert.equal(directiveOwned.map.metadata.plannedEffects[0].owner, "pieceful");
 });
 
 test("MyST reports malformed ownership, conflicting labels, repeats, and unterminated directives", () => {

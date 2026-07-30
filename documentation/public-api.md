@@ -68,6 +68,18 @@ Use this package at adapter, editor, and host boundaries.
 - `options.executionOwner` selects `myst` or `pieceful` for notebook cells.
   Cell metadata and effect plans are inert during parsing.
 
+## `@pieceful/ravel-myst-plugin`
+
+- The default export is a native MyST JavaScript plugin; `pieceDirective` is
+  also exported for direct registration or testing.
+- `{piece}` directives render as standard MyST code/container nodes with
+  syntax highlighting, visible captions, labels, and displayed pipelines.
+- `:cell:` emits MyST's native executable code-cell structure by default.
+  `:execution-owner: pieceful` keeps the rendered block static so two runtimes
+  cannot own the same cell.
+- The plugin does not parse a Ravel graph, weave artifacts, or execute
+  Pieceful live code. Use `@pieceful/ravel-myst` for those semantics.
+
 ## `@pieceful/ravel-core`
 
 - `parseChunkId` and `formatChunkId` convert canonical chunk identities.

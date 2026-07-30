@@ -374,17 +374,35 @@ export const mystToMap = (text, options = {}) => {
       : scalar(fence.argument).split(/\s+/)[0] || null;
     const cellOption = booleanValue(optionValue(fence.options, "cell") ?? "false");
     const notebookCell = fence.directive === "code-cell" || cellOption === true;
+    const directiveOwner = optionValue(fence.options, "execution-owner") || null;
+    if (directiveOwner !== null && !executionOwners.has(directiveOwner)) {
+      diagnostics.push(diagnostic(
+        "LPA141",
+        "MyST directive execution-owner must be myst or pieceful.",
+        fence.declaration
+      ));
+    }
+    if (directiveOwner && executionOwner && directiveOwner !== executionOwner) {
+      diagnostics.push(diagnostic(
+        "LPA141",
+        "MyST directive and adapter configuration select different execution owners.",
+        fence.declaration
+      ));
+    }
+    const selectedOwner = executionOwners.has(directiveOwner)
+      ? directiveOwner
+      : executionOwner;
     const runOption = booleanValue(optionValue(fence.options, "run") ?? "false");
     const piecefulRequested = runSelected(options, [authoredName, canonical, label].filter(Boolean)) ||
       runOption === true;
-    if (piecefulRequested && executionOwner !== "pieceful") {
+    if (piecefulRequested && selectedOwner !== "pieceful") {
       diagnostics.push(diagnostic(
         "LPA141",
         "Pieceful execution requires executionOwner: pieceful; MyST remains the default notebook owner.",
         fence.declaration
       ));
     }
-    if (notebookCell && executionOwner === "pieceful" && !piecefulRequested) {
+    if (notebookCell && selectedOwner === "pieceful" && !piecefulRequested) {
       diagnostics.push(diagnostic(
         "LPA141",
         "A MyST notebook cell assigned to Pieceful must explicitly request run.",
@@ -419,7 +437,9 @@ export const mystToMap = (text, options = {}) => {
       pipeline: parsedPipeline.pipeline,
       pipelineSource: pipeSource,
       notebookCell,
-      piecefulRun: piecefulRequested && executionOwner === "pieceful",
+      executionOwner: selectedOwner,
+      piecefulRun: piecefulRequested && selectedOwner === "pieceful",
+      provider: optionValue(fence.options, "provider") || options.provider || null,
       tags: tagsFrom(optionValue(fence.options, "tags") ?? "")
     });
   }
@@ -471,13 +491,15 @@ export const mystToMap = (text, options = {}) => {
                 aliases
               },
               ...(candidate.piecefulRun ? { run: true } : {}),
-              ...(candidate.piecefulRun && options.provider ? { provider: options.provider } : {})
+              ...(candidate.piecefulRun && candidate.provider ? { provider: candidate.provider } : {})
             },
             myst: {
               label: candidate.label,
               caption: candidate.caption,
               notebookCell: candidate.notebookCell,
-              executionOwner: candidate.notebookCell ? (executionOwner ?? "myst") : executionOwner,
+              executionOwner: candidate.notebookCell
+                ? (candidate.executionOwner ?? "myst")
+                : candidate.executionOwner,
               fragments: []
             }
           }
@@ -556,7 +578,7 @@ export const mystToMap = (text, options = {}) => {
     if (candidate.notebookCell) {
       plannedEffects.push({
         kind: "myst-code-cell",
-        owner: executionOwner ?? "myst",
+        owner: candidate.executionOwner ?? "myst",
         pieceId: id,
         language: candidate.language,
         label: candidate.label,

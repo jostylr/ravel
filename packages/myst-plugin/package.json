@@ -1,0 +1,19 @@
+{
+  "name": "@pieceful/ravel-myst-plugin",
+  "version": "0.1.1",
+  "type": "module",
+  "description": "MyST rendering plugin for visible, cross-referenceable Pieceful code directives.",
+  "license": "MIT",
+  "author": "James Taylor",
+  "repository": { "type": "git", "url": "git+https://github.com/jostylr/ravel.git", "directory": "packages/myst-plugin" },
+  "bugs": { "url": "https://github.com/jostylr/ravel/issues" },
+  "homepage": "https://ravel.jostylr.com/",
+  "engines": { "node": ">=22" },
+  "keywords": ["ravel", "myst", "plugin", "literate-programming"],
+  "publishConfig": { "access": "public" },
+  "exports": {
+    ".": "./plugin.mjs"
+  },
+  "types": "./src/index.d.ts",
+  "files": ["plugin.mjs", "src", "README.md", "LICENSE"]
+}

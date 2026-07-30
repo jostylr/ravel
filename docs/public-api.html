@@ -407,6 +407,7 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#piecefulravel-noweb" id="toc-piecefulravel-noweb" class="nav-link" data-scroll-target="#piecefulravel-noweb"><code>@pieceful/ravel-noweb</code></a></li>
   <li><a href="#piecefulravel-org" id="toc-piecefulravel-org" class="nav-link" data-scroll-target="#piecefulravel-org"><code>@pieceful/ravel-org</code></a></li>
   <li><a href="#piecefulravel-myst" id="toc-piecefulravel-myst" class="nav-link" data-scroll-target="#piecefulravel-myst"><code>@pieceful/ravel-myst</code></a></li>
+  <li><a href="#piecefulravel-myst-plugin" id="toc-piecefulravel-myst-plugin" class="nav-link" data-scroll-target="#piecefulravel-myst-plugin"><code>@pieceful/ravel-myst-plugin</code></a></li>
   <li><a href="#piecefulravel-core" id="toc-piecefulravel-core" class="nav-link" data-scroll-target="#piecefulravel-core"><code>@pieceful/ravel-core</code></a></li>
   <li><a href="#piecefulravel-js-live-0.2-development" id="toc-piecefulravel-js-live-0.2-development" class="nav-link" data-scroll-target="#piecefulravel-js-live-0.2-development"><code>@pieceful/ravel-js-live</code> (0.2 development)</a></li>
   <li><a href="#piecefulravel-host-node" id="toc-piecefulravel-host-node" class="nav-link" data-scroll-target="#piecefulravel-host-node"><code>@pieceful/ravel-host-node</code></a></li>
@@ -475,6 +476,15 @@ ul.task-list li input[type="checkbox"] {
 <li>Piece arguments use the shared name-and-pipeline grammar. <code>:label:</code> supplies a rendered anchor and semantic ID, while <code>:caption:</code> remains the visible display name.</li>
 <li><code>surface.references</code> contains code-composition uses; <code>surface.navigation</code> separately contains MyST links, reference roles, and <code>@label</code> shorthand.</li>
 <li><code>options.executionOwner</code> selects <code>myst</code> or <code>pieceful</code> for notebook cells. Cell metadata and effect plans are inert during parsing.</li>
+</ul>
+</section>
+<section id="piecefulravel-myst-plugin" class="level2">
+<h2 class="anchored" data-anchor-id="piecefulravel-myst-plugin"><code>@pieceful/ravel-myst-plugin</code></h2>
+<ul>
+<li>The default export is a native MyST JavaScript plugin; <code>pieceDirective</code> is also exported for direct registration or testing.</li>
+<li><code>{piece}</code> directives render as standard MyST code/container nodes with syntax highlighting, visible captions, labels, and displayed pipelines.</li>
+<li><code>:cell:</code> emits MyST’s native executable code-cell structure by default. <code>:execution-owner: pieceful</code> keeps the rendered block static so two runtimes cannot own the same cell.</li>
+<li>The plugin does not parse a Ravel graph, weave artifacts, or execute Pieceful live code. Use <code>@pieceful/ravel-myst</code> for those semantics.</li>
 </ul>
 </section>
 <section id="piecefulravel-core" class="level2">

@@ -1029,7 +1029,7 @@ without requiring TeX, `noweave`, or `notangle`.
 ### MyST Markdown — high priority after the initial adapters
 
 MyST already has directive blocks, labels, captions, cross references, code
-cells, and notebook integration. A Pieceful MyST plugin can provide a dedicated
+cells, and notebook integration. The Pieceful MyST plugin provides a dedicated
 directive whose argument follows the shared name-and-pipeline rule:
 
 ```markdown
@@ -1041,11 +1041,13 @@ console.log(_"format-greeting");
 :::
 ```
 
-The plugin renders through MyST's normal code, label, and caption nodes while
-the adapter emits the same Piece Document as other formats. A no-plugin
-fallback may use the built-in `{code-block}` directive with an `lp-*` label and
-no Pieceful-only options. MyST is attractive for scientific books and
-notebooks where Quarto is not the chosen renderer.
+`@pieceful/ravel-myst-plugin` renders standard MyST code, container, caption,
+and notebook-cell nodes while the adapter emits the same Piece Document as
+other formats. It makes the piece name and optional pipeline visible and lets
+ordinary MyST cross references target the piece label. A no-plugin fallback
+may use the built-in `{code-block}` directive with an `lp-*` label and no
+Pieceful-only options. MyST is attractive for scientific books and notebooks
+where Quarto is not the chosen renderer.
 
 The implemented adapter uses the following mapping:
 
@@ -1071,8 +1073,9 @@ rendered label.
 
 `{code-cell}` and `{piece}` with `:cell:` retain page front matter, cell tags,
 and an inert `myst-code-cell` effect plan. MyST is the default execution owner.
-Pieceful live execution requires explicit `pieceful` ownership plus an explicit
-run request; parsing itself invokes neither MyST nor Jupyter.
+On `{piece}`, `:execution-owner: pieceful` keeps the rendered node static;
+Pieceful live execution still requires an explicit `:run:` request. Parsing
+itself invokes neither MyST nor Jupyter.
 
 `.myst.md` selects the adapter in the Node host. Ordinary `.md` remains normal
 Markdown unless its TOML entry declares `adapter = "myst"`.

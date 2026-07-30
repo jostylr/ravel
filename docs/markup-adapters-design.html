@@ -1267,14 +1267,14 @@ lp::read[target=shared.adoc,as=shared]</code></pre>
 <h2 class="anchored" data-anchor-id="other-promising-formats">Other promising formats</h2>
 <section id="myst-markdown-high-priority-after-the-initial-adapters" class="level3">
 <h3 class="anchored" data-anchor-id="myst-markdown-high-priority-after-the-initial-adapters">MyST Markdown — high priority after the initial adapters</h3>
-<p>MyST already has directive blocks, labels, captions, cross references, code cells, and notebook integration. A Pieceful MyST plugin can provide a dedicated directive whose argument follows the shared name-and-pipeline rule:</p>
+<p>MyST already has directive blocks, labels, captions, cross references, code cells, and notebook integration. The Pieceful MyST plugin provides a dedicated directive whose argument follows the shared name-and-pipeline rule:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb41"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>:::{piece} main | normalize-eol() | trim()</span>
 <span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a><span class="sc">:language:</span> javascript</span>
 <span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a><span class="sc">:caption:</span> Main program</span>
 <span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>console.log(_"format-greeting");</span>
 <span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a>:::</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>The plugin renders through MyST’s normal code, label, and caption nodes while the adapter emits the same Piece Document as other formats. A no-plugin fallback may use the built-in <code>{code-block}</code> directive with an <code>lp-*</code> label and no Pieceful-only options. MyST is attractive for scientific books and notebooks where Quarto is not the chosen renderer.</p>
+<p><code>@pieceful/ravel-myst-plugin</code> renders standard MyST code, container, caption, and notebook-cell nodes while the adapter emits the same Piece Document as other formats. It makes the piece name and optional pipeline visible and lets ordinary MyST cross references target the piece label. A no-plugin fallback may use the built-in <code>{code-block}</code> directive with an <code>lp-*</code> label and no Pieceful-only options. MyST is attractive for scientific books and notebooks where Quarto is not the chosen renderer.</p>
 <p>The implemented adapter uses the following mapping:</p>
 <ul>
 <li>the <code>{piece}</code> argument supplies the authored name and optional definition pipeline;</li>
@@ -1285,7 +1285,7 @@ lp::read[target=shared.adoc,as=shared]</code></pre>
 <li>MyST links, <code>{ref}</code>/<code>{numref}</code> roles, and <code>@label</code> shorthand are retained separately in <code>SurfaceMap.navigation</code>, because document navigation must not acquire code-composition semantics.</li>
 </ul>
 <p>Both colon and backtick fences are scanned losslessly. A target in <code>(label)=</code> form immediately before the directive is equivalent to <code>:label:</code>; if both are present they must agree. Repeated directives concatenate only when they resolve to the same semantic ID, their pipelines agree, and they do not reuse a rendered label.</p>
-<p><code>{code-cell}</code> and <code>{piece}</code> with <code>:cell:</code> retain page front matter, cell tags, and an inert <code>myst-code-cell</code> effect plan. MyST is the default execution owner. Pieceful live execution requires explicit <code>pieceful</code> ownership plus an explicit run request; parsing itself invokes neither MyST nor Jupyter.</p>
+<p><code>{code-cell}</code> and <code>{piece}</code> with <code>:cell:</code> retain page front matter, cell tags, and an inert <code>myst-code-cell</code> effect plan. MyST is the default execution owner. On <code>{piece}</code>, <code>:execution-owner: pieceful</code> keeps the rendered node static; Pieceful live execution still requires an explicit <code>:run:</code> request. Parsing itself invokes neither MyST nor Jupyter.</p>
 <p><code>.myst.md</code> selects the adapter in the Node host. Ordinary <code>.md</code> remains normal Markdown unless its TOML entry declares <code>adapter = "myst"</code>.</p>
 </section>
 <section id="restructuredtextsphinx-possible-below-myst" class="level3">

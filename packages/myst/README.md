@@ -4,6 +4,10 @@ Lossless MyST Markdown source adapter for Ravel. It recognizes Pieceful
 `{piece}` directives plus native MyST `{code}`, `{code-block}`, and
 `{code-cell}` fallbacks carrying an `lp-*` label.
 
+Install `@pieceful/ravel-myst-plugin` alongside this adapter when MyST itself
+should render the custom `{piece}` directive. The plugin owns presentation;
+this package continues to own Ravel semantics and exact source mapping.
+
 ```js
 import { mystToMap } from "@pieceful/ravel-myst";
 

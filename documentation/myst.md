@@ -5,6 +5,10 @@ notebook-cell metadata into a Ravel Map without invoking MyST, Jupyter, or a
 language runtime. The scanner preserves directive bodies and source ranges
 exactly.
 
+The separate `@pieceful/ravel-myst-plugin` package teaches MyST how to render
+the custom `{piece}` directive. Keeping it separate means parsing Ravel source
+does not require MyST, while a MyST project can opt into native presentation.
+
 MyST permits both colon and backtick directive fences, arguments after the
 directive name, and `:key: value` options. See the official
 [syntax overview](https://mystmd.org/guide/syntax-overview),
@@ -33,6 +37,32 @@ diagnostic.
 The pipeline is parsed with Ravel's shared typed grammar and runs once after
 all fragments have been concatenated. Both colon and backtick fences work,
 although MyST recommends backticks for code-like directive bodies.
+
+## Native `{piece}` rendering plugin
+
+Install the adapter and renderer independently:
+
+```sh
+npm install @pieceful/ravel-myst @pieceful/ravel-myst-plugin
+```
+
+Register the plugin in `myst.yml`:
+
+```yaml
+project:
+  plugins:
+    - node_modules/@pieceful/ravel-myst-plugin/plugin.mjs
+```
+
+The plugin turns `{piece}` into standard MyST code, container, caption, and
+code-cell nodes. MyST therefore supplies syntax highlighting and ordinary
+label-based cross references. The class `pieceful-piece` is added for theme
+customization, the caption defaults to `Piece: <name>`, and the definition
+pipeline is displayed beside it unless `:show-pipeline: false` is set.
+
+The plugin handles presentation only. It does not construct the Ravel graph,
+resolve code-composition references, weave outputs, or execute Pieceful live
+code; those remain the adapter and host's responsibility.
 
 ## Native no-plugin fallback
 
@@ -97,8 +127,24 @@ The adapter emits an inert `myst-code-cell` effect plan. MyST owns it by
 default. A custom `{piece}` can request the same mapping with `:cell:`.
 
 Ravel live execution is deliberately separate. A cell runs through Pieceful
-only when its owner is explicitly `pieceful` and `run` is requested. The
-portable API is:
+only when its owner is explicitly `pieceful` and `run` is requested. Ownership
+may be selected directly on a piece:
+
+````markdown
+```{piece} analysis
+:language: javascript
+:cell:
+:execution-owner: pieceful
+:run:
+:provider: quickjs-wasm-worker
+
+export default { answer: 42 };
+```
+````
+
+The rendering plugin keeps this form static in MyST, while the adapter records
+the Pieceful live request. The same policy can be supplied through the portable
+API:
 
 ```js
 import { mystToMap } from "@pieceful/ravel-myst";
@@ -132,5 +178,7 @@ provider = "quickjs-wasm-worker"
 executes a cell, fetches a cross-reference, or renders a document.
 
 The checked-in `fixtures/myst/fallback.myst.md` compatibility fixture uses only
-built-in MyST directives. The richer `{piece}` fixture is separate because its
-rendering requires a Pieceful MyST plugin; the source adapter itself does not.
+built-in MyST directives. `fixtures/myst/plugin-project` is a native MyST
+project that exercises visible pipelines, labels, cross references, native
+cells, and Pieceful-owned cells. Run `npm run test:myst-plugin` to build and
+inspect its transformed MyST document.

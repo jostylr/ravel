@@ -603,6 +603,9 @@ Exit criteria:
 - [x] Implement the MyST `{piece}` directive with name-and-pipeline argument,
       language, caption, label, code body, cross-reference, and notebook-cell
       mapping.
+- [x] Ship the separate `@pieceful/ravel-myst-plugin` renderer with visible
+      captions and pipelines, native labels and cross references, optional
+      MyST-owned code cells, and static rendering for Pieceful-owned cells.
 - [ ] Add native-tool compatibility fixtures showing which sources remain
       consumable by Org Babel, classic noweb, and a MyST renderer without a
       Ravel extension.
