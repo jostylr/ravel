@@ -45,12 +45,15 @@ const main = nodes.find((node) =>
 const analysis = nodes.find((node) =>
   node.type === "container" && node.identifier === "lp-analysis"
 );
-const piecefulLive = nodes.find((node) =>
-  node.type === "container" && node.identifier === "lp-pieceful-live"
+const ravelLive = nodes.find((node) =>
+  node.type === "container" && node.identifier === "lp-ravel-live"
+);
+const ravelBuild = nodes.find((node) =>
+  node.type === "container" && node.identifier === "ravel-build"
 );
 
 assert.equal(main.kind, "code");
-assert.equal(main.class, "pieceful-piece wide");
+assert.equal(main.class, "ravel-piece wide");
 assert.match(nodeText(main), /Main program/);
 assert.match(nodeText(main), /\| normalize-eol\(\) \| trim\(\)/);
 assert.equal(analysis.kind, "figure");
@@ -62,8 +65,12 @@ assert.ok(nodes.some((node) =>
 assert.ok(nodes.some((node) =>
   node.type === "outputs" && node.identifier === "lp-analysis-outputs"
 ));
-assert.equal(piecefulLive.kind, "code");
-assert.equal(piecefulLive.children[0].executable, undefined);
+assert.equal(ravelLive.kind, "code");
+assert.equal(ravelLive.children[0].executable, undefined);
+assert.equal(ravelBuild.kind, "code");
+assert.equal(ravelBuild.class, "ravel-directives");
+assert.equal(ravelBuild.children[0].lang, "ravel");
+assert.equal(ravelBuild.children[0].executable, undefined);
 assert.ok(nodes.some((node) =>
   node.type === "crossReference" &&
   node.identifier === "lp-main" &&
@@ -76,4 +83,4 @@ assert.ok(xref.references.some((entry) =>
   entry.identifier === "lp-analysis"
 ));
 
-console.log("Pieceful MyST plugin renders captions, pipelines, cells, and cross-references.");
+console.log("Ravel MyST plugin renders pieces, graph directives, cells, and cross-references.");

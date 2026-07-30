@@ -53,7 +53,7 @@ For source that must remain consumable by classic noweb, use a documentation
 pragma and enable underscore-quote references:
 
 ```noweb
-@ %pieceful pipeline main | trim()
+@ %ravel pipeline main | trim()
 <<main>>=
 _"message | indent(2)"
 @
@@ -63,9 +63,9 @@ The pragma is attached to the next matching definition. Other inert planning
 pragmas are:
 
 ```noweb
-@ %pieceful language main | javascript
-@ %pieceful output main | dist/main.js
-@ %pieceful run main | provider=quickjs-wasm-worker
+@ %ravel language main | javascript
+@ %ravel output main | dist/main.js
+@ %ravel run main | provider=quickjs-wasm-worker
 ```
 
 An output pragma creates an `out` directive. A run pragma records live

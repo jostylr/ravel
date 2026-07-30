@@ -452,8 +452,8 @@ export const loadTomlBuild = async (configPath) => {
     }
     const executionOwner = file.execution_owner;
     const supportedExecutionOwners = adapter === "myst"
-      ? ["myst", "pieceful"]
-      : ["org", "pieceful"];
+      ? ["myst", "ravel"]
+      : ["org", "ravel"];
     if (executionOwner !== undefined && !supportedExecutionOwners.includes(executionOwner)) {
       throw inputError(
         "RC102",

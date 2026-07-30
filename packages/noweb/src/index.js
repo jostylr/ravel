@@ -148,7 +148,7 @@ const scanDefinitions = (text, uri, starts) => {
 
 const pragmasFrom = (text, source) => {
   const pragmas = [];
-  const pattern = /^[ \t]*@[ \t]+%pieceful[ \t]+(pipeline|language|output|run)[ \t]+(.+?)[ \t]*$/gm;
+  const pattern = /^[ \t]*@[ \t]+%ravel[ \t]+(pipeline|language|output|run)[ \t]+(.+?)[ \t]*$/gm;
   for (const match of text.matchAll(pattern)) {
     const pipe = firstUnescapedPipe(match[2]);
     const name = (pipe === -1 ? match[2] : match[2].slice(0, pipe)).trim().replace(/\\\|/g, "|");
@@ -235,7 +235,7 @@ export const nowebToMap = (text, options = {}) => {
     if (canonicalByName.has(name)) return canonicalByName.get(name);
     const base = semanticComponent(name);
     if (!base) {
-      diagnostics.push(diagnostic("LPA101", "noweb chunk name does not produce a usable Pieceful ID: " + name, source));
+      diagnostics.push(diagnostic("LPA101", "noweb chunk name does not produce a usable Ravel ID: " + name, source));
       return null;
     }
     let canonical = base;
@@ -247,7 +247,7 @@ export const nowebToMap = (text, options = {}) => {
     if (canonical !== base) {
       diagnostics.push(diagnostic(
         "LPA102",
-        "noweb chunk names normalize to the same Pieceful ID; " + name + " was assigned " + canonical + ".",
+        "noweb chunk names normalize to the same Ravel ID; " + name + " was assigned " + canonical + ".",
         source
       ));
     }
@@ -314,7 +314,7 @@ export const nowebToMap = (text, options = {}) => {
     const pipelinePragmas = matching.filter((pragma) => pragma.kind === "pipeline");
     const pragmaPipeline = pipelinePragmas.flatMap((pragma) => {
       if (!pragma.value) {
-        diagnostics.push(diagnostic("LPA110", "Pieceful pipeline pragmas require `name | pipeline`.", pragma.source));
+        diagnostics.push(diagnostic("LPA110", "Ravel pipeline pragmas require `name | pipeline`.", pragma.source));
         return [];
       }
       return parsePipeline(pragma.value, pragma.source);
@@ -457,7 +457,7 @@ export const nowebToMap = (text, options = {}) => {
 
     for (const pragma of matching.filter((entry) => entry.kind === "output")) {
       if (!pragma.value) {
-        diagnostics.push(diagnostic("LPA110", "Pieceful output pragmas require `name | path`.", pragma.source));
+        diagnostics.push(diagnostic("LPA110", "Ravel output pragmas require `name | path`.", pragma.source));
         continue;
       }
       const directive = { kind: "out", name: pragma.value, from: id, source: pragma.source };
@@ -477,7 +477,7 @@ export const nowebToMap = (text, options = {}) => {
   for (const pragma of pendingPragmas) {
     diagnostics.push(diagnostic(
       "LPA110",
-      "Pieceful " + pragma.kind + " pragma did not match a following noweb definition: " + pragma.name,
+      "Ravel " + pragma.kind + " pragma did not match a following noweb definition: " + pragma.name,
       pragma.source
     ));
   }

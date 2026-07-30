@@ -39,15 +39,15 @@ output.
 Org sources use `.org` or `adapter = "org"`. TOML can select
 `references = "org-noweb"`, `"underscore-quote"`, or `"both"`, enable
 Pieceful-only use-site pipes with `noweb_pipes = true`, and assign Babel
-authority with `execution_owner = "org"` or `"pieceful"`. The host retains
+authority with `execution_owner = "org"` or `"ravel"`. The host retains
 Babel header arguments, result artifacts, and tangle requests as data; loading
 does not invoke Emacs or Babel.
 
-MyST sources use `.myst.md` or `adapter = "myst"`. Labeled `{piece}`,
+MyST sources use `.myst.md` or `adapter = "myst"`. Labeled `{ravel:piece}`,
 `{code}`, `{code-block}`, and `{code-cell}` directives retain visible
 captions, anchors, exact bodies, cross-reference navigation, front matter, and
 notebook tags. TOML may assign cell authority with
-`execution_owner = "myst"` or `"pieceful"`; loading invokes neither MyST nor
+`execution_owner = "myst"` or `"ravel"`; loading invokes neither MyST nor
 Jupyter.
 
 Requires Node.js 22 or newer. This package is intentionally Node-specific;

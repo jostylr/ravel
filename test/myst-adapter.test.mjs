@@ -95,7 +95,7 @@ test("MyST navigation stays distinct from code composition references", async ()
 test("an adjacent MyST target can provide the stable piece label", () => {
   const source = [
     "(lp-helper)=",
-    "````{piece} helper",
+    "````{ravel:piece} helper",
     ":language: text",
     ":caption: Visible helper",
     "",
@@ -114,9 +114,9 @@ test("an adjacent MyST target can provide the stable piece label", () => {
   assert.equal(adapted.surface.navigation[0].targetPieceId, "target::helper");
 });
 
-test("MyST notebook cells preserve native ownership unless Pieceful is explicit", () => {
+test("MyST notebook cells preserve native ownership unless Ravel is explicit", () => {
   const source = [
-    "```{piece} analysis",
+    "```{ravel:piece} analysis",
     ":language: javascript",
     ":caption: Analysis",
     ":label: lp-analysis",
@@ -133,24 +133,24 @@ test("MyST notebook cells preserve native ownership unless Pieceful is explicit"
   assert.equal(native.map.chunks[0].metadata.data.ravel.run, undefined);
   assert.equal(native.map.metadata.plannedEffects[0].owner, "myst");
 
-  const pieceful = mystToMap(source, {
+  const ravel = mystToMap(source, {
     uri: "cell.myst.md",
     document: "cell",
-    executionOwner: "pieceful",
+    executionOwner: "ravel",
     provider: "quickjs-wasm-worker"
   });
-  assert.deepEqual(pieceful.diagnostics, []);
-  assert.equal(pieceful.map.chunks[0].metadata.data.ravel.run, true);
-  assert.equal(pieceful.map.chunks[0].metadata.data.ravel.provider, "quickjs-wasm-worker");
-  assert.equal(pieceful.map.metadata.plannedEffects[0].owner, "pieceful");
+  assert.deepEqual(ravel.diagnostics, []);
+  assert.equal(ravel.map.chunks[0].metadata.data.ravel.run, true);
+  assert.equal(ravel.map.chunks[0].metadata.data.ravel.provider, "quickjs-wasm-worker");
+  assert.equal(ravel.map.metadata.plannedEffects[0].owner, "ravel");
 
   const directiveOwned = mystToMap([
-    "```{piece} analysis",
+    "```{ravel:piece} analysis",
     ":language: javascript",
     ":caption: Analysis",
     ":label: lp-analysis",
     ":cell:",
-    ":execution-owner: pieceful",
+    ":execution-owner: ravel",
     ":run:",
     ":provider: quickjs-wasm-worker",
     "",
@@ -164,24 +164,63 @@ test("MyST notebook cells preserve native ownership unless Pieceful is explicit"
     directiveOwned.map.chunks[0].metadata.data.ravel.provider,
     "quickjs-wasm-worker"
   );
-  assert.equal(directiveOwned.map.metadata.plannedEffects[0].owner, "pieceful");
+  assert.equal(directiveOwned.map.metadata.plannedEffects[0].owner, "ravel");
+});
+
+test("MyST ravel directives use the same graph DSL and exact ranges as Markdown", () => {
+  const source = [
+    "```{ravel:piece} main",
+    ":language: text",
+    ":caption: Main",
+    ":label: lp-main",
+    "",
+    "value",
+    "```",
+    "",
+    "```{ravel}",
+    "alias(\"public\", _\"main\")",
+    "out(\"dist/main.txt\", _\"public\")",
+    "```",
+    ""
+  ].join("\n");
+  const adapted = mystToMap(source, {
+    uri: "directives.myst.md",
+    document: "directives"
+  });
+
+  assert.deepEqual(adapted.diagnostics, []);
+  assert.deepEqual(
+    adapted.map.directives.map((directive) => directive.kind),
+    ["alias", "out"]
+  );
+  assert.deepEqual(adapted.surface.directives, adapted.map.directives);
+  assert.equal(
+    source.slice(
+      adapted.map.directives[0].source.range.start.offset,
+      adapted.map.directives[0].source.range.end.offset
+    ),
+    "alias(\"public\", _\"main\")"
+  );
+  const program = transformGraph(combineMaps([adapted.map]));
+  assert.deepEqual(program.diagnostics, []);
+  assert.equal(program.deliverables["dist/main.txt"].value, "value\n");
 });
 
 test("MyST reports malformed ownership, conflicting labels, repeats, and unterminated directives", () => {
   const conflicts = mystToMap([
     "(lp-first)=",
-    ":::{piece} mismatched",
+    ":::{ravel:piece} mismatched",
     ":label: lp-second",
     "",
     "first",
     ":::",
     "",
-    ":::{piece} shared | trim()",
+    ":::{ravel:piece} shared | trim()",
     "",
     "first",
     ":::",
     "",
-    ":::{piece} shared | indent(2)",
+    ":::{ravel:piece} shared | indent(2)",
     "",
     "second",
     ":::",
@@ -201,7 +240,7 @@ test("MyST reports malformed ownership, conflicting labels, repeats, and untermi
   assert.equal(conflicts.map.metadata.ignoredDirectives[0].directive, "note");
 
   const unterminated = mystToMap(
-    ":::{piece} main\n:caption: Main\n\nvalue\n",
+    ":::{ravel:piece} main\n:caption: Main\n\nvalue\n",
     { uri: "broken.myst.md", document: "broken" }
   );
   assert.equal(unterminated.map.chunks[0].body, "value\n");
@@ -220,7 +259,7 @@ test("MyST and modern Markdown normalize pieces and pipelines equivalently", () 
     ""
   ].join("\n"), { uri: "equivalent.md", document: "equivalent" });
   const myst = mystToMap([
-    ":::{piece} main | trim()",
+    ":::{ravel:piece} main | trim()",
     ":language: text",
     ":caption: Main",
     ":label: lp-main",

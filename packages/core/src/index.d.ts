@@ -122,3 +122,7 @@ export function pipe(steps: unknown[], source: SourceLocation): unknown;
 export function pass(steps: unknown[], source: SourceLocation): unknown;
 export function createDirective(name: string, value: unknown, source: SourceLocation): unknown;
 export function aliasDirective(name: string, reference: string, source: SourceLocation): unknown;
+export function parseRavelDirectiveBlock(text: string, options: {
+  document: string;
+  sourceAt(start: number, end: number): SourceLocation;
+}): { directives: Array<Record<string, unknown>>; diagnostics: Diagnostic[] };

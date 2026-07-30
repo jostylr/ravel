@@ -3,6 +3,7 @@ const chunkPathPattern = /^[a-z][a-z0-9-]*(?:\/(?:[a-z][a-z0-9-]*)?)*$/;
 const relativeChunkPathPattern = /^(?:\.\.?)(?:\/(?:\.\.?|[a-z][a-z0-9-]*))*$/;
 
 export { directiveKinds, compose, append, newline, pipe, pass, createDirective, aliasDirective } from "./directives.js";
+export { parseRavelDirectiveBlock } from "./directive-syntax.js";
 export {
   cloneRavelValue,
   executeLiveProgram,

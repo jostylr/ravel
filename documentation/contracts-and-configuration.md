@@ -58,10 +58,10 @@ Markup entries may select `adapter = "markdown"`, `"markdown-litpro"`,
 `"myst"`, `"noweb"`, or `"org"`. Org entries additionally accept
 `references = "org-noweb" | "underscore-quote" | "both"`,
 `noweb_pipes = true | false`, and
-`execution_owner = "org" | "pieceful"`. See [Org and Babel](org.md) for the
+`execution_owner = "org" | "ravel"`. See [Org and Babel](org.md) for the
 ownership boundary. Noweb uses its corresponding reference policies and
 `dialect = "noweb" | "noweb-plus"`. MyST entries accept
-`execution_owner = "myst" | "pieceful"`; `.myst.md` selects the adapter
+`execution_owner = "myst" | "ravel"`; `.myst.md` selects the adapter
 without TOML. See [MyST Markdown](myst.md).
 
 All file, import, output, and backup paths are confined to the directory that

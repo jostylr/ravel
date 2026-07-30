@@ -1,6 +1,6 @@
-# Pieceful MyST plugin
+# Ravel MyST plugin
 
-```{piece} main | normalize-eol() | trim()
+```{ravel:piece} main | normalize-eol() | trim()
 :language: javascript
 :caption: Main program
 :label: lp-main
@@ -22,13 +22,20 @@ print("analysis")
 
 See @lp-analysis.
 
-```{piece} pieceful-live
+```{ravel:piece} ravel-live
 :language: javascript
-:label: lp-pieceful-live
+:label: lp-ravel-live
 :cell:
-:execution-owner: pieceful
+:execution-owner: ravel
 :run:
 :provider: quickjs-wasm-worker
 
 export default 42;
+```
+
+```{ravel}
+:caption: Build directives
+:label: ravel-build
+
+out("dist/main.js", _"main")
 ```

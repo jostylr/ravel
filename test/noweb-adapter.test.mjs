@@ -99,7 +99,7 @@ test("noweb-plus parses definition and use-site pipelines and reports classic po
 
 test("classic-compatible pragmas and underscore-quote references share the core pipeline grammar", () => {
   const adapted = nowebToMap([
-    "@ %pieceful pipeline main | trim()",
+    "@ %ravel pipeline main | trim()",
     "<<main>>=",
     "  _\"message | trim()\"  ",
     "@",

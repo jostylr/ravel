@@ -14,8 +14,8 @@ keywords. See the official references for
 ## Native named blocks
 
 ```org
-#+PROPERTY: pieceful-reference-style org-noweb
-#+PROPERTY: pieceful-execution-owner org
+#+PROPERTY: ravel-reference-style org-noweb
+#+PROPERTY: ravel-execution-owner org
 
 #+NAME: main
 #+HEADER: :session *node*
@@ -54,7 +54,7 @@ If a block also has `#+NAME`, its exact body contributes both to the
 individually named piece and the aggregate group. This preserves Babel's
 distinction rather than forcing authors to choose one identity.
 
-## Compact Pieceful declarations
+## Compact Ravel declarations
 
 ```org
 #+LP_NAME: main | normalize-eol() | trim()
@@ -72,7 +72,7 @@ the shared Ravel grammar and run once after all fragments are concatenated.
 Reference policy is selected with:
 
 ```org
-#+PROPERTY: pieceful-reference-style org-noweb
+#+PROPERTY: ravel-reference-style org-noweb
 ```
 
 The supported values are:
@@ -85,7 +85,7 @@ The supported values are:
 Piped Org-noweb syntax is a separate explicit extension:
 
 ```org
-#+PROPERTY: pieceful-noweb-pipes yes
+#+PROPERTY: ravel-noweb-pipes yes
 
 #+NAME: main
 #+BEGIN_SRC text
@@ -107,11 +107,11 @@ plan.
 A block requesting execution or tangling must have exactly one owner:
 
 ```org
-#+PROPERTY: pieceful-execution-owner org
+#+PROPERTY: ravel-execution-owner org
 ```
 
 - `org` means Babel remains authoritative.
-- `pieceful` lets an explicitly executable block become ordinary Ravel live
+- `ravel` lets an explicitly executable block become ordinary Ravel live
   metadata, still subject to the host's provider and capability boundary.
 
 Parsing never evaluates or tangles. In particular, `:tangle` is not silently
@@ -129,7 +129,7 @@ path = "program.org"
 adapter = "org"
 references = "both"
 noweb_pipes = true
-execution_owner = "pieceful"
+execution_owner = "ravel"
 run = true
 provider = "quickjs-wasm-worker"
 ```

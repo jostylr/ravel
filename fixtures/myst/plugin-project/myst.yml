@@ -1,7 +1,7 @@
 version: 1
 project:
-  id: pieceful-myst-plugin-fixture
-  title: Pieceful MyST plugin fixture
+  id: ravel-myst-plugin-fixture
+  title: Ravel MyST plugin fixture
   toc:
     - file: index.md
   plugins:

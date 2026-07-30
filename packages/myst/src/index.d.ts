@@ -10,7 +10,7 @@ export interface Diagnostic {
 export interface MystOptions {
   uri?: string;
   document?: string;
-  executionOwner?: "myst" | "pieceful";
+  executionOwner?: "myst" | "ravel";
   run?: boolean | string[];
   provider?: string;
 }

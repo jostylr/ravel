@@ -20,14 +20,14 @@ compatibility warning because unmodified Babel treats the full text as its
 block ID.
 
 Execution and tangling are never performed while parsing. A document that
-requests either must explicitly select `org` or `pieceful` ownership:
+requests either must explicitly select `org` or `ravel` ownership:
 
 ```org
-#+PROPERTY: pieceful-execution-owner org
-#+PROPERTY: pieceful-reference-style org-noweb
+#+PROPERTY: ravel-execution-owner org
+#+PROPERTY: ravel-reference-style org-noweb
 ```
 
-When Pieceful owns an explicitly executable block, the adapter emits live
+When Ravel owns an explicitly executable block, the adapter emits live
 metadata for the ordinary capability-gated Ravel execution stage. Babel
 header arguments and `#+RESULTS` remain available as Org metadata and inert
 effect plans.

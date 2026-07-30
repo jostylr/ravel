@@ -480,7 +480,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#org-adapter-org" id="toc-org-adapter-org" class="nav-link" data-scroll-target="#org-adapter-org">Org adapter (<code>org</code>)</a>
   <ul class="collapse">
   <li><a href="#native-compatible-piece-declarations" id="toc-native-compatible-piece-declarations" class="nav-link" data-scroll-target="#native-compatible-piece-declarations">Native-compatible piece declarations</a></li>
-  <li><a href="#compact-pieceful-org-spelling" id="toc-compact-pieceful-org-spelling" class="nav-link" data-scroll-target="#compact-pieceful-org-spelling">Compact Pieceful Org spelling</a></li>
+  <li><a href="#compact-ravel-org-spelling" id="toc-compact-ravel-org-spelling" class="nav-link" data-scroll-target="#compact-ravel-org-spelling">Compact Ravel Org spelling</a></li>
   <li><a href="#references-and-use-site-pipes" id="toc-references-and-use-site-pipes" class="nav-link" data-scroll-target="#references-and-use-site-pipes">References and use-site pipes</a></li>
   <li><a href="#headings-results-and-tangling" id="toc-headings-results-and-tangling" class="nav-link" data-scroll-target="#headings-results-and-tangling">Headings, results, and tangling</a></li>
   <li><a href="#org-source-maps" id="toc-org-source-maps" class="nav-link" data-scroll-target="#org-source-maps">Org source maps</a></li>
@@ -524,7 +524,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="decision-summary" class="level2">
 <h2 class="anchored" data-anchor-id="decision-summary">Decision summary</h2>
 <ol type="1">
-<li>There is one Pieceful semantic language and one public, source-mapped Piece Document IR. Markup adapters only recognize authoring conventions and map them to that IR.</li>
+<li>There is one Ravel semantic language and one public, source-mapped Piece Document IR. Markup adapters only recognize authoring conventions and map them to that IR.</li>
 <li>The modern Markdown adapter allows heading-owned pieces and fence-owned pieces to coexist. An unnamed fence belongs to the current heading piece; a named fence declares only itself and does not change that heading context.</li>
 <li>A separate <code>markdown-litpro</code> adapter preserves the original LitPro structure, including peer H1-H4 blocks, relative H5/H6 blocks, repeated headings, minor blocks, link directives, and legacy reference paths.</li>
 <li>Definition pipelines are available after piece names in every adapter. They run once after all fragments of that piece have been concatenated.</li>
@@ -547,15 +547,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>Give Markdown, Quarto, AsciiDoc, HTML, Org, noweb, notebooks, and future rich-text hosts the same piece graph and effect plan.</li>
 <li>Preserve exact source ranges for definitions, literal fragments, references, transforms, and directives.</li>
 <li>Make piece identity and graph navigation useful in the rendered document, not only in compiler internals.</li>
-<li>Keep ordinary rendering useful when the Pieceful extension is absent.</li>
-<li>Never require a markup renderer to execute Pieceful effects while parsing.</li>
+<li>Keep ordinary rendering useful when the Ravel extension is absent.</li>
+<li>Never require a markup renderer to execute Ravel effects while parsing.</li>
 </ul>
 </section>
 <section id="non-goals" class="level2">
 <h2 class="anchored" data-anchor-id="non-goals">Non-goals</h2>
 <ul>
-<li>Making every feature of a host format part of Pieceful.</li>
-<li>Treating Quarto/Jupyter execution order as Pieceful dependency order.</li>
+<li>Making every feature of a host format part of Ravel.</li>
+<li>Treating Quarto/Jupyter execution order as Ravel dependency order.</li>
 <li>Reimplementing Quarto, Asciidoctor, Babel, or browser rendering.</li>
 <li>Making the modern Markdown adapter emulate legacy LitPro; that responsibility belongs to the separate <code>markdown-litpro</code> adapter.</li>
 <li>Allowing markup-specific syntax to leak into the core resolver.</li>
@@ -606,7 +606,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>All adapters must:</p>
 <ul>
 <li>preserve the document URI and exact source offsets;</li>
-<li>emit the same AST for Pieceful references and pipelines regardless of markup;</li>
+<li>emit the same AST for Ravel references and pipelines regardless of markup;</li>
 <li>distinguish a piece declaration from its display name;</li>
 <li>preserve literal fragments before markup rendering or syntax highlighting;</li>
 <li>plan effects as data rather than performing them;</li>
@@ -633,7 +633,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td>semantic ID</td>
-<td>Pieceful references and graph identity</td>
+<td>Ravel references and graph identity</td>
 <td><code>format-greeting</code></td>
 </tr>
 <tr class="even">
@@ -708,7 +708,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tr class="even">
 <td>noweb-plus</td>
 <td><code>&lt;&lt;main | trim()&gt;&gt;=</code></td>
-<td><code>@ %pieceful pipeline ...</code> pragma</td>
+<td><code>@ %ravel pipeline ...</code> pragma</td>
 </tr>
 <tr class="odd">
 <td>HTML</td>
@@ -833,7 +833,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">Browser form</span><span class="co">]</span>(#lp-widget "lp:derive browser | minify()")</span>
 <span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">Read shared definitions</span><span class="co">](shared.qmd "lp:read as shared")</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>The link text and destination remain useful when Pieceful is absent. The adapter parses the title into a typed AST and plans any effect; it does not execute effects while walking the Markdown tree.</p>
+<p>The link text and destination remain useful when Ravel is absent. The adapter parses the title into a typed AST and plans any effect; it does not execute effects while walking the Markdown tree.</p>
 </section>
 </section>
 <section id="full-litpro-markdown-adapter-markdown-litpro" class="level2">
@@ -843,7 +843,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 class="anchored" data-anchor-id="default-heading-model">Default heading model</h3>
 <p>The default deliberately keeps the unusual model:</p>
 <ul>
-<li>H1, H2, H3, and H4 are peer major-piece declarations. Markdown outline depth does not affect their Pieceful identity.</li>
+<li>H1, H2, H3, and H4 are peer major-piece declarations. Markdown outline depth does not affect their Ravel identity.</li>
 <li>H5 declares a slash child of the most recent major piece: <code>major/h5-name</code>.</li>
 <li>H6 declares a slash grandchild: <code>major/h5-name/h6-name</code>. With no preceding H5 it retains the legacy empty path segment behavior.</li>
 <li>Minor blocks declared by links append a colon: <code>major:minor</code>, <code>major/h5:minor</code>, or <code>major/h5/h6:minor</code>.</li>
@@ -949,10 +949,10 @@ document::major/h5:minor</code></pre>
 <p>Quarto uses Pandoc Markdown and already understands headings with IDs, fenced Divs, attributed code blocks, code-cell labels, captions, listings, and cross references. Therefore <code>.qmd</code> uses the Markdown adapter plus a Quarto integration. There is no <code>format: "quarto"</code> Piece Document and no Quarto-only resolver. A project normally selects modern <code>markdown</code>, though <code>markdown-litpro</code> can also feed the Quarto render bridge for historical books.</p>
 <p>The integration has two independent jobs:</p>
 <ol type="1">
-<li><strong>Build bridge</strong> — run pure Pieceful parsing/resolution/weaving before Quarto executes code, producing a temporary source tree and source maps.</li>
+<li><strong>Build bridge</strong> — run pure Ravel parsing/resolution/weaving before Quarto executes code, producing a temporary source tree and source maps.</li>
 <li><strong>Render bridge</strong> — decorate Quarto’s Pandoc AST with visible piece identity, links, graph summaries, and diagnostics.</li>
 </ol>
-<p>Keeping these jobs separate prevents a Lua render filter from becoming a second Pieceful compiler.</p>
+<p>Keeping these jobs separate prevents a Lua render filter from becoming a second Ravel compiler.</p>
 </section>
 <section id="heading-owned-pieces-in-quarto" class="level3">
 <h3 class="anchored" data-anchor-id="heading-owned-pieces-in-quarto">Heading-owned pieces in Quarto</h3>
@@ -976,7 +976,7 @@ document::major/h5:minor</code></pre>
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>See @lst-lp-main.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Quarto renders <code>Main program</code> as a visible listing caption and turns <code>@lst-lp-main</code> into a numbered hyperlink. Pieceful takes the semantic ID from <code>lp-id</code>; if it is absent, it may strip <code>lst-lp-</code> from the listing label.</p>
+<p>Quarto renders <code>Main program</code> as a visible listing caption and turns <code>@lst-lp-main</code> into a numbered hyperlink. Ravel takes the semantic ID from <code>lp-id</code>; if it is absent, it may strip <code>lst-lp-</code> from the listing label.</p>
 <p>This is the no-extension baseline. The render bridge can reduce the source boilerplate by deriving a default caption and listing label from:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="in">```{.javascript .lp-piece #lp-main lp-title="Main program" lp-pipe="normalize-eol()"}</span></span>
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>console<span class="op">.</span><span class="fu">log</span><span class="op">(</span>_<span class="st">"format-greeting"</span><span class="op">);</span></span>
@@ -993,7 +993,7 @@ document::major/h5:minor</code></pre>
 <span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>:::</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>The build bridge must weave <code>prepared-data</code> into a temporary <code>.qmd</code> before the Jupyter or Knitr engine sees the cell. Quarto remains responsible for executing the resulting cell and rendering its output. Pieceful <code>execute</code> effects are disabled in this path unless separately and explicitly requested, preventing double execution.</p>
+<p>The build bridge must weave <code>prepared-data</code> into a temporary <code>.qmd</code> before the Jupyter or Knitr engine sees the cell. Quarto remains responsible for executing the resulting cell and rendering its output. Ravel <code>execute</code> effects are disabled in this path unless separately and explicitly requested, preventing double execution.</p>
 </section>
 <section id="reference-and-definition-navigation" class="level3">
 <h3 class="anchored" data-anchor-id="reference-and-definition-navigation">Reference and definition navigation</h3>
@@ -1009,7 +1009,7 @@ document::major/h5:minor</code></pre>
 <h3 class="anchored" data-anchor-id="pipeline-and-cache-ordering">Pipeline and cache ordering</h3>
 <p>The supported render pipeline is:</p>
 <pre class="text"><code>source .qmd
-  -&gt; Pieceful adapter and graph validation
+  -&gt; Ravel adapter and graph validation
   -&gt; pure weaving into a temporary .qmd tree + source maps
   -&gt; Quarto execution
   -&gt; Pandoc/Quarto render bridge
@@ -1018,9 +1018,9 @@ document::major/h5:minor</code></pre>
 <ul>
 <li>never overwrite the author’s <code>.qmd</code> during rendering;</li>
 <li>preserve a composed source map through the temporary file;</li>
-<li>key Quarto freeze/cache inputs on the woven temporary content and Pieceful plugin versions, not only the original <code>.qmd</code>;</li>
+<li>key Quarto freeze/cache inputs on the woven temporary content and Ravel plugin versions, not only the original <code>.qmd</code>;</li>
 <li>report Quarto execution errors against the original piece/reference chain where the engine supplies usable generated locations;</li>
-<li>do not let Quarto shortcodes, filters, or executed output declare new Pieceful pieces after graph validation.</li>
+<li>do not let Quarto shortcodes, filters, or executed output declare new Ravel pieces after graph validation.</li>
 </ul>
 </section>
 </section>
@@ -1054,7 +1054,7 @@ function formatGreeting(name) {
 <li><code>lp-main</code> maps to semantic ID <code>main</code>;</li>
 <li>source/listing blocks in the section become fragments;</li>
 <li>the next configured piece section ends ownership;</li>
-<li>section depth does not create Pieceful namespaces;</li>
+<li>section depth does not create Ravel namespaces;</li>
 <li>the pipeline runs once after the section’s fragments are concatenated.</li>
 </ul>
 <p>AsciiDoc can link to the piece using its native cross-reference syntax:</p>
@@ -1113,7 +1113,7 @@ lp::read[target=shared.adoc,as=shared]</code></pre>
 </section>
 <section id="html" class="level2">
 <h2 class="anchored" data-anchor-id="html">HTML</h2>
-<p>HTML is both a useful authoring format and an important rendered interchange format. The canonical source form should be valid, meaningful HTML even when no Pieceful script is installed.</p>
+<p>HTML is both a useful authoring format and an important rendered interchange format. The canonical source form should be valid, meaningful HTML even when no Ravel script is installed.</p>
 <section id="section-form-1" class="level3">
 <h3 class="anchored" data-anchor-id="section-form-1">Section form</h3>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="sourceCode html code-with-copy"><code class="sourceCode html"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">meta</span><span class="ot"> name</span><span class="op">=</span><span class="st">"lp-document"</span><span class="ot"> content</span><span class="op">=</span><span class="st">"greeting"</span><span class="dt">&gt;</span></span>
@@ -1135,7 +1135,7 @@ lp::read[target=shared.adoc,as=shared]</code></pre>
 <span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&lt;</span><span class="kw">figcaption</span><span class="dt">&gt;</span>Main program <span class="dt">&lt;</span><span class="kw">code</span><span class="dt">&gt;</span>main<span class="dt">&lt;/</span><span class="kw">code</span><span class="dt">&gt;&lt;/</span><span class="kw">figcaption</span><span class="dt">&gt;</span></span>
 <span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&lt;</span><span class="kw">pre</span><span class="dt">&gt;&lt;</span><span class="kw">code</span><span class="ot"> class</span><span class="op">=</span><span class="st">"language-javascript"</span><span class="dt">&gt;</span>console.log(_"format-greeting");<span class="dt">&lt;/</span><span class="kw">code</span><span class="dt">&gt;&lt;/</span><span class="kw">pre</span><span class="dt">&gt;</span></span>
 <span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;/</span><span class="kw">figure</span><span class="dt">&gt;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Both forms make the display name visible, provide a native anchor, and degrade well. Standard elements carry accessibility and rendering semantics; <code>data-lp-*</code> carries private Pieceful metadata.</p>
+<p>Both forms make the display name visible, provide a native anchor, and degrade well. Standard elements carry accessibility and rendering semantics; <code>data-lp-*</code> carries private Ravel metadata.</p>
 <p>Directives use ordinary links with explicit data:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb29"><pre class="sourceCode html code-with-copy"><code class="sourceCode html"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">a</span><span class="ot"> href</span><span class="op">=</span><span class="st">"dist/greeting.js"</span></span>
 <span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="ot">   data-lp-effect</span><span class="op">=</span><span class="st">"write"</span></span>
@@ -1166,8 +1166,8 @@ lp::read[target=shared.adoc,as=shared]</code></pre>
 <span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a><span class="in">#+BEGIN_SRC java</span>script</span>
 <span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>console<span class="op">.</span><span class="fu">log</span><span class="op">(&lt;&lt;</span>format<span class="op">-</span>greeting<span class="op">&gt;&gt;);</span></span>
 <span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a><span class="in">#+END_SRC</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p><code>#+NAME</code> remains fully meaningful to Org. The adjacent <code>#+LP_PIPE</code> keyword is Pieceful metadata that Org can otherwise ignore. The pipeline applies after all fragments of <code>main</code> have been collected.</p>
-<p>Org’s <code>:noweb-ref</code> header argument groups several blocks under one shared reference. Pieceful maps that group to repeated fragments:</p>
+<p><code>#+NAME</code> remains fully meaningful to Org. The adjacent <code>#+LP_PIPE</code> keyword is Ravel metadata that Org can otherwise ignore. The pipeline applies after all fragments of <code>main</code> have been collected.</p>
+<p>Org’s <code>:noweb-ref</code> header argument groups several blocks under one shared reference. Ravel maps that group to repeated fragments:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb31"><pre class="sourceCode org code-with-copy"><code class="sourceCode orgmode"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="in">#+BEGIN_SRC java</span>script <span class="op">:</span>noweb<span class="op">-</span>ref main</span>
 <span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="fu">first</span><span class="op">();</span></span>
 <span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a><span class="in">#+END_SRC</span></span>
@@ -1177,9 +1177,9 @@ lp::read[target=shared.adoc,as=shared]</code></pre>
 <span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a><span class="in">#+END_SRC</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>The blocks concatenate as <code>first();\nsecond();</code>. A <code>#+NAME</code> identifies one block; a shared <code>:noweb-ref</code> identifies the aggregate. If both are present, the named block may be addressed individually while also contributing to the aggregate, matching Org’s distinction.</p>
 </section>
-<section id="compact-pieceful-org-spelling" class="level3">
-<h3 class="anchored" data-anchor-id="compact-pieceful-org-spelling">Compact Pieceful Org spelling</h3>
-<p>For authors using Pieceful rather than Babel as the primary engine, the adapter also accepts:</p>
+<section id="compact-ravel-org-spelling" class="level3">
+<h3 class="anchored" data-anchor-id="compact-ravel-org-spelling">Compact Ravel Org spelling</h3>
+<p>For authors using Ravel rather than Babel as the primary engine, the adapter also accepts:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb32"><pre class="sourceCode org code-with-copy"><code class="sourceCode orgmode"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>#+LP_NAME: main | normalize-eol() | trim()</span>
 <span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="in">#+BEGIN_SRC java</span>script</span>
 <span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>console<span class="op">.</span><span class="fu">log</span><span class="op">(&lt;&lt;</span>format<span class="op">-</span>greeting<span class="op">&gt;&gt;);</span></span>
@@ -1190,19 +1190,19 @@ lp::read[target=shared.adoc,as=shared]</code></pre>
 <h3 class="anchored" data-anchor-id="references-and-use-site-pipes">References and use-site pipes</h3>
 <p>In <code>org-noweb</code> reference mode:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb33"><pre class="sourceCode org code-with-copy"><code class="sourceCode orgmode"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>&lt;&lt;format-greeting&gt;&gt;</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>maps to the same Pieceful reference AST as <code>_"format-greeting"</code>. The extended form allows a use-site pipeline:</p>
+<p>maps to the same Ravel reference AST as <code>_"format-greeting"</code>. The extended form allows a use-site pipeline:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb34"><pre class="sourceCode org code-with-copy"><code class="sourceCode orgmode"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>&lt;&lt;format-greeting | indent(2)&gt;&gt;</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Org Babel would interpret the entire text, including the pipe, as a block ID. Therefore a document that must remain executable by unmodified Babel should use Pieceful’s underscore-quote reference for piped consumption:</p>
+<p>Org Babel would interpret the entire text, including the pipe, as a block ID. Therefore a document that must remain executable by unmodified Babel should use Ravel’s underscore-quote reference for piped consumption:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb35"><pre class="sourceCode org code-with-copy"><code class="sourceCode orgmode"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>_"format-greeting | indent(2)"</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Front matter/property configuration selects one policy:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb36"><pre class="sourceCode org code-with-copy"><code class="sourceCode orgmode"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#+PROPERTY: pieceful-reference-style org-noweb</span></span>
-<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#+PROPERTY: pieceful-execution-owner org</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Reference styles are <code>org-noweb</code>, <code>underscore-quote</code>, or <code>both</code>. Execution owners are <code>org</code> or <code>pieceful</code>; a build must never expand/evaluate the same block through both engines.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb36"><pre class="sourceCode org code-with-copy"><code class="sourceCode orgmode"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#+PROPERTY: ravel-reference-style org-noweb</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#+PROPERTY: ravel-execution-owner org</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Reference styles are <code>org-noweb</code>, <code>underscore-quote</code>, or <code>both</code>. Execution owners are <code>org</code> or <code>ravel</code>; a build must never expand/evaluate the same block through both engines.</p>
 </section>
 <section id="headings-results-and-tangling" class="level3">
 <h3 class="anchored" data-anchor-id="headings-results-and-tangling">Headings, results, and tangling</h3>
 <p>Org headings remain narrative by default. An opt-in heading mode can mirror modern Markdown ambient ownership, but named source blocks are the canonical Org declaration because their names stay visible in the source.</p>
-<p><code>#+RESULTS</code> blocks are artifacts, not piece fragments. Babel’s <code>:tangle</code>, <code>:eval</code>, <code>:results</code>, cache, sessions, and variables are preserved as Org metadata. Pieceful does not reinterpret them as pure transforms. When Org owns execution/tangling, Pieceful supplies the validated dependency graph and woven block bodies; Org performs the native operation. When Pieceful owns it, those requests become capability-gated effects.</p>
+<p><code>#+RESULTS</code> blocks are artifacts, not piece fragments. Babel’s <code>:tangle</code>, <code>:eval</code>, <code>:results</code>, cache, sessions, and variables are preserved as Org metadata. Ravel does not reinterpret them as pure transforms. When Org owns execution/tangling, Ravel supplies the validated dependency graph and woven block bodies; Org performs the native operation. When Ravel owns it, those requests become capability-gated effects.</p>
 </section>
 <section id="org-source-maps" class="level3">
 <h3 class="anchored" data-anchor-id="org-source-maps">Org source maps</h3>
@@ -1233,20 +1233,20 @@ lp::read[target=shared.adoc,as=shared]</code></pre>
 <li>the chunk name is the semantic ID source after adapter normalization;</li>
 <li>root/output chunks are planned as artifacts rather than written while parsing.</li>
 </ul>
-<p>Classic noweb does not encode a source language in the chunk declaration. The adapter takes language from project configuration, root filename conventions, or an explicit Pieceful pragma and records any inference.</p>
+<p>Classic noweb does not encode a source language in the chunk declaration. The adapter takes language from project configuration, root filename conventions, or an explicit Ravel pragma and records any inference.</p>
 <section id="noweb-plus-pipes" class="level3">
 <h3 class="anchored" data-anchor-id="noweb-plus-pipes">noweb-plus pipes</h3>
 <p>The <code>noweb-plus</code> dialect allows definition and use-site pipelines directly after a name:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb38"><pre class="sourceCode noweb code-with-copy"><code class="sourceCode noweb"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="re">&lt;&lt;main | normalize-eol() | trim()&gt;&gt;=</span></span>
 <span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>console<span class="op">.</span>log<span class="op">(</span><span class="re">&lt;&lt;format-greeting | indent(2)&gt;&gt;</span><span class="op">);</span></span>
 <span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a><span class="re">@</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>The first unescaped pipe separates the classic chunk name from the typed Pieceful pipeline. This is intentionally an extension: an unmodified noweb tool would treat the full text, including pipes, as the chunk name.</p>
+<p>The first unescaped pipe separates the classic chunk name from the typed Ravel pipeline. This is intentionally an extension: an unmodified noweb tool would treat the full text, including pipes, as the chunk name.</p>
 <p>For a source that must remain consumable by classic noweb, use a documentation pragma for the definition pipeline and underscore-quote syntax for piped references:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb39"><pre class="sourceCode noweb code-with-copy"><code class="sourceCode noweb"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>@ %pieceful pipeline main | normalize-eol() | trim()</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb39"><pre class="sourceCode noweb code-with-copy"><code class="sourceCode noweb"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>@ %ravel pipeline main | normalize-eol() | trim()</span>
 <span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a><span class="re">&lt;&lt;main&gt;&gt;=</span></span>
 <span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>console<span class="op">.</span>log<span class="op">(</span>_<span class="st">"format-greeting | indent(2)"</span><span class="op">);</span></span>
 <span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a><span class="re">@</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>The pragma is attached to the next matching definition by the Pieceful adapter; classic <code>notangle</code> continues to see the ordinary <code>main</code> chunk.</p>
+<p>The pragma is attached to the next matching definition by the Ravel adapter; classic <code>notangle</code> continues to see the ordinary <code>main</code> chunk.</p>
 </section>
 <section id="noweb-dialect-and-compatibility-policy" class="level3">
 <h3 class="anchored" data-anchor-id="noweb-dialect-and-compatibility-policy">noweb dialect and compatibility policy</h3>
@@ -1267,17 +1267,17 @@ lp::read[target=shared.adoc,as=shared]</code></pre>
 <h2 class="anchored" data-anchor-id="other-promising-formats">Other promising formats</h2>
 <section id="myst-markdown-high-priority-after-the-initial-adapters" class="level3">
 <h3 class="anchored" data-anchor-id="myst-markdown-high-priority-after-the-initial-adapters">MyST Markdown — high priority after the initial adapters</h3>
-<p>MyST already has directive blocks, labels, captions, cross references, code cells, and notebook integration. The Pieceful MyST plugin provides a dedicated directive whose argument follows the shared name-and-pipeline rule:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb41"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>:::{piece} main | normalize-eol() | trim()</span>
+<p>MyST already has directive blocks, labels, captions, cross references, code cells, and notebook integration. The Ravel MyST plugin provides a dedicated directive whose argument follows the shared name-and-pipeline rule:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb41"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>:::{ravel:piece} main | normalize-eol() | trim()</span>
 <span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a><span class="sc">:language:</span> javascript</span>
 <span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a><span class="sc">:caption:</span> Main program</span>
 <span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>console.log(_"format-greeting");</span>
 <span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a>:::</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p><code>@pieceful/ravel-myst-plugin</code> renders standard MyST code, container, caption, and notebook-cell nodes while the adapter emits the same Piece Document as other formats. It makes the piece name and optional pipeline visible and lets ordinary MyST cross references target the piece label. A no-plugin fallback may use the built-in <code>{code-block}</code> directive with an <code>lp-*</code> label and no Pieceful-only options. MyST is attractive for scientific books and notebooks where Quarto is not the chosen renderer.</p>
+<p><code>@pieceful/ravel-myst-plugin</code> renders standard MyST code, container, caption, and notebook-cell nodes while the adapter emits the same Piece Document as other formats. It makes the piece name and optional pipeline visible and lets ordinary MyST cross references target the piece label. <code>{ravel:piece}</code> is canonical and <code>{piece}</code> is its short alias. <code>{ravel}</code> carries the same graph directive language as a Markdown <code>ravel</code> fence. A no-plugin fallback may use the built-in <code>{code-block}</code> directive with an <code>lp-*</code> label and no Ravel-only options. MyST is attractive for scientific books and notebooks where Quarto is not the chosen renderer.</p>
 <p>The implemented adapter uses the following mapping:</p>
 <ul>
-<li>the <code>{piece}</code> argument supplies the authored name and optional definition pipeline;</li>
+<li>the <code>{ravel:piece}</code> or <code>{piece}</code> argument supplies the authored name and optional definition pipeline;</li>
 <li><code>:label:</code> supplies the stable MyST anchor and semantic ID after removing an optional <code>lp-</code> prefix;</li>
 <li><code>:caption:</code> is the visible display name and <code>:language:</code> is language metadata;</li>
 <li>native <code>{code}</code>/<code>{code-block}</code> and <code>{code-cell}</code> directives are recognized as no-plugin fallbacks only when their label begins with <code>lp-</code>;</li>
@@ -1285,7 +1285,7 @@ lp::read[target=shared.adoc,as=shared]</code></pre>
 <li>MyST links, <code>{ref}</code>/<code>{numref}</code> roles, and <code>@label</code> shorthand are retained separately in <code>SurfaceMap.navigation</code>, because document navigation must not acquire code-composition semantics.</li>
 </ul>
 <p>Both colon and backtick fences are scanned losslessly. A target in <code>(label)=</code> form immediately before the directive is equivalent to <code>:label:</code>; if both are present they must agree. Repeated directives concatenate only when they resolve to the same semantic ID, their pipelines agree, and they do not reuse a rendered label.</p>
-<p><code>{code-cell}</code> and <code>{piece}</code> with <code>:cell:</code> retain page front matter, cell tags, and an inert <code>myst-code-cell</code> effect plan. MyST is the default execution owner. On <code>{piece}</code>, <code>:execution-owner: pieceful</code> keeps the rendered node static; Pieceful live execution still requires an explicit <code>:run:</code> request. Parsing itself invokes neither MyST nor Jupyter.</p>
+<p><code>{code-cell}</code> and <code>{ravel:piece}</code> with <code>:cell:</code> retain page front matter, cell tags, and an inert <code>myst-code-cell</code> effect plan. MyST is the default execution owner. On <code>{ravel:piece}</code>, <code>:execution-owner: ravel</code> keeps the rendered node static; Ravel live execution still requires an explicit <code>:run:</code> request. Parsing itself invokes neither MyST nor Jupyter.</p>
 <p><code>.myst.md</code> selects the adapter in the Node host. Ordinary <code>.md</code> remains normal Markdown unless its TOML entry declares <code>adapter = "myst"</code>.</p>
 </section>
 <section id="restructuredtextsphinx-possible-below-myst" class="level3">
@@ -1458,11 +1458,11 @@ lp::read[target=shared.adoc,as=shared]</code></pre>
 </tr>
 <tr class="odd">
 <td>LPA140</td>
-<td>Quarto attempted execution before Pieceful weaving.</td>
+<td>Quarto attempted execution before Ravel weaving.</td>
 </tr>
 <tr class="even">
 <td>LPA141</td>
-<td>Org/Babel and Pieceful both claim execution or tangling ownership.</td>
+<td>Org/Babel and Ravel both claim execution or tangling ownership.</td>
 </tr>
 </tbody>
 </table>
@@ -1523,7 +1523,7 @@ lp::read[target=shared.adoc,as=shared]</code></pre>
 <li>Should the Quarto bridge always number pieces as listings, or support an unnumbered <code>Piece: main</code> caption style?</li>
 <li>Should AsciiDoc retain the single generic block macro (<code>lp::write[target=...]</code>), or use a styled delimited block for directives that need richer visible prose?</li>
 <li>Should <code>&lt;&lt;name | pipeline&gt;&gt;</code> be enabled by <code>noweb-plus</code>/Org configuration only, or recognized with a portability warning whenever encountered?</li>
-<li>Which system owns execution in an Org or notebook workflow? The default should be the native host, with Pieceful limited to pure graph assembly.</li>
+<li>Which system owns execution in an Org or notebook workflow? The default should be the native host, with Ravel limited to pure graph assembly.</li>
 </ol>
 </section>
 <section id="recommendation" class="level2">

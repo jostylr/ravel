@@ -2,7 +2,7 @@ import { parseDefinitionPipeline } from "@pieceful/ravel-core";
 
 const componentPattern = /^[a-z][a-z0-9-]*$/;
 const referencePolicies = new Set(["org-noweb", "underscore-quote", "both"]);
-const executionOwners = new Set(["org", "pieceful"]);
+const executionOwners = new Set(["org", "ravel"]);
 
 const diagnostic = (code, message, source, severity = "error") => ({
   code, severity, message, source
@@ -449,18 +449,18 @@ export const orgToMap = (text, options = {}) => {
   const lines = linesOf(text);
   const fileProperties = scanFileProperties(lines, uri, starts);
   const configuredReferences = options.references ??
-    propertyValue(fileProperties, "pieceful-reference-style") ??
+    propertyValue(fileProperties, "ravel-reference-style") ??
     "org-noweb";
   const references = configuredReferences === "noweb" ? "org-noweb" : configuredReferences;
   if (!referencePolicies.has(references)) {
     throw new Error("Unknown Org reference policy: " + references);
   }
-  const propertyPipes = propertyValue(fileProperties, "pieceful-noweb-pipes");
+  const propertyPipes = propertyValue(fileProperties, "ravel-noweb-pipes");
   const nowebPipes = options.nowebPipes ?? /^(?:yes|true|on)$/i.test(propertyPipes ?? "");
-  const propertyOwner = propertyValue(fileProperties, "pieceful-execution-owner");
+  const propertyOwner = propertyValue(fileProperties, "ravel-execution-owner");
   const executionOwner = options.executionOwner ?? propertyOwner ?? null;
   if (executionOwner !== null && !executionOwners.has(executionOwner)) {
-    throw new Error("Org execution owner must be org or pieceful: " + executionOwner);
+    throw new Error("Org execution owner must be org or ravel: " + executionOwner);
   }
   const documentId = options.document ?? defaultDocumentId(uri);
   if (!componentPattern.test(documentId ?? "")) {
@@ -469,10 +469,10 @@ export const orgToMap = (text, options = {}) => {
 
   const diagnostics = [];
   if (options.executionOwner && propertyOwner && options.executionOwner !== propertyOwner) {
-    const property = fileProperties.findLast((entry) => entry.name === "pieceful-execution-owner");
+    const property = fileProperties.findLast((entry) => entry.name === "ravel-execution-owner");
     diagnostics.push(diagnostic(
       "LPA113",
-      "Org configuration and pieceful-execution-owner property select different owners.",
+      "Org configuration and ravel-execution-owner property select different owners.",
       property?.source ?? rangeAt(uri, starts, 0, 0)
     ));
   }
@@ -486,7 +486,7 @@ export const orgToMap = (text, options = {}) => {
     if (canonicalByName.has(name)) return canonicalByName.get(name);
     const base = semanticComponent(name);
     if (!base) {
-      diagnostics.push(diagnostic("LPA101", "Org piece name does not produce a usable Pieceful ID: " + name, source));
+      diagnostics.push(diagnostic("LPA101", "Org piece name does not produce a usable Ravel ID: " + name, source));
       return null;
     }
     let canonical = base;
@@ -498,7 +498,7 @@ export const orgToMap = (text, options = {}) => {
     if (canonical !== base) {
       diagnostics.push(diagnostic(
         "LPA102",
-        "Org names normalize to the same Pieceful ID; " + name + " was assigned " + canonical + ".",
+        "Org names normalize to the same Ravel ID; " + name + " was assigned " + canonical + ".",
         source
       ));
     }
@@ -599,12 +599,12 @@ export const orgToMap = (text, options = {}) => {
     const configuredRun = runSelected(options, names);
     const executionRequested = configuredRun ||
       (evalRequest !== undefined && !/^(?:no|never|never-export|no-export)$/i.test(evalRequest));
-    const piecefulRun = configuredRun || /^yes$/i.test(evalRequest ?? "");
+    const ravelRun = configuredRun || /^yes$/i.test(evalRequest ?? "");
     const tangleRequested = tangleRequest !== undefined && !/^no$/i.test(tangleRequest);
     if ((executionRequested || tangleRequested) && executionOwner === null) {
       diagnostics.push(diagnostic(
         "LPA115",
-        "Org execution or tangling requires pieceful-execution-owner to be org or pieceful.",
+        "Org execution or tangling requires ravel-execution-owner to be org or ravel.",
         block.declaration
       ));
     }
@@ -655,10 +655,10 @@ export const orgToMap = (text, options = {}) => {
                   dialect: nowebPipes ? "noweb-plus" : "noweb",
                   aliases
                 },
-                ...((executionOwner === "pieceful" && piecefulRun)
+                ...((executionOwner === "ravel" && ravelRun)
                   ? { run: true }
                   : {}),
-                ...((executionOwner === "pieceful" && piecefulRun && options.provider)
+                ...((executionOwner === "ravel" && ravelRun && options.provider)
                   ? { provider: options.provider }
                   : {})
               },

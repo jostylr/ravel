@@ -51,12 +51,13 @@ Use this package at adapter, editor, and host boundaries.
   the same source body to a repeated aggregate piece.
 - `options.references` selects `org-noweb`, `underscore-quote`, or `both`;
   `options.nowebPipes` explicitly enables piped Org-noweb uses.
-- `options.executionOwner` selects `org` or `pieceful`. Execution and tangling
+- `options.executionOwner` selects `org` or `ravel`. Execution and tangling
   requests without one owner are diagnosed, and parsing performs neither.
 
 ## `@pieceful/ravel-myst`
 
-- `mystToMap(text, options)` scans `{piece}` directives and labeled native
+- `mystToMap(text, options)` scans canonical `{ravel:piece}` directives, their
+  `{piece}` alias, `{ravel}` graph directives, and labeled native
   `{code}`, `{code-block}`, and `{code-cell}` fallbacks, returning
   `{ map, diagnostics, surface }`.
 - Piece arguments use the shared name-and-pipeline grammar. `:label:` supplies
@@ -65,20 +66,22 @@ Use this package at adapter, editor, and host boundaries.
 - `surface.references` contains code-composition uses;
   `surface.navigation` separately contains MyST links, reference roles, and
   `@label` shorthand.
-- `options.executionOwner` selects `myst` or `pieceful` for notebook cells.
+- `options.executionOwner` selects `myst` or `ravel` for notebook cells.
   Cell metadata and effect plans are inert during parsing.
 
 ## `@pieceful/ravel-myst-plugin`
 
 - The default export is a native MyST JavaScript plugin; `pieceDirective` is
   also exported for direct registration or testing.
-- `{piece}` directives render as standard MyST code/container nodes with
+- `{ravel:piece}` and its `{piece}` alias render as standard MyST code/container nodes with
   syntax highlighting, visible captions, labels, and displayed pipelines.
 - `:cell:` emits MyST's native executable code-cell structure by default.
-  `:execution-owner: pieceful` keeps the rendered block static so two runtimes
+  `:execution-owner: ravel` keeps the rendered block static so two runtimes
   cannot own the same cell.
-- The plugin does not parse a Ravel graph, weave artifacts, or execute
-  Pieceful live code. Use `@pieceful/ravel-myst` for those semantics.
+- `{ravel}` renders graph-directive bodies as visible static code; the adapter
+  parses those bodies through the shared Ravel directive grammar.
+- The plugin does not parse a Ravel graph, weave artifacts, or execute live
+  code. Use `@pieceful/ravel-myst` for those semantics.
 
 ## `@pieceful/ravel-core`
 
@@ -88,6 +91,9 @@ Use this package at adapter, editor, and host boundaries.
   semantic-ID aliases without rewriting the body.
 - `parseDefinitionPipeline` gives source adapters the shared definition-time
   transform grammar without evaluating a pipeline.
+- `parseRavelDirectiveBlock(text, { document, sourceAt })` gives Markdown,
+  MyST, and future adapters one source-mapped grammar for `in`, `create`,
+  `alias`, and `out` blocks.
 - `combineMaps(maps)` constructs the pre-transform graph.
 - `transformGraph(graph, { transforms?, deferLiveResults?, liveResults? })`
   evaluates that graph and returns the program, deliverables, diagnostics,

@@ -12,7 +12,7 @@ export interface OrgOptions {
   document?: string;
   references?: "org-noweb" | "underscore-quote" | "both";
   nowebPipes?: boolean;
-  executionOwner?: "org" | "pieceful";
+  executionOwner?: "org" | "ravel";
   run?: boolean | string[];
   provider?: string;
 }

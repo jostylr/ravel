@@ -599,13 +599,15 @@ Exit criteria:
       `@` terminators, exact offsets, and configured/inferred languages.
 - [x] Implement strict `noweb` and extended `noweb-plus` dialects. In
       `noweb-plus`, split definition and reference names at the first unescaped
-      pipe; also support the classic-compatible Pieceful pipeline pragma.
-- [x] Implement the MyST `{piece}` directive with name-and-pipeline argument,
-      language, caption, label, code body, cross-reference, and notebook-cell
-      mapping.
+      pipe; also support the classic-compatible Ravel pipeline pragma.
+- [x] Implement canonical MyST `{ravel:piece}` with a `{piece}` alias,
+      name-and-pipeline argument, language, caption, label, code body,
+      cross-reference, and notebook-cell mapping.
+- [x] Map MyST `{ravel}` bodies through the same graph-directive grammar as
+      Markdown `ravel` fences.
 - [x] Ship the separate `@pieceful/ravel-myst-plugin` renderer with visible
       captions and pipelines, native labels and cross references, optional
-      MyST-owned code cells, and static rendering for Pieceful-owned cells.
+      MyST-owned code cells, and static rendering for Ravel-owned cells.
 - [ ] Add native-tool compatibility fixtures showing which sources remain
       consumable by Org Babel, classic noweb, and a MyST renderer without a
       Ravel extension.

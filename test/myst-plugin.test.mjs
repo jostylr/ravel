@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import plugin, { pieceDirective } from "../packages/myst-plugin/plugin.mjs";
+import plugin, {
+  pieceDirective,
+  ravelDirective
+} from "../packages/myst-plugin/plugin.mjs";
 
 const vfile = () => ({
   messages: [],
@@ -11,10 +14,12 @@ const vfile = () => ({
   }
 });
 
-test("Pieceful MyST plugin exports one piece directive", () => {
-  assert.equal(plugin.name, "Pieceful Ravel");
-  assert.deepEqual(plugin.directives, [pieceDirective]);
-  assert.equal(pieceDirective.name, "piece");
+test("Ravel MyST plugin exports canonical piece and graph directives", () => {
+  assert.equal(plugin.name, "Ravel");
+  assert.deepEqual(plugin.directives, [pieceDirective, ravelDirective]);
+  assert.equal(pieceDirective.name, "ravel:piece");
+  assert.deepEqual(pieceDirective.alias, ["piece"]);
+  assert.equal(ravelDirective.name, "ravel");
   assert.equal(pieceDirective.body.type, String);
 });
 
@@ -37,7 +42,7 @@ test("piece directive renders a labeled, captioned native code container", () =>
   assert.equal(container.kind, "code");
   assert.equal(container.label, "lp-main");
   assert.equal(container.identifier, "lp-main");
-  assert.equal(container.class, "pieceful-piece wide");
+  assert.equal(container.class, "ravel-piece wide");
   assert.equal(container.enumerated, true);
   assert.deepEqual(container.data.ravel, {
     piece: "main",
@@ -91,7 +96,7 @@ test("a MyST-owned cell becomes an executable notebook block", () => {
   assert.equal(block.data.ravel.executionOwner, "myst");
 });
 
-test("a Pieceful-owned cell renders statically and never claims MyST execution", () => {
+test("a Ravel-owned cell renders statically and never claims MyST execution", () => {
   const [container] = pieceDirective.run({
     arg: "analysis",
     body: "export default 42;\n",
@@ -99,7 +104,7 @@ test("a Pieceful-owned cell renders statically and never claims MyST execution",
       language: "javascript",
       label: "lp-analysis",
       cell: true,
-      "execution-owner": "pieceful",
+      "execution-owner": "ravel",
       run: true,
       provider: "quickjs-wasm-worker"
     }
@@ -107,9 +112,30 @@ test("a Pieceful-owned cell renders statically and never claims MyST execution",
 
   assert.equal(container.type, "container");
   assert.equal(container.children[0].executable, undefined);
-  assert.equal(container.data.ravel.executionOwner, "pieceful");
+  assert.equal(container.data.ravel.executionOwner, "ravel");
   assert.equal(container.data.ravel.run, true);
   assert.equal(container.data.ravel.provider, "quickjs-wasm-worker");
+});
+
+test("ravel directive renders the graph DSL as visible static code", () => {
+  const [container] = ravelDirective.run({
+    body: "out(\"dist/main.js\", _\"main\")\n",
+    options: {
+      caption: [{ type: "text", value: "Build outputs" }],
+      label: "ravel-outputs"
+    }
+  });
+
+  assert.equal(container.type, "container");
+  assert.equal(container.kind, "code");
+  assert.equal(container.class, "ravel-directives");
+  assert.equal(container.identifier, "ravel-outputs");
+  assert.equal(container.children[0].lang, "ravel");
+  assert.equal(container.children[0].executable, undefined);
+  assert.equal(
+    container.children[1].children[0].children[0].value,
+    "Build outputs"
+  );
 });
 
 test("piece directive reports an empty name or unknown execution owner", () => {

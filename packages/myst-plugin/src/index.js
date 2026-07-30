@@ -61,16 +61,16 @@ const hash = (value) => {
 
 const report = (vfile, data, message) => {
   if (typeof vfile?.message === "function") {
-    const result = vfile.message(message, data.node, "pieceful:piece");
+    const result = vfile.message(message, data.node, "ravel:piece");
     if (result && typeof result === "object") result.fatal = true;
   }
 };
 
-const targetOptions = (data, node) => {
+const targetOptions = (data, node, baseClass = "ravel-piece") => {
   const target = normalizeLabel(data.options?.label);
   if (target.label) node.label = target.label;
   if (target.identifier) node.identifier = target.identifier;
-  const classes = ["pieceful-piece"];
+  const classes = [baseClass];
   if (typeof data.options?.class === "string") {
     classes.push(...data.options.class.split(/\s+/).filter(Boolean));
   }
@@ -95,8 +95,9 @@ const ravelData = (name, pipeline, owner, options) => ({
 });
 
 export const pieceDirective = {
-  name: "piece",
-  doc: "Render a named Pieceful code piece with a visible caption, stable label, and optional definition pipeline.",
+  name: "ravel:piece",
+  alias: ["piece"],
+  doc: "Render a named Ravel code piece with a visible caption, stable label, and optional definition pipeline.",
   arg: {
     type: String,
     required: true,
@@ -145,15 +146,15 @@ export const pieceDirective = {
     },
     "execution-owner": {
       type: String,
-      doc: "Select `myst` or `pieceful` as the code-cell execution owner."
+      doc: "Select `myst` or `ravel` as the code-cell execution owner."
     },
     run: {
       type: Boolean,
-      doc: "Retain Pieceful live-execution intent; rendering performs no Pieceful execution."
+      doc: "Retain Ravel live-execution intent; rendering performs no Ravel execution."
     },
     provider: {
       type: String,
-      doc: "Retain the selected Pieceful live provider for source compatibility."
+      doc: "Retain the selected Ravel live provider for source compatibility."
     }
   },
   body: {
@@ -164,13 +165,13 @@ export const pieceDirective = {
   run(data, vfile) {
     const { name, pipeline } = splitNamePipeline(data.arg ?? "");
     if (!name) {
-      report(vfile, data, "The {piece} directive requires a non-empty piece name.");
+      report(vfile, data, "The {ravel:piece} directive requires a non-empty piece name.");
       return [];
     }
     const configuredOwner = data.options?.["execution-owner"];
     const owner = configuredOwner ?? (data.options?.cell ? "myst" : null);
-    if (owner !== null && owner !== "myst" && owner !== "pieceful") {
-      report(vfile, data, "The {piece} execution-owner must be myst or pieceful.");
+    if (owner !== null && owner !== "myst" && owner !== "ravel") {
+      report(vfile, data, "The {ravel:piece} execution-owner must be myst or ravel.");
     }
 
     const body = data.body ?? "";
@@ -191,7 +192,7 @@ export const pieceDirective = {
     };
     const metadata = ravelData(name, pipeline, owner, data.options);
 
-    if (data.options?.cell && owner !== "pieceful") {
+    if (data.options?.cell && owner !== "ravel") {
       code.executable = true;
       const block = {
         type: "block",
@@ -224,11 +225,74 @@ export const pieceDirective = {
   }
 };
 
+export const ravelDirective = {
+  name: "ravel",
+  doc: "Render a Ravel graph-directive block without executing it.",
+  options: {
+    caption: {
+      type: "myst",
+      doc: "Visible parsed caption. Defaults to `Ravel directives`."
+    },
+    label: {
+      type: String,
+      alias: ["name"],
+      doc: "Stable MyST label used for links and cross-references."
+    },
+    class: {
+      type: String,
+      doc: "Additional space-delimited CSS classes."
+    },
+    enumerated: {
+      type: Boolean,
+      alias: ["numbered"],
+      doc: "Enable or disable numbering for the rendered directive block."
+    },
+    enumerator: {
+      type: String,
+      alias: ["number"],
+      doc: "Explicit directive-block number."
+    }
+  },
+  body: {
+    type: String,
+    required: true,
+    doc: "Raw Ravel graph directives."
+  },
+  run(data) {
+    const captionNodes = cloneNodes(data.options?.caption);
+    if (captionNodes.length === 0) {
+      captionNodes.push(text("Ravel directives"));
+    }
+    const container = {
+      type: "container",
+      kind: "code",
+      children: [
+        {
+          type: "code",
+          lang: "ravel",
+          value: data.body ?? ""
+        },
+        {
+          type: "caption",
+          children: [{
+            type: "paragraph",
+            children: captionNodes
+          }]
+        }
+      ],
+      data: {
+        ravel: { directiveBlock: true }
+      }
+    };
+    return [targetOptions(data, container, "ravel-directives")];
+  }
+};
+
 const plugin = {
-  name: "Pieceful Ravel",
+  name: "Ravel",
   author: "James Taylor",
   license: "MIT",
-  directives: [pieceDirective]
+  directives: [pieceDirective, ravelDirective]
 };
 
 export default plugin;

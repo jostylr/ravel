@@ -2,7 +2,7 @@
   "name": "@pieceful/ravel-myst-plugin",
   "version": "0.1.1",
   "type": "module",
-  "description": "MyST rendering plugin for visible, cross-referenceable Pieceful code directives.",
+  "description": "MyST rendering plugin for visible, cross-referenceable Ravel code pieces and graph directives.",
   "license": "MIT",
   "author": "James Taylor",
   "repository": { "type": "git", "url": "git+https://github.com/jostylr/ravel.git", "directory": "packages/myst-plugin" },

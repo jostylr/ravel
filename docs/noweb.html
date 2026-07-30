@@ -475,14 +475,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="re">@</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>This spelling is deliberately an extension. Each extended definition or reference produces a portability warning because classic noweb treats the pipe and pipeline text as part of the chunk name. Repeated definitions may declare a pipeline only when their normalized pipelines agree, and the pipeline runs once after all fragments have been concatenated.</p>
 <p>For source that must remain consumable by classic noweb, use a documentation pragma and enable underscore-quote references:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode noweb code-with-copy"><code class="sourceCode noweb"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>@ %pieceful pipeline main | trim()</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode noweb code-with-copy"><code class="sourceCode noweb"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>@ %ravel pipeline main | trim()</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="re">&lt;&lt;main&gt;&gt;=</span></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>_<span class="st">"message | indent(2)"</span></span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="re">@</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>The pragma is attached to the next matching definition. Other inert planning pragmas are:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode noweb code-with-copy"><code class="sourceCode noweb"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>@ %pieceful language main | javascript</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>@ %pieceful output main | dist/main.js</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>@ %pieceful run main | provider=quickjs-wasm-worker</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode noweb code-with-copy"><code class="sourceCode noweb"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>@ %ravel language main | javascript</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>@ %ravel output main | dist/main.js</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>@ %ravel run main | provider=quickjs-wasm-worker</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>An output pragma creates an <code>out</code> directive. A run pragma records live metadata. Parsing performs neither operation.</p>
 </section>
 <section id="node-host-configuration" class="level2">

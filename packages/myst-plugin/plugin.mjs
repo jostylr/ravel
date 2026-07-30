@@ -1,1 +1,1 @@
-export { default, pieceDirective } from "./src/index.js";
+export { default, pieceDirective, ravelDirective } from "./src/index.js";

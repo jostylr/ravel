@@ -3,7 +3,7 @@
 Lossless, portable noweb input adapter for Ravel. It recognizes ordinary
 `<<name>>=` definitions, repeated fragments, `<<name>>` references, `@`
 terminators, preceding documentation, configured or filename-inferred
-languages, and classic-compatible Pieceful pragmas. Parsing never runs code or
+languages, and classic-compatible Ravel pragmas. Parsing never runs code or
 writes tangled output.
 
 ```js
@@ -30,7 +30,7 @@ classic noweb should continue to consume, declare the definition pipeline in
 documentation and use underscore-quote references for piped uses:
 
 ```noweb
-@ %pieceful pipeline main | trim()
+@ %ravel pipeline main | trim()
 <<main>>=
 _"message | indent(2)"
 @
@@ -39,9 +39,9 @@ _"message | indent(2)"
 Other supported documentation pragmas are:
 
 ```noweb
-@ %pieceful language main | javascript
-@ %pieceful output main | dist/main.js
-@ %pieceful run main | provider=quickjs-wasm-worker
+@ %ravel language main | javascript
+@ %ravel output main | dist/main.js
+@ %ravel run main | provider=quickjs-wasm-worker
 ```
 
 Live metadata is only planned. A host still owns provider selection and

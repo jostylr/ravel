@@ -438,7 +438,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul class="collapse">
   <li><a href="#native-named-blocks" id="toc-native-named-blocks" class="nav-link" data-scroll-target="#native-named-blocks">Native named blocks</a></li>
   <li><a href="#repeated-noweb-ref-groups" id="toc-repeated-noweb-ref-groups" class="nav-link" data-scroll-target="#repeated-noweb-ref-groups">Repeated <code>:noweb-ref</code> groups</a></li>
-  <li><a href="#compact-pieceful-declarations" id="toc-compact-pieceful-declarations" class="nav-link" data-scroll-target="#compact-pieceful-declarations">Compact Pieceful declarations</a></li>
+  <li><a href="#compact-ravel-declarations" id="toc-compact-ravel-declarations" class="nav-link" data-scroll-target="#compact-ravel-declarations">Compact Ravel declarations</a></li>
   <li><a href="#reference-compatibility" id="toc-reference-compatibility" class="nav-link" data-scroll-target="#reference-compatibility">Reference compatibility</a></li>
   <li><a href="#execution-results-and-tangling" id="toc-execution-results-and-tangling" class="nav-link" data-scroll-target="#execution-results-and-tangling">Execution, results, and tangling</a></li>
   <li><a href="#node-host-configuration" id="toc-node-host-configuration" class="nav-link" data-scroll-target="#node-host-configuration">Node host configuration</a></li>
@@ -458,8 +458,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>The adapter follows Org’s documented source-block structure and affiliated keywords. See the official references for <a href="https://orgmode.org/manual/Structure-of-Code-Blocks.html">source-block structure</a>, <a href="https://orgmode.org/manual/Using-Header-Arguments.html">header arguments</a>, and <a href="https://orgmode.org/manual/Noweb-Reference-Syntax.html">noweb references</a>.</p>
 <section id="native-named-blocks" class="level2">
 <h2 class="anchored" data-anchor-id="native-named-blocks">Native named blocks</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode org code-with-copy"><code class="sourceCode orgmode"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#+PROPERTY: pieceful-reference-style org-noweb</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#+PROPERTY: pieceful-execution-owner org</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode org code-with-copy"><code class="sourceCode orgmode"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#+PROPERTY: ravel-reference-style org-noweb</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#+PROPERTY: ravel-execution-owner org</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="pp">#+NAME: main</span></span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="pp">#+HEADER: :session *node*</span></span>
@@ -482,8 +482,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="in">#+END_SRC</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>If a block also has <code>#+NAME</code>, its exact body contributes both to the individually named piece and the aggregate group. This preserves Babel’s distinction rather than forcing authors to choose one identity.</p>
 </section>
-<section id="compact-pieceful-declarations" class="level2">
-<h2 class="anchored" data-anchor-id="compact-pieceful-declarations">Compact Pieceful declarations</h2>
+<section id="compact-ravel-declarations" class="level2">
+<h2 class="anchored" data-anchor-id="compact-ravel-declarations">Compact Ravel declarations</h2>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode org code-with-copy"><code class="sourceCode orgmode"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>#+LP_NAME: main | normalize-eol() | trim()</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="in">#+BEGIN_SRC java</span>script</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>console<span class="op">.</span><span class="fu">log</span><span class="op">(</span>_<span class="st">"message | indent(2)"</span><span class="op">);</span></span>
@@ -493,7 +493,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="reference-compatibility" class="level2">
 <h2 class="anchored" data-anchor-id="reference-compatibility">Reference compatibility</h2>
 <p>Reference policy is selected with:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode org code-with-copy"><code class="sourceCode orgmode"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#+PROPERTY: pieceful-reference-style org-noweb</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode org code-with-copy"><code class="sourceCode orgmode"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#+PROPERTY: ravel-reference-style org-noweb</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>The supported values are:</p>
 <ul>
 <li><code>org-noweb</code>: interpret <code>&lt;&lt;name&gt;&gt;</code> as a Ravel reference;</li>
@@ -501,7 +501,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><code>both</code>: accept both forms.</li>
 </ul>
 <p>Piped Org-noweb syntax is a separate explicit extension:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode org code-with-copy"><code class="sourceCode orgmode"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#+PROPERTY: pieceful-noweb-pipes yes</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode org code-with-copy"><code class="sourceCode orgmode"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#+PROPERTY: ravel-noweb-pipes yes</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="pp">#+NAME: main</span></span>
 <span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="in">#+BEGIN_SRC text</span></span>
@@ -513,10 +513,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="execution-results-and-tangling">Execution, results, and tangling</h2>
 <p><code>#+RESULTS</code> is retained as an artifact and never appended to a piece body. <code>:eval</code>, <code>:tangle</code>, <code>:results</code>, <code>:session</code>, <code>:cache</code>, and repeated <code>:var</code> requests remain in Org fragment metadata and in an inert <code>org-babel</code> effect plan.</p>
 <p>A block requesting execution or tangling must have exactly one owner:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode org code-with-copy"><code class="sourceCode orgmode"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#+PROPERTY: pieceful-execution-owner org</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode org code-with-copy"><code class="sourceCode orgmode"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#+PROPERTY: ravel-execution-owner org</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <ul>
 <li><code>org</code> means Babel remains authoritative.</li>
-<li><code>pieceful</code> lets an explicitly executable block become ordinary Ravel live metadata, still subject to the host’s provider and capability boundary.</li>
+<li><code>ravel</code> lets an explicitly executable block become ordinary Ravel live metadata, still subject to the host’s provider and capability boundary.</li>
 </ul>
 <p>Parsing never evaluates or tangles. In particular, <code>:tangle</code> is not silently converted into a filesystem write.</p>
 </section>
@@ -530,7 +530,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="dt">adapter</span> <span class="op">=</span> <span class="st">"org"</span></span>
 <span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="dt">references</span> <span class="op">=</span> <span class="st">"both"</span></span>
 <span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="dt">noweb_pipes</span> <span class="op">=</span> <span class="cn">true</span></span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="dt">execution_owner</span> <span class="op">=</span> <span class="st">"pieceful"</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="dt">execution_owner</span> <span class="op">=</span> <span class="st">"ravel"</span></span>
 <span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="dt">run</span> <span class="op">=</span> <span class="cn">true</span></span>
 <span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="dt">provider</span> <span class="op">=</span> <span class="st">"quickjs-wasm-worker"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>The portable API is:</p>

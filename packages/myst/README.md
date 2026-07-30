@@ -1,11 +1,12 @@
 # `@pieceful/ravel-myst`
 
-Lossless MyST Markdown source adapter for Ravel. It recognizes Pieceful
-`{piece}` directives plus native MyST `{code}`, `{code-block}`, and
-`{code-cell}` fallbacks carrying an `lp-*` label.
+Lossless MyST Markdown source adapter for Ravel. It recognizes canonical
+`{ravel:piece}` directives, the short `{piece}` alias, `{ravel}` graph
+directives, and native MyST `{code}`, `{code-block}`, and `{code-cell}`
+fallbacks carrying an `lp-*` label.
 
 Install `@pieceful/ravel-myst-plugin` alongside this adapter when MyST itself
-should render the custom `{piece}` directive. The plugin owns presentation;
+should render the custom directives. The plugin owns presentation;
 this package continues to own Ravel semantics and exact source mapping.
 
 ```js
@@ -17,12 +18,12 @@ const { map, diagnostics, surface } = mystToMap(source, {
 });
 ```
 
-The `{piece}` argument accepts the shared name-and-pipeline grammar. Its
+The `{ravel:piece}` argument accepts the shared name-and-pipeline grammar. Its
 `:language:`, `:caption:`, and `:label:` options map to language, visible name,
 and stable MyST anchor:
 
 ````markdown
-```{piece} main | normalize-eol() | trim()
+```{ravel:piece} main | normalize-eol() | trim()
 :language: javascript
 :caption: Main program
 :label: lp-main
@@ -41,5 +42,5 @@ navigation to rendered piece anchors. They do not become code-composition
 references. Piece bodies use Ravel's underscore-quote syntax for composition.
 
 MyST owns notebook execution by default. To run a piece through Ravel's live
-provider instead, select `executionOwner: "pieceful"` and explicitly request
+provider instead, select `executionOwner: "ravel"` and explicitly request
 `run`; this prevents both engines from claiming the same cell.

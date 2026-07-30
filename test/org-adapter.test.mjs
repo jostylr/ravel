@@ -87,7 +87,7 @@ test(":noweb-ref aggregates repeated fragments while #+NAME remains individually
 
 test("#+LP_NAME pipelines and explicitly extended Org-noweb references use the shared grammar", () => {
   const adapted = orgToMap([
-    "#+PROPERTY: pieceful-noweb-pipes yes",
+    "#+PROPERTY: ravel-noweb-pipes yes",
     "#+LP_NAME: main | trim()",
     "#+BEGIN_SRC text",
     "  <<message | trim()>>  ",
@@ -138,9 +138,9 @@ test("#+LP_NAME and #+NAME must agree and repeated pipelines must be identical",
   ));
 });
 
-test("reference policy can reserve Org-noweb expansion for Babel and use underscore-quote in Pieceful", () => {
+test("reference policy can reserve Org-noweb expansion for Babel and use underscore-quote in Ravel", () => {
   const adapted = orgToMap([
-    "#+PROPERTY: pieceful-reference-style underscore-quote",
+    "#+PROPERTY: ravel-reference-style underscore-quote",
     "#+NAME: message",
     "#+BEGIN_SRC text",
     "hello",
@@ -172,23 +172,23 @@ test("Babel execution and tangling require one explicit owner", () => {
   assert.ok(unowned.diagnostics.some((entry) => entry.code === "LPA115"));
   assert.equal(unowned.map.chunks[0].metadata.data.ravel.run, undefined);
 
-  const pieceful = orgToMap([
-    "#+PROPERTY: pieceful-execution-owner pieceful",
+  const ravel = orgToMap([
+    "#+PROPERTY: ravel-execution-owner ravel",
     "#+NAME: main",
     "#+BEGIN_SRC javascript :eval yes :tangle main.js",
     "export default 42;",
     "#+END_SRC",
     ""
   ].join("\n"), {
-    uri: "pieceful.org",
-    document: "pieceful",
+    uri: "ravel.org",
+    document: "ravel",
     provider: "quickjs-wasm-worker"
   });
-  assert.deepEqual(pieceful.diagnostics, []);
-  assert.equal(pieceful.map.chunks[0].metadata.data.ravel.run, true);
-  assert.equal(pieceful.map.chunks[0].metadata.data.ravel.provider, "quickjs-wasm-worker");
-  assert.equal(pieceful.map.directives.length, 0);
-  assert.equal(pieceful.map.metadata.plannedEffects[0].requests.tangle, "main.js");
+  assert.deepEqual(ravel.diagnostics, []);
+  assert.equal(ravel.map.chunks[0].metadata.data.ravel.run, true);
+  assert.equal(ravel.map.chunks[0].metadata.data.ravel.provider, "quickjs-wasm-worker");
+  assert.equal(ravel.map.directives.length, 0);
+  assert.equal(ravel.map.metadata.plannedEffects[0].requests.tangle, "main.js");
 });
 
 test("language-scoped subtree headers apply only within their Org subtree", () => {
@@ -276,7 +276,7 @@ test("Org, noweb, and modern Markdown normalize repeated pieces and pipelines eq
     references: "underscore-quote"
   });
   const noweb = nowebToMap([
-    "@ %pieceful pipeline main | trim()",
+    "@ %ravel pipeline main | trim()",
     "<<main>>=",
     "  _\"helper\"",
     "@",

@@ -4,9 +4,9 @@ kernelspec:
   display_name: Python 3
 ---
 
-# MyST Pieceful example
+# MyST Ravel example
 
-:::{piece} main | trim()
+:::{ravel:piece} main | trim()
 :language: python
 :caption: Main program
 :label: lp-main

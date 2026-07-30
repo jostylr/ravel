@@ -11,7 +11,7 @@ chunk in earlier LitPro writing. A source document may contain many pieces.
 
 ## Decision summary
 
-1. There is one Pieceful semantic language and one public, source-mapped Piece
+1. There is one Ravel semantic language and one public, source-mapped Piece
    Document IR. Markup adapters only recognize authoring conventions and map
    them to that IR.
 2. The modern Markdown adapter allows heading-owned pieces and fence-owned
@@ -57,13 +57,13 @@ chunk in earlier LitPro writing. A source document may contain many pieces.
   transforms, and directives.
 - Make piece identity and graph navigation useful in the rendered document, not
   only in compiler internals.
-- Keep ordinary rendering useful when the Pieceful extension is absent.
-- Never require a markup renderer to execute Pieceful effects while parsing.
+- Keep ordinary rendering useful when the Ravel extension is absent.
+- Never require a markup renderer to execute Ravel effects while parsing.
 
 ## Non-goals
 
-- Making every feature of a host format part of Pieceful.
-- Treating Quarto/Jupyter execution order as Pieceful dependency order.
+- Making every feature of a host format part of Ravel.
+- Treating Quarto/Jupyter execution order as Ravel dependency order.
 - Reimplementing Quarto, Asciidoctor, Babel, or browser rendering.
 - Making the modern Markdown adapter emulate legacy LitPro; that responsibility
   belongs to the separate `markdown-litpro` adapter.
@@ -122,7 +122,7 @@ without teaching the core about headings, fences, or HTML nodes.
 All adapters must:
 
 - preserve the document URI and exact source offsets;
-- emit the same AST for Pieceful references and pipelines regardless of markup;
+- emit the same AST for Ravel references and pipelines regardless of markup;
 - distinguish a piece declaration from its display name;
 - preserve literal fragments before markup rendering or syntax highlighting;
 - plan effects as data rather than performing them;
@@ -135,7 +135,7 @@ A piece has three related but distinct names:
 
 | Property | Purpose | Example |
 | --- | --- | --- |
-| semantic ID | Pieceful references and graph identity | `format-greeting` |
+| semantic ID | Ravel references and graph identity | `format-greeting` |
 | display name | prose and rendered caption | `Greeting formatter` |
 | rendered anchor | host-format navigation | `lp-format-greeting` or `lst-lp-format-greeting` |
 
@@ -180,7 +180,7 @@ would interfere with the host parser:
 | Quarto | same heading form | `lp-pipe="trim()"` on the listing |
 | AsciiDoc | <code>== Main &#124; trim()</code> | `lp-pipe="trim()"` block attribute |
 | Org | <code>#+LP_NAME: main &#124; trim()</code> | adjacent `#+LP_PIPE:` keyword |
-| noweb-plus | <code>&lt;&lt;main &#124; trim()&gt;&gt;=</code> | `@ %pieceful pipeline ...` pragma |
+| noweb-plus | <code>&lt;&lt;main &#124; trim()&gt;&gt;=</code> | `@ %ravel pipeline ...` pragma |
 | HTML | n/a | `data-lp-pipe="trim()"` |
 
 The two spellings must normalize to the same pipeline AST. Supplying both with
@@ -365,7 +365,7 @@ The modern adapter recognizes only the compact, typed LP2 link directives:
 [Read shared definitions](shared.qmd "lp:read as shared")
 ```
 
-The link text and destination remain useful when Pieceful is absent. The
+The link text and destination remain useful when Ravel is absent. The
 adapter parses the title into a typed AST and plans any effect; it does not
 execute effects while walking the Markdown tree.
 
@@ -381,7 +381,7 @@ the documents.
 The default deliberately keeps the unusual model:
 
 - H1, H2, H3, and H4 are peer major-piece declarations. Markdown outline depth
-  does not affect their Pieceful identity.
+  does not affect their Ravel identity.
 - H5 declares a slash child of the most recent major piece:
   `major/h5-name`.
 - H6 declares a slash grandchild:
@@ -515,13 +515,13 @@ resolver. A project normally selects modern `markdown`, though
 
 The integration has two independent jobs:
 
-1. **Build bridge** — run pure Pieceful parsing/resolution/weaving before Quarto
+1. **Build bridge** — run pure Ravel parsing/resolution/weaving before Quarto
    executes code, producing a temporary source tree and source maps.
 2. **Render bridge** — decorate Quarto's Pandoc AST with visible piece identity,
    links, graph summaries, and diagnostics.
 
 Keeping these jobs separate prevents a Lua render filter from becoming a
-second Pieceful compiler.
+second Ravel compiler.
 
 ### Heading-owned pieces in Quarto
 
@@ -558,7 +558,7 @@ See @lst-lp-main.
 ````
 
 Quarto renders `Main program` as a visible listing caption and turns
-`@lst-lp-main` into a numbered hyperlink. Pieceful takes the semantic ID from
+`@lst-lp-main` into a numbered hyperlink. Ravel takes the semantic ID from
 `lp-id`; if it is absent, it may strip `lst-lp-` from the listing label.
 
 This is the no-extension baseline. The render bridge can reduce the source
@@ -593,7 +593,7 @@ print(_"prepared-data")
 
 The build bridge must weave `prepared-data` into a temporary `.qmd` before the
 Jupyter or Knitr engine sees the cell. Quarto remains responsible for executing
-the resulting cell and rendering its output. Pieceful `execute` effects are
+the resulting cell and rendering its output. Ravel `execute` effects are
 disabled in this path unless separately and explicitly requested, preventing
 double execution.
 
@@ -622,7 +622,7 @@ The supported render pipeline is:
 
 ```text
 source .qmd
-  -> Pieceful adapter and graph validation
+  -> Ravel adapter and graph validation
   -> pure weaving into a temporary .qmd tree + source maps
   -> Quarto execution
   -> Pandoc/Quarto render bridge
@@ -633,12 +633,12 @@ Rules:
 
 - never overwrite the author's `.qmd` during rendering;
 - preserve a composed source map through the temporary file;
-- key Quarto freeze/cache inputs on the woven temporary content and Pieceful
+- key Quarto freeze/cache inputs on the woven temporary content and Ravel
   plugin versions, not only the original `.qmd`;
 - report Quarto execution errors against the original piece/reference chain
   where the engine supplies usable generated locations;
 - do not let Quarto shortcodes, filters, or executed output declare new
-  Pieceful pieces after graph validation.
+  Ravel pieces after graph validation.
 
 ## AsciiDoc
 
@@ -676,7 +676,7 @@ As with a Markdown heading-owned piece:
 - `lp-main` maps to semantic ID `main`;
 - source/listing blocks in the section become fragments;
 - the next configured piece section ends ownership;
-- section depth does not create Pieceful namespaces;
+- section depth does not create Ravel namespaces;
 - the pipeline runs once after the section's fragments are concatenated.
 
 AsciiDoc can link to the piece using its native cross-reference syntax:
@@ -769,7 +769,7 @@ contain blocks from several files.
 
 HTML is both a useful authoring format and an important rendered interchange
 format. The canonical source form should be valid, meaningful HTML even when no
-Pieceful script is installed.
+Ravel script is installed.
 
 ### Section form
 
@@ -799,7 +799,7 @@ Pieceful script is installed.
 
 Both forms make the display name visible, provide a native anchor, and degrade
 well. Standard elements carry accessibility and rendering semantics;
-`data-lp-*` carries private Pieceful metadata.
+`data-lp-*` carries private Ravel metadata.
 
 Directives use ordinary links with explicit data:
 
@@ -849,11 +849,11 @@ console.log(<<format-greeting>>);
 ```
 
 `#+NAME` remains fully meaningful to Org. The adjacent `#+LP_PIPE` keyword is
-Pieceful metadata that Org can otherwise ignore. The pipeline applies after
+Ravel metadata that Org can otherwise ignore. The pipeline applies after
 all fragments of `main` have been collected.
 
 Org's `:noweb-ref` header argument groups several blocks under one shared
-reference. Pieceful maps that group to repeated fragments:
+reference. Ravel maps that group to repeated fragments:
 
 ```org
 #+BEGIN_SRC javascript :noweb-ref main
@@ -870,9 +870,9 @@ block; a shared `:noweb-ref` identifies the aggregate. If both are present,
 the named block may be addressed individually while also contributing to the
 aggregate, matching Org's distinction.
 
-### Compact Pieceful Org spelling
+### Compact Ravel Org spelling
 
-For authors using Pieceful rather than Babel as the primary engine, the adapter
+For authors using Ravel rather than Babel as the primary engine, the adapter
 also accepts:
 
 ```org
@@ -894,7 +894,7 @@ In `org-noweb` reference mode:
 <<format-greeting>>
 ```
 
-maps to the same Pieceful reference AST as `_"format-greeting"`. The extended
+maps to the same Ravel reference AST as `_"format-greeting"`. The extended
 form allows a use-site pipeline:
 
 ```org
@@ -903,7 +903,7 @@ form allows a use-site pipeline:
 
 Org Babel would interpret the entire text, including the pipe, as a block ID.
 Therefore a document that must remain executable by unmodified Babel should
-use Pieceful's underscore-quote reference for piped consumption:
+use Ravel's underscore-quote reference for piped consumption:
 
 ```org
 _"format-greeting | indent(2)"
@@ -912,12 +912,12 @@ _"format-greeting | indent(2)"
 Front matter/property configuration selects one policy:
 
 ```org
-#+PROPERTY: pieceful-reference-style org-noweb
-#+PROPERTY: pieceful-execution-owner org
+#+PROPERTY: ravel-reference-style org-noweb
+#+PROPERTY: ravel-execution-owner org
 ```
 
 Reference styles are `org-noweb`, `underscore-quote`, or `both`. Execution
-owners are `org` or `pieceful`; a build must never expand/evaluate the same
+owners are `org` or `ravel`; a build must never expand/evaluate the same
 block through both engines.
 
 ### Headings, results, and tangling
@@ -928,9 +928,9 @@ Org declaration because their names stay visible in the source.
 
 `#+RESULTS` blocks are artifacts, not piece fragments. Babel's `:tangle`,
 `:eval`, `:results`, cache, sessions, and variables are preserved as Org
-metadata. Pieceful does not reinterpret them as pure transforms. When Org owns
-execution/tangling, Pieceful supplies the validated dependency graph and woven
-block bodies; Org performs the native operation. When Pieceful owns it, those
+metadata. Ravel does not reinterpret them as pure transforms. When Org owns
+execution/tangling, Ravel supplies the validated dependency graph and woven
+block bodies; Org performs the native operation. When Ravel owns it, those
 requests become capability-gated effects.
 
 ### Org source maps
@@ -970,7 +970,7 @@ Rules:
 
 Classic noweb does not encode a source language in the chunk declaration. The
 adapter takes language from project configuration, root filename conventions,
-or an explicit Pieceful pragma and records any inference.
+or an explicit Ravel pragma and records any inference.
 
 ### noweb-plus pipes
 
@@ -984,7 +984,7 @@ console.log(<<format-greeting | indent(2)>>);
 ```
 
 The first unescaped pipe separates the classic chunk name from the typed
-Pieceful pipeline. This is intentionally an extension: an unmodified noweb
+Ravel pipeline. This is intentionally an extension: an unmodified noweb
 tool would treat the full text, including pipes, as the chunk name.
 
 For a source that must remain consumable by classic noweb, use a documentation
@@ -992,13 +992,13 @@ pragma for the definition pipeline and underscore-quote syntax for piped
 references:
 
 ```noweb
-@ %pieceful pipeline main | normalize-eol() | trim()
+@ %ravel pipeline main | normalize-eol() | trim()
 <<main>>=
 console.log(_"format-greeting | indent(2)");
 @
 ```
 
-The pragma is attached to the next matching definition by the Pieceful
+The pragma is attached to the next matching definition by the Ravel
 adapter; classic `notangle` continues to see the ordinary `main` chunk.
 
 ### noweb dialect and compatibility policy
@@ -1029,11 +1029,11 @@ without requiring TeX, `noweave`, or `notangle`.
 ### MyST Markdown — high priority after the initial adapters
 
 MyST already has directive blocks, labels, captions, cross references, code
-cells, and notebook integration. The Pieceful MyST plugin provides a dedicated
+cells, and notebook integration. The Ravel MyST plugin provides a dedicated
 directive whose argument follows the shared name-and-pipeline rule:
 
 ```markdown
-:::{piece} main | normalize-eol() | trim()
+:::{ravel:piece} main | normalize-eol() | trim()
 :language: javascript
 :caption: Main program
 
@@ -1044,14 +1044,16 @@ console.log(_"format-greeting");
 `@pieceful/ravel-myst-plugin` renders standard MyST code, container, caption,
 and notebook-cell nodes while the adapter emits the same Piece Document as
 other formats. It makes the piece name and optional pipeline visible and lets
-ordinary MyST cross references target the piece label. A no-plugin fallback
-may use the built-in `{code-block}` directive with an `lp-*` label and no
-Pieceful-only options. MyST is attractive for scientific books and notebooks
-where Quarto is not the chosen renderer.
+ordinary MyST cross references target the piece label. `{ravel:piece}` is
+canonical and `{piece}` is its short alias. `{ravel}` carries the same graph
+directive language as a Markdown `ravel` fence. A no-plugin fallback may use
+the built-in `{code-block}` directive with an `lp-*` label and no Ravel-only
+options. MyST is attractive for scientific books and notebooks where Quarto
+is not the chosen renderer.
 
 The implemented adapter uses the following mapping:
 
-- the `{piece}` argument supplies the authored name and optional definition
+- the `{ravel:piece}` or `{piece}` argument supplies the authored name and optional definition
   pipeline;
 - `:label:` supplies the stable MyST anchor and semantic ID after removing an
   optional `lp-` prefix;
@@ -1071,10 +1073,10 @@ present they must agree. Repeated directives concatenate only when they resolve
 to the same semantic ID, their pipelines agree, and they do not reuse a
 rendered label.
 
-`{code-cell}` and `{piece}` with `:cell:` retain page front matter, cell tags,
+`{code-cell}` and `{ravel:piece}` with `:cell:` retain page front matter, cell tags,
 and an inert `myst-code-cell` effect plan. MyST is the default execution owner.
-On `{piece}`, `:execution-owner: pieceful` keeps the rendered node static;
-Pieceful live execution still requires an explicit `:run:` request. Parsing
+On `{ravel:piece}`, `:execution-owner: ravel` keeps the rendered node static;
+Ravel live execution still requires an explicit `:run:` request. Parsing
 itself invokes neither MyST nor Jupyter.
 
 `.myst.md` selects the adapter in the Node host. Ordinary `.md` remains normal
@@ -1140,8 +1142,8 @@ Documents rather than rendered HTML.
 | LPA120 | Markup parser could not provide an exact source range. |
 | LPA121 | Included source URI is missing or outside the allowed input set. |
 | LPA130 | Render integration cannot represent a requested navigation feature. |
-| LPA140 | Quarto attempted execution before Pieceful weaving. |
-| LPA141 | Org/Babel and Pieceful both claim execution or tangling ownership. |
+| LPA140 | Quarto attempted execution before Ravel weaving. |
+| LPA141 | Org/Babel and Ravel both claim execution or tangling ownership. |
 
 An inferred ID (`LPA102`) is informational for an enabled heading declaration
 and a warning for a block-local declaration.
@@ -1210,7 +1212,7 @@ Quarto adds golden renders for HTML and PDF showing:
 7. Should `<<name | pipeline>>` be enabled by `noweb-plus`/Org configuration
    only, or recognized with a portability warning whenever encountered?
 8. Which system owns execution in an Org or notebook workflow? The default
-   should be the native host, with Pieceful limited to pure graph assembly.
+   should be the native host, with Ravel limited to pure graph assembly.
 
 ## Recommendation
 

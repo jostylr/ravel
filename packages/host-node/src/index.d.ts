@@ -15,7 +15,7 @@ export interface SourceAdapterOptions {
   references?: "noweb" | "org-noweb" | "underscore-quote" | "both";
   language?: string;
   nowebPipes?: boolean;
-  executionOwner?: "org" | "myst" | "pieceful";
+  executionOwner?: "org" | "myst" | "ravel";
   run?: boolean;
   provider?: string;
 }

@@ -466,25 +466,26 @@ ul.task-list li input[type="checkbox"] {
 <li><code>orgToMap(text, options)</code> scans named Babel source blocks and returns <code>{ map, diagnostics, surface }</code>.</li>
 <li><code>#+NAME</code> and <code>#+LP_NAME</code> declare individual pieces; <code>:noweb-ref</code> contributes the same source body to a repeated aggregate piece.</li>
 <li><code>options.references</code> selects <code>org-noweb</code>, <code>underscore-quote</code>, or <code>both</code>; <code>options.nowebPipes</code> explicitly enables piped Org-noweb uses.</li>
-<li><code>options.executionOwner</code> selects <code>org</code> or <code>pieceful</code>. Execution and tangling requests without one owner are diagnosed, and parsing performs neither.</li>
+<li><code>options.executionOwner</code> selects <code>org</code> or <code>ravel</code>. Execution and tangling requests without one owner are diagnosed, and parsing performs neither.</li>
 </ul>
 </section>
 <section id="piecefulravel-myst" class="level2">
 <h2 class="anchored" data-anchor-id="piecefulravel-myst"><code>@pieceful/ravel-myst</code></h2>
 <ul>
-<li><code>mystToMap(text, options)</code> scans <code>{piece}</code> directives and labeled native <code>{code}</code>, <code>{code-block}</code>, and <code>{code-cell}</code> fallbacks, returning <code>{ map, diagnostics, surface }</code>.</li>
+<li><code>mystToMap(text, options)</code> scans canonical <code>{ravel:piece}</code> directives, their <code>{piece}</code> alias, <code>{ravel}</code> graph directives, and labeled native <code>{code}</code>, <code>{code-block}</code>, and <code>{code-cell}</code> fallbacks, returning <code>{ map, diagnostics, surface }</code>.</li>
 <li>Piece arguments use the shared name-and-pipeline grammar. <code>:label:</code> supplies a rendered anchor and semantic ID, while <code>:caption:</code> remains the visible display name.</li>
 <li><code>surface.references</code> contains code-composition uses; <code>surface.navigation</code> separately contains MyST links, reference roles, and <code>@label</code> shorthand.</li>
-<li><code>options.executionOwner</code> selects <code>myst</code> or <code>pieceful</code> for notebook cells. Cell metadata and effect plans are inert during parsing.</li>
+<li><code>options.executionOwner</code> selects <code>myst</code> or <code>ravel</code> for notebook cells. Cell metadata and effect plans are inert during parsing.</li>
 </ul>
 </section>
 <section id="piecefulravel-myst-plugin" class="level2">
 <h2 class="anchored" data-anchor-id="piecefulravel-myst-plugin"><code>@pieceful/ravel-myst-plugin</code></h2>
 <ul>
 <li>The default export is a native MyST JavaScript plugin; <code>pieceDirective</code> is also exported for direct registration or testing.</li>
-<li><code>{piece}</code> directives render as standard MyST code/container nodes with syntax highlighting, visible captions, labels, and displayed pipelines.</li>
-<li><code>:cell:</code> emits MyST’s native executable code-cell structure by default. <code>:execution-owner: pieceful</code> keeps the rendered block static so two runtimes cannot own the same cell.</li>
-<li>The plugin does not parse a Ravel graph, weave artifacts, or execute Pieceful live code. Use <code>@pieceful/ravel-myst</code> for those semantics.</li>
+<li><code>{ravel:piece}</code> and its <code>{piece}</code> alias render as standard MyST code/container nodes with syntax highlighting, visible captions, labels, and displayed pipelines.</li>
+<li><code>:cell:</code> emits MyST’s native executable code-cell structure by default. <code>:execution-owner: ravel</code> keeps the rendered block static so two runtimes cannot own the same cell.</li>
+<li><code>{ravel}</code> renders graph-directive bodies as visible static code; the adapter parses those bodies through the shared Ravel directive grammar.</li>
+<li>The plugin does not parse a Ravel graph, weave artifacts, or execute live code. Use <code>@pieceful/ravel-myst</code> for those semantics.</li>
 </ul>
 </section>
 <section id="piecefulravel-core" class="level2">
@@ -493,6 +494,7 @@ ul.task-list li input[type="checkbox"] {
 <li><code>parseChunkId</code> and <code>formatChunkId</code> convert canonical chunk identities.</li>
 <li><code>parseChunk</code> parses an individual chunk body into portable syntax data. Adapters may opt into lossless noweb delimiters and provide authored-name to semantic-ID aliases without rewriting the body.</li>
 <li><code>parseDefinitionPipeline</code> gives source adapters the shared definition-time transform grammar without evaluating a pipeline.</li>
+<li><code>parseRavelDirectiveBlock(text, { document, sourceAt })</code> gives Markdown, MyST, and future adapters one source-mapped grammar for <code>in</code>, <code>create</code>, <code>alias</code>, and <code>out</code> blocks.</li>
 <li><code>combineMaps(maps)</code> constructs the pre-transform graph.</li>
 <li><code>transformGraph(graph, { transforms?, deferLiveResults?, liveResults? })</code> evaluates that graph and returns the program, deliverables, diagnostics, dependencies, and trace. Hosts use <code>deferLiveResults</code> before execution and pass the completed execution result as <code>liveResults</code> for ordinary text materialization.</li>
 <li><code>planLiveExecutions(program, { providers })</code> performs the language-neutral analysis and dependency-planning stage for chunks marked executable.</li>

@@ -11,7 +11,8 @@ export interface PieceDirectiveData {
 }
 
 export interface PieceDirective {
-  name: "piece";
+  name: "ravel:piece";
+  alias: ["piece"];
   doc: string;
   arg: Record<string, unknown>;
   options: Record<string, unknown>;
@@ -20,12 +21,21 @@ export interface PieceDirective {
 }
 
 export const pieceDirective: PieceDirective;
+export interface RavelDirective {
+  name: "ravel";
+  doc: string;
+  options: Record<string, unknown>;
+  body: Record<string, unknown>;
+  run(data: PieceDirectiveData): MystAstNode[];
+}
+
+export const ravelDirective: RavelDirective;
 
 declare const plugin: {
   name: string;
   author: string;
   license: string;
-  directives: PieceDirective[];
+  directives: Array<PieceDirective | RavelDirective>;
 };
 
 export default plugin;

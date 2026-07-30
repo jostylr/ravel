@@ -1,9 +1,29 @@
-import { parseDefinitionPipeline } from "@pieceful/ravel-core";
+import {
+  parseDefinitionPipeline,
+  parseRavelDirectiveBlock
+} from "@pieceful/ravel-core";
 import { parse as parseYaml } from "yaml";
 
 const componentPattern = /^[a-z][a-z0-9-]*$/;
-const supportedDirectives = new Set(["piece", "code", "code-block", "code-cell"]);
-const executionOwners = new Set(["myst", "pieceful"]);
+const pieceDirectives = new Set(["ravel:piece", "piece"]);
+const supportedDirectives = new Set([
+  ...pieceDirectives,
+  "ravel",
+  "code",
+  "code-block",
+  "code-cell"
+]);
+const executionOwners = new Set(["myst", "ravel"]);
+const ravelPresentationOptions = new Set([
+  "caption",
+  "label",
+  "name",
+  "class",
+  "enumerated",
+  "numbered",
+  "enumerator",
+  "number"
+]);
 
 const diagnostic = (code, message, source, severity = "error") => ({
   code, severity, message, source
@@ -149,7 +169,7 @@ const scanFences = (text, uri, starts, frontMatterEnd) => {
   for (let index = 0; index < lines.length; index += 1) {
     const line = lines[index];
     if (line.start < frontMatterEnd) continue;
-    const opening = /^([ \t]{0,3})(:{3,}|`{3,})\{([A-Za-z][A-Za-z0-9_-]*)\}(?:[ \t]+(.*?))?[ \t]*$/.exec(line.value);
+    const opening = /^([ \t]{0,3})(:{3,}|`{3,})\{([A-Za-z][A-Za-z0-9_-]*(?::[A-Za-z][A-Za-z0-9_-]*)*)\}(?:[ \t]+(.*?))?[ \t]*$/.exec(line.value);
     if (!opening) continue;
     const marker = opening[2][0];
     const minimumLength = opening[2].length;
@@ -287,12 +307,13 @@ export const mystToMap = (text, options = {}) => {
     frontMatter.data?.ravel?.executionOwner;
   const executionOwner = options.executionOwner ?? frontMatterOwner ?? null;
   if (executionOwner !== null && !executionOwners.has(executionOwner)) {
-    throw new Error("MyST execution owner must be myst or pieceful: " + executionOwner);
+    throw new Error("MyST execution owner must be myst or ravel: " + executionOwner);
   }
 
   const diagnostics = [];
   const fences = scanFences(text, uri, starts, frontMatter.end);
   const candidates = [];
+  const ravelDirectives = [];
   const ignoredDirectives = [];
   for (const fence of fences) {
     if (!fence.end) {
@@ -308,6 +329,27 @@ export const mystToMap = (text, options = {}) => {
       continue;
     }
 
+    if (fence.directive === "ravel") {
+      const semanticOptions = fence.options.filter((option) =>
+        !ravelPresentationOptions.has(option.name)
+      );
+      if (fence.argument || semanticOptions.length) {
+        diagnostics.push(diagnostic(
+          "LPA101",
+          "The MyST {ravel} directive accepts no argument or semantic options.",
+          fence.declaration
+        ));
+      }
+      const parsed = parseRavelDirectiveBlock(fence.body, {
+        document: documentId,
+        sourceAt: (start, end) =>
+          advanceRange(fence.bodySource, fence.body, start, end)
+      });
+      diagnostics.push(...parsed.diagnostics);
+      ravelDirectives.push(...parsed.directives);
+      continue;
+    }
+
     const optionLabel = optionValue(fence.options, "label") || null;
     const target = precedingTarget(text, fence, uri, starts);
     if (target && optionLabel && target.label !== optionLabel) {
@@ -318,7 +360,8 @@ export const mystToMap = (text, options = {}) => {
       ));
     }
     const label = optionLabel ?? target?.label ?? null;
-    const fallback = fence.directive !== "piece";
+    const pieceDirective = pieceDirectives.has(fence.directive);
+    const fallback = !pieceDirective;
     if (fallback && !label?.startsWith("lp-")) {
       ignoredDirectives.push({
         directive: fence.directive,
@@ -329,7 +372,7 @@ export const mystToMap = (text, options = {}) => {
       continue;
     }
 
-    const split = fence.directive === "piece"
+    const split = pieceDirective
       ? splitNamePipeline(fence.argument)
       : { name: label.slice(3), pipe: null, pipeIndex: -1 };
     const caption = optionValue(fence.options, "caption") || null;
@@ -339,7 +382,7 @@ export const mystToMap = (text, options = {}) => {
     if (!canonical) {
       diagnostics.push(diagnostic(
         "LPA101",
-        "MyST piece name or label does not produce a usable Pieceful ID.",
+        "MyST piece name or label does not produce a usable Ravel ID.",
         fence.declaration
       ));
       continue;
@@ -369,7 +412,7 @@ export const mystToMap = (text, options = {}) => {
       ));
     }
 
-    const language = fence.directive === "piece"
+    const language = pieceDirective
       ? optionValue(fence.options, "language") || null
       : scalar(fence.argument).split(/\s+/)[0] || null;
     const cellOption = booleanValue(optionValue(fence.options, "cell") ?? "false");
@@ -378,7 +421,7 @@ export const mystToMap = (text, options = {}) => {
     if (directiveOwner !== null && !executionOwners.has(directiveOwner)) {
       diagnostics.push(diagnostic(
         "LPA141",
-        "MyST directive execution-owner must be myst or pieceful.",
+        "MyST directive execution-owner must be myst or ravel.",
         fence.declaration
       ));
     }
@@ -393,19 +436,19 @@ export const mystToMap = (text, options = {}) => {
       ? directiveOwner
       : executionOwner;
     const runOption = booleanValue(optionValue(fence.options, "run") ?? "false");
-    const piecefulRequested = runSelected(options, [authoredName, canonical, label].filter(Boolean)) ||
+    const ravelRequested = runSelected(options, [authoredName, canonical, label].filter(Boolean)) ||
       runOption === true;
-    if (piecefulRequested && selectedOwner !== "pieceful") {
+    if (ravelRequested && selectedOwner !== "ravel") {
       diagnostics.push(diagnostic(
         "LPA141",
-        "Pieceful execution requires executionOwner: pieceful; MyST remains the default notebook owner.",
+        "Ravel execution requires executionOwner: ravel; MyST remains the default notebook owner.",
         fence.declaration
       ));
     }
-    if (notebookCell && selectedOwner === "pieceful" && !piecefulRequested) {
+    if (notebookCell && selectedOwner === "ravel" && !ravelRequested) {
       diagnostics.push(diagnostic(
         "LPA141",
-        "A MyST notebook cell assigned to Pieceful must explicitly request run.",
+        "A MyST notebook cell assigned to Ravel must explicitly request run.",
         fence.declaration
       ));
     }
@@ -438,7 +481,7 @@ export const mystToMap = (text, options = {}) => {
       pipelineSource: pipeSource,
       notebookCell,
       executionOwner: selectedOwner,
-      piecefulRun: piecefulRequested && selectedOwner === "pieceful",
+      ravelRun: ravelRequested && selectedOwner === "ravel",
       provider: optionValue(fence.options, "provider") || options.provider || null,
       tags: tagsFrom(optionValue(fence.options, "tags") ?? "")
     });
@@ -449,7 +492,12 @@ export const mystToMap = (text, options = {}) => {
   const chunksById = new Map();
   const labelToPiece = new Map();
   const labelOwners = new Map();
-  const surface = { definitions: [], references: [], directives: [], navigation: [] };
+  const surface = {
+    definitions: [],
+    references: [],
+    directives: [...ravelDirectives],
+    navigation: []
+  };
   const plannedEffects = [];
   for (const candidate of candidates) {
     const id = documentId + "::" + candidate.canonical;
@@ -490,8 +538,8 @@ export const mystToMap = (text, options = {}) => {
                 underscore: true,
                 aliases
               },
-              ...(candidate.piecefulRun ? { run: true } : {}),
-              ...(candidate.piecefulRun && candidate.provider ? { provider: candidate.provider } : {})
+              ...(candidate.ravelRun ? { run: true } : {}),
+              ...(candidate.ravelRun && candidate.provider ? { provider: candidate.provider } : {})
             },
             myst: {
               label: candidate.label,
@@ -601,7 +649,7 @@ export const mystToMap = (text, options = {}) => {
       version: 1,
       document: { id: documentId, uri, format: "myst+ravel-v1" },
       chunks: chunks.map(({ _pipelineKey, ...chunk }) => chunk),
-      directives: [],
+      directives: ravelDirectives,
       metadata: {
         adapter: "myst",
         frontMatter: frontMatter.data ?? null,

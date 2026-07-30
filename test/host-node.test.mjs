@@ -312,7 +312,7 @@ test("Node host loads Org extensions and TOML ownership/reference settings", asy
       "adapter = \"org\"",
       "references = \"both\"",
       "noweb_pipes = true",
-      "execution_owner = \"pieceful\"",
+      "execution_owner = \"ravel\"",
       "run = true",
       "provider = \"quickjs-wasm-worker\"",
       ""
@@ -340,7 +340,7 @@ test("Node host loads .myst.md directly and explicit MyST TOML execution setting
   const ordinary = join(sandbox, "explicit.md");
   const config = join(sandbox, "ravel.toml");
   const source = [
-    "```{piece} main | trim()",
+    "```{ravel:piece} main | trim()",
     ":language: javascript",
     ":caption: Main",
     ":label: lp-main",
@@ -359,7 +359,7 @@ test("Node host loads .myst.md directly and explicit MyST TOML execution setting
       "[[files]]",
       "path = \"explicit.md\"",
       "adapter = \"myst\"",
-      "execution_owner = \"pieceful\"",
+      "execution_owner = \"ravel\"",
       "run = true",
       "provider = \"quickjs-wasm-worker\"",
       ""
