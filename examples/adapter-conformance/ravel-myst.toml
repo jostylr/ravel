@@ -1,0 +1,26 @@
+version = 1
+
+[build]
+name = "adapter-conformance-myst"
+out_dir = ".ravel/build/myst"
+
+[[files]]
+path = "myst.myst.md"
+document = "field-report"
+adapter = "myst"
+
+[[live.resources]]
+name = "observations.csv"
+path = "observations.csv"
+
+[[outputs]]
+name = "report.md"
+from = "field-report::report"
+
+[[outputs]]
+name = "summary.json"
+from = "field-report::summary"
+
+[[outputs]]
+name = "alerts.txt"
+from = "field-report::alerts"

@@ -1128,6 +1128,16 @@ The following declarations must yield equivalent semantic pieces:
 Adapter-independent conformance fixtures should compare normalized Piece
 Documents rather than rendered HTML.
 
+The implemented
+[cross-adapter field report](https://github.com/jostylr/ravel/tree/main/examples/adapter-conformance)
+is the shared vertical fixture. Its Markdown, LitPro Markdown, Org, noweb,
+MyST, AsciiDoc, HTML, and Quarto sources normalize to the same six-piece graph.
+Two live JavaScript pieces load a declared CSV resource and exchange structured
+values; three configured writes then produce byte-identical Markdown, JSON,
+and text artifacts in every format. The conformance test compares normalized
+piece bodies, languages, live metadata, definition pipelines, output
+directives, live exports, and final bytes.
+
 ## Diagnostics added by adapters
 
 | Code | Meaning |
@@ -1218,7 +1228,7 @@ Quarto adds golden renders for HTML and PDF showing:
 
 ## Recommendation
 
-Prototype the same five-piece example in:
+The cross-adapter field report now implements this vertical slice in:
 
 - modern Markdown with a named fence between two heading-owned fragments;
 - `markdown-litpro` with H1-H4, H5/H6, a minor, and a repeated heading;
@@ -1228,9 +1238,9 @@ Prototype the same five-piece example in:
 - AsciiDoc section form;
 - HTML `<figure data-ravel-piece>` form.
 
-Compare their normalized Piece Documents and rendered navigation. That small
-vertical slice will test the adapter boundary, visible naming, graph links, and
-source maps before committing to more grammars.
+Its normalized Piece Documents and generated artifacts are compared
+automatically. Per-format fixtures continue to carry the more exhaustive
+navigation, malformed-input, nesting, and exact-range cases listed above.
 
 ## External references
 

@@ -32,6 +32,7 @@
     "test:bun": "bun test",
     "test:myst-plugin": "node scripts/myst-plugin-smoke.mjs",
     "test:quarto": "node scripts/quarto-smoke.mjs",
+    "example:adapters": "node examples/adapter-conformance/build-all.mjs",
     "ravel": "node packages/cli/src/index.js",
     "benchmark:assembly": "node examples/benchmark/benchmark-build.mjs",
     "validate:schema": "node scripts/validate-map-example.mjs",

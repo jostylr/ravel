@@ -1423,6 +1423,7 @@ ravel::read[target=shared.adoc,as=shared]</code></pre>
 </tbody>
 </table>
 <p>Adapter-independent conformance fixtures should compare normalized Piece Documents rather than rendered HTML.</p>
+<p>The implemented <a href="https://github.com/jostylr/ravel/tree/main/examples/adapter-conformance">cross-adapter field report</a> is the shared vertical fixture. Its Markdown, LitPro Markdown, Org, noweb, MyST, AsciiDoc, HTML, and Quarto sources normalize to the same six-piece graph. Two live JavaScript pieces load a declared CSV resource and exchange structured values; three configured writes then produce byte-identical Markdown, JSON, and text artifacts in every format. The conformance test compares normalized piece bodies, languages, live metadata, definition pipelines, output directives, live exports, and final bytes.</p>
 </section>
 <section id="diagnostics-added-by-adapters" class="level2">
 <h2 class="anchored" data-anchor-id="diagnostics-added-by-adapters">Diagnostics added by adapters</h2>
@@ -1558,7 +1559,7 @@ ravel::read[target=shared.adoc,as=shared]</code></pre>
 </section>
 <section id="recommendation" class="level2">
 <h2 class="anchored" data-anchor-id="recommendation">Recommendation</h2>
-<p>Prototype the same five-piece example in:</p>
+<p>The cross-adapter field report now implements this vertical slice in:</p>
 <ul>
 <li>modern Markdown with a named fence between two heading-owned fragments;</li>
 <li><code>markdown-litpro</code> with H1-H4, H5/H6, a minor, and a repeated heading;</li>
@@ -1568,7 +1569,7 @@ ravel::read[target=shared.adoc,as=shared]</code></pre>
 <li>AsciiDoc section form;</li>
 <li>HTML <code>&lt;figure data-ravel-piece&gt;</code> form.</li>
 </ul>
-<p>Compare their normalized Piece Documents and rendered navigation. That small vertical slice will test the adapter boundary, visible naming, graph links, and source maps before committing to more grammars.</p>
+<p>Its normalized Piece Documents and generated artifacts are compared automatically. Per-format fixtures continue to carry the more exhaustive navigation, malformed-input, nesting, and exact-range cases listed above.</p>
 </section>
 <section id="external-references" class="level2">
 <h2 class="anchored" data-anchor-id="external-references">External references</h2>

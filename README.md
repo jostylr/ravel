@@ -196,6 +196,18 @@ npm run live
 npm run build
 ```
 
+Build the same live CSV publishing pipeline from modern Markdown, LitPro
+Markdown, Org, noweb, MyST, AsciiDoc, HTML, and Quarto, then verify that all
+eight produce byte-identical artifacts:
+
+```sh
+npm run example:adapters
+```
+
+See the
+[cross-adapter field report](examples/adapter-conformance/README.md) for its
+normalized-graph checks and per-format source/configuration pairs.
+
 Build the [50-chunk assembly benchmark](examples/benchmark/README.md) when you
 need a repeatable timing fixture for imports, nested substitutions, directives,
 and graph evaluation:

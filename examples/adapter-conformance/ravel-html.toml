@@ -1,0 +1,26 @@
+version = 1
+
+[build]
+name = "adapter-conformance-html"
+out_dir = ".ravel/build/html"
+
+[[files]]
+path = "html.html"
+document = "field-report"
+adapter = "html"
+
+[[live.resources]]
+name = "observations.csv"
+path = "observations.csv"
+
+[[outputs]]
+name = "report.md"
+from = "field-report::report"
+
+[[outputs]]
+name = "summary.json"
+from = "field-report::summary"
+
+[[outputs]]
+name = "alerts.txt"
+from = "field-report::alerts"

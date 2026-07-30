@@ -492,7 +492,7 @@ below makes that design release-binding for 0.2.
 - [ ] Ensure parsing only produces maps, diagnostics, and effect plans. No
       adapter may read undeclared files, execute a cell, run a directive, or
       mutate an output document during parsing.
-- [ ] Build adapter-independent conformance fixtures whose normalized Ravel
+- [x] Build adapter-independent conformance fixtures whose normalized Ravel
       Maps are identical across source formats.
 
 Exit criteria:

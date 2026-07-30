@@ -1,0 +1,3 @@
+birch 2026-07-02: heat 32.1 °C
+cedar 2026-07-02: rainfall 26.5 mm
+birch 2026-07-03: heat 30.0 °C

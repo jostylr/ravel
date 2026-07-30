@@ -415,7 +415,9 @@ export const prepareQuartoRender = (text, options = {}) => {
     headings: options.headings
   });
   const graph = combineMaps([adapted.map]);
-  const program = transformGraph(graph);
+  const program = transformGraph(graph, {
+    deferLiveResults: true
+  });
   const woven = weaveQuartoExecutions(text, adapted.map, program);
   const diagnostics = [
     ...adapted.diagnostics,
@@ -518,7 +520,8 @@ export const prepareQuartoProject = (documents, options = {}) => {
   });
   const graph = combineMaps(adapted.map((entry) => entry.adapted.map));
   const program = transformGraph(graph, {
-    transforms: options.transforms
+    transforms: options.transforms,
+    deferLiveResults: true
   });
   const diagnostics = [
     ...adapted.flatMap((entry) => entry.adapted.diagnostics),

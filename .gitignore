@@ -18,6 +18,7 @@ _site/
 
 # Ravel local run state
 **/.ravel/cache/
+**/.ravel/build/
 **/.ravel/runs/
 
 # Generated browser conformance bundle

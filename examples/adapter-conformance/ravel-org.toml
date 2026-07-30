@@ -1,0 +1,29 @@
+version = 1
+
+[build]
+name = "adapter-conformance-org"
+out_dir = ".ravel/build/org"
+
+[[files]]
+path = "org.org"
+document = "field-report"
+adapter = "org"
+references = "both"
+execution_owner = "ravel"
+provider = "quickjs-wasm-worker"
+
+[[live.resources]]
+name = "observations.csv"
+path = "observations.csv"
+
+[[outputs]]
+name = "report.md"
+from = "field-report::report"
+
+[[outputs]]
+name = "summary.json"
+from = "field-report::summary"
+
+[[outputs]]
+name = "alerts.txt"
+from = "field-report::alerts"

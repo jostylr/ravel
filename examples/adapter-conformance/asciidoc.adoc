@@ -1,0 +1,164 @@
+= Adapter conformance field report
+
+Every Ravel piece is a captioned AsciiDoc source block with a stable semantic
+ID. Live ownership remains with Ravel.
+
+.Analyze observations
+[source#lp-analyze,js,role=lp-piece,lp-id=analyze,ravel-run=true,ravel-provider=quickjs-wasm-worker]
+----
+const source = load("observations.csv");
+const lines = source.trim().split(/\r?\n/);
+const expectedHeader = ["station", "date", "temperature_c", "rainfall_mm"];
+const header = lines.shift().split(",");
+
+if (header.join(",") !== expectedHeader.join(",")) {
+  throw new Error("Unexpected observations.csv header: " + header.join(","));
+}
+
+const rows = lines.map((line, index) => {
+  const cells = line.split(",");
+  if (cells.length !== expectedHeader.length) {
+    throw new Error("Row " + (index + 2) + " has " + cells.length + " columns");
+  }
+  const temperatureC = Number(cells[2]);
+  const rainfallMm = Number(cells[3]);
+  if (!Number.isFinite(temperatureC) || !Number.isFinite(rainfallMm)) {
+    throw new Error("Row " + (index + 2) + " contains a non-numeric measurement");
+  }
+  return {
+    station: cells[0],
+    date: cells[1],
+    temperatureC,
+    rainfallMm
+  };
+});
+
+const round1 = (value) => Math.round(value * 10) / 10;
+const stationNames = [...new Set(rows.map((row) => row.station))].sort();
+const stationSummaries = stationNames.map((station) => {
+  const observations = rows.filter((row) => row.station === station);
+  return {
+    station,
+    observations: observations.length,
+    averageTemperatureC: round1(
+      observations.reduce((sum, row) => sum + row.temperatureC, 0) /
+        observations.length
+    ),
+    totalRainfallMm: round1(
+      observations.reduce((sum, row) => sum + row.rainfallMm, 0)
+    )
+  };
+});
+const hottest = rows.reduce((best, row) =>
+  row.temperatureC > best.temperatureC ? row : best
+);
+const wettest = rows.reduce((best, row) =>
+  row.rainfallMm > best.rainfallMm ? row : best
+);
+const alerts = [];
+
+for (const row of rows) {
+  if (row.temperatureC >= 30) {
+    alerts.push({
+      station: row.station,
+      date: row.date,
+      kind: "heat",
+      value: row.temperatureC
+    });
+  }
+  if (row.rainfallMm >= 20) {
+    alerts.push({
+      station: row.station,
+      date: row.date,
+      kind: "rainfall",
+      value: row.rainfallMm
+    });
+  }
+}
+
+export default {
+  observations: rows.length,
+  stationSummaries,
+  averageTemperatureC: round1(
+    rows.reduce((sum, row) => sum + row.temperatureC, 0) / rows.length
+  ),
+  totalRainfallMm: round1(
+    rows.reduce((sum, row) => sum + row.rainfallMm, 0)
+  ),
+  hottest: {
+    station: hottest.station,
+    date: hottest.date,
+    temperatureC: hottest.temperatureC
+  },
+  wettest: {
+    station: wettest.station,
+    date: wettest.date,
+    rainfallMm: wettest.rainfallMm
+  },
+  alerts
+};
+----
+
+.Publish report views
+[source#lp-publish,js,role=lp-piece,lp-id=publish,ravel-run=true,ravel-provider=quickjs-wasm-worker]
+----
+const analysis = ch("analyze");
+const oneDecimal = (value) => value.toFixed(1);
+const table = [
+  "| Station | Avg temp (°C) | Rain (mm) |",
+  "| --- | ---: | ---: |",
+  ...analysis.stationSummaries.map((row) =>
+    `| ${row.station} | ${oneDecimal(row.averageTemperatureC)} | ${oneDecimal(row.totalRainfallMm)} |`
+  )
+].join("\n");
+const reportBody = [
+  `Processed ${analysis.observations} observations from ${analysis.stationSummaries.length} stations.`,
+  `Average temperature: ${oneDecimal(analysis.averageTemperatureC)} °C.`,
+  `Total rainfall: ${oneDecimal(analysis.totalRainfallMm)} mm.`,
+  `Hottest: ${analysis.hottest.station} on ${analysis.hottest.date} (${oneDecimal(analysis.hottest.temperatureC)} °C).`,
+  `Wettest: ${analysis.wettest.station} on ${analysis.wettest.date} (${oneDecimal(analysis.wettest.rainfallMm)} mm).`,
+  "",
+  table
+].join("\n");
+const summary = {
+  observations: analysis.observations,
+  stations: analysis.stationSummaries,
+  averageTemperatureC: analysis.averageTemperatureC,
+  totalRainfallMm: analysis.totalRainfallMm,
+  hottest: analysis.hottest,
+  wettest: analysis.wettest,
+  alertCount: analysis.alerts.length
+};
+const alerts = analysis.alerts.map((alert) => {
+  const unit = alert.kind === "heat" ? "°C" : "mm";
+  return `${alert.station} ${alert.date}: ${alert.kind} ${oneDecimal(alert.value)} ${unit}`;
+}).join("\n");
+
+export default { reportBody, summary, alerts };
+----
+
+.Report heading
+[source#lp-report-heading,text,role=lp-piece,lp-id=report-heading,lp-pipe="trim()"]
+----
+# Field Station Report
+----
+
+.Markdown report
+[source#lp-report,text,role=lp-piece,lp-id=report,lp-pipe='trim() | replace("RAVELEND", "\n")']
+----
+_"report-heading"
+
+_"publish | jsontext('reportBody')"RAVELEND
+----
+
+.JSON summary
+[source#lp-summary,json,role=lp-piece,lp-id=summary,lp-pipe='trim() | replace("RAVELEND", "\n")']
+----
+_"publish | jsontext('summary')"RAVELEND
+----
+
+.Alert log
+[source#lp-alerts,text,role=lp-piece,lp-id=alerts,lp-pipe='trim() | replace("RAVELEND", "\n")']
+----
+_"publish | jsontext('alerts')"RAVELEND
+----
