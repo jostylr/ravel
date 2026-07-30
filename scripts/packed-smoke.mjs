@@ -56,7 +56,8 @@ const expectedPackages = new Set([
   "@pieceful/ravel-host-node",
   "@pieceful/ravel-js-live",
   "@pieceful/ravel-map",
-  "@pieceful/ravel-markdown"
+  "@pieceful/ravel-markdown",
+  "@pieceful/ravel-markdown-litpro"
 ]);
 
 const publicWorkspacePaths = [];
@@ -123,6 +124,7 @@ try {
     'const live = await import("@pieceful/ravel-js-live");',
     'const liveNode = await import("@pieceful/ravel-js-live/node");',
     'await import("@pieceful/ravel-markdown");',
+    'await import("@pieceful/ravel-markdown-litpro");',
     'await import("@pieceful/ravel-host-node");',
     'const map = await import("@pieceful/ravel-map");',
     'await import("@pieceful/ravel");',

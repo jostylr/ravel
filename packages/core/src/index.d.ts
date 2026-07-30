@@ -3,7 +3,7 @@ export interface SourceRange { start: SourcePosition; end: SourcePosition; }
 export interface SourceLocation { uri: string; range: SourceRange; }
 export interface Diagnostic { code: string; severity: "error" | "warning" | "info"; message: string; source: SourceLocation; related?: SourceLocation[]; }
 export type RavelValue = null | boolean | number | string | RavelValue[] | { [key: string]: RavelValue };
-export interface ChunkIdentity { document: string | null; chunk: string | null; minor: string | null; type: string | null; explicitDocument?: boolean; }
+export interface ChunkIdentity { document: string | null; chunk: string | null; minor: string | null; type: string | null; explicitDocument?: boolean; relativePath?: string; }
 export interface RavelMap { version: 1; document: { id: string; uri: string; format: string }; chunks: Array<Record<string, unknown>>; directives?: Array<Record<string, unknown>>; diagnostics?: Diagnostic[]; }
 export interface PretransformGraph { version: 1; documents: Array<{ id: string; uri: string; format: string }>; chunks: Array<Record<string, unknown>>; directives: Array<Record<string, unknown>>; diagnostics: Diagnostic[]; }
 export interface ProvenanceStep { kind: string; source?: SourceLocation; from?: string; to?: string; name?: string; phase?: number; value?: string; owner?: string; target?: string; }
@@ -82,6 +82,7 @@ export interface LiveProgramResult {
 export function formatChunkId(identity: ChunkIdentity): string;
 export function parseChunkId(input: string, options?: { reference?: boolean }): ChunkIdentity | null;
 export function parseChunk(body: string, source: SourceLocation): { nodes: unknown[]; diagnostics: Diagnostic[] };
+export function parseDefinitionPipeline(text: string, source: SourceLocation): { pipeline: TransformCall[]; diagnostics: Diagnostic[] };
 export function combineMaps(maps: RavelMap[]): PretransformGraph;
 export function transformGraph(graph: PretransformGraph, options?: {
   transforms?: Record<string, (value: string, ...argumentsValue: unknown[]) => string> | Map<string, Function>;

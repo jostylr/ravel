@@ -18,14 +18,27 @@ Use this package at adapter, editor, and host boundaries.
 
 ## `@pieceful/ravel-markdown`
 
-- `markdownToMap(text, { uri?, document?, mode? })` converts the documented
-  Markdown fenced profile to `{ map, diagnostics }`. `mode` is `"opt-in"` or
-  `"primary"`.
+- `markdownToMap(text, options)` converts the compatibility fence profile or
+  explicitly selected modern profile to `{ map, diagnostics }`.
+- `modernMarkdownToMap(text, options)` parses heading-owned and named-fence
+  modern Markdown.
+
+## `@pieceful/ravel-markdown-litpro`
+
+- `litproMarkdownToMap(text, options)` parses the independent historical
+  adapter and returns `{ map, diagnostics, surface }`.
+- `options.dialect` selects `litpro-2017`, `pieceful-2020`, or `litpro-plus`.
+- `options.headings` selects or configures `legacy`, `flat`, or `none` heading
+  semantics.
+- `isLitproMarkdown(text)` detects an explicit `lp.adapter: markdown-litpro`
+  front-matter selection without making a host parse Markdown configuration.
 
 ## `@pieceful/ravel-core`
 
 - `parseChunkId` and `formatChunkId` convert canonical chunk identities.
 - `parseChunk` parses an individual chunk body into portable syntax data.
+- `parseDefinitionPipeline` gives source adapters the shared definition-time
+  transform grammar without evaluating a pipeline.
 - `combineMaps(maps)` constructs the pre-transform graph.
 - `transformGraph(graph, { transforms?, deferLiveResults?, liveResults? })`
   evaluates that graph and returns the program, deliverables, diagnostics,

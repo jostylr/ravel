@@ -210,6 +210,99 @@ test("Node host loads Quarto sources through the modern Markdown adapter", async
   }
 });
 
+test("Node host selects markdown-litpro and its dialect from TOML", async () => {
+  const sandbox = await mkdtemp(join(tmpdir(), "ravel-litpro-host-"));
+  const input = join(sandbox, "legacy.md");
+  const config = join(sandbox, "ravel.toml");
+  try {
+    await writeFile(input, [
+      "# Main",
+      "",
+      "    value",
+      "",
+      "[result.txt](# \"save:\")",
+      ""
+    ].join("\n"));
+    await writeFile(config, [
+      "version = 1",
+      "",
+      "[[files]]",
+      "path = \"legacy.md\"",
+      "adapter = \"markdown-litpro\"",
+      "dialect = \"litpro-2017\"",
+      ""
+    ].join("\n"));
+
+    const loaded = await loadBuildInput(config);
+    assert.equal(loaded.pretransform.documents[0].format, "markdown+litpro-litpro-2017-v1");
+    const program = transformGraph(loaded.pretransform);
+    assert.deepEqual(program.diagnostics, []);
+    assert.equal(program.deliverables["result.txt"].value, "value");
+  } finally {
+    await rm(sandbox, { recursive: true, force: true });
+  }
+});
+
+test("LitPro load directives retain the adapter and document alias", async () => {
+  const sandbox = await mkdtemp(join(tmpdir(), "ravel-litpro-load-"));
+  const entry = join(sandbox, "entry.md");
+  const library = join(sandbox, "library.md");
+  try {
+    await writeFile(entry, [
+      "# Main",
+      "",
+      "    _\"shared::helper\"",
+      "",
+      "[shared](library.md \"load:\")",
+      "[result.txt](# \"save:\")",
+      ""
+    ].join("\n"));
+    await writeFile(library, [
+      "# Helper",
+      "",
+      "    loaded",
+      ""
+    ].join("\n"));
+
+    const loaded = await loadBuildInput(entry, {
+      adapter: "markdown-litpro",
+      dialect: "litpro-2017",
+      document: "entry"
+    });
+    const program = transformGraph(loaded.pretransform);
+    assert.deepEqual(program.diagnostics, []);
+    assert.deepEqual(loaded.pretransform.documents.map((document) => document.id).sort(), ["entry", "shared"]);
+    assert.equal(program.deliverables["result.txt"].value, "loaded");
+  } finally {
+    await rm(sandbox, { recursive: true, force: true });
+  }
+});
+
+test("LitPro front matter selects the adapter for a direct Markdown input", async () => {
+  const sandbox = await mkdtemp(join(tmpdir(), "ravel-litpro-frontmatter-"));
+  const input = join(sandbox, "legacy.md");
+  try {
+    await writeFile(input, [
+      "---",
+      "lp:",
+      "  adapter: markdown-litpro",
+      "  document: selected",
+      "  dialect: litpro-plus",
+      "---",
+      "# Main | trim()",
+      "",
+      "    value",
+      ""
+    ].join("\n"));
+
+    const loaded = await loadBuildInput(input);
+    assert.equal(loaded.pretransform.documents[0].format, "markdown+litpro-litpro-plus-v1");
+    assert.equal(loaded.pretransform.chunks[0].id, "selected::main");
+  } finally {
+    await rm(sandbox, { recursive: true, force: true });
+  }
+});
+
 test("Node host confines TOML inputs, imports, and configured outputs to its root", async () => {
   const sandbox = await mkdtemp(join(tmpdir(), "ravel-scope-"));
   const root = join(sandbox, "project");

@@ -516,16 +516,16 @@ Exit criteria:
 - [x] Support compact CommonMark and attributed Pandoc/Quarto spellings for
       named chunks, append fragments, display names, stable IDs, languages, and
       pipelines.
-- [ ] Add the independent `markdown-litpro` adapter with H1-H4 peer chunks, H5
+- [x] Add the independent `markdown-litpro` adapter with H1-H4 peer chunks, H5
       children, H6 grandchildren, slash and colon paths, relative references,
       repeated definitions, minor blocks, link directives, delayed
       substitutions, legacy comments, and fence/indented-code concatenation.
-- [ ] Implement the `litpro-2017`, `pieceful-2020`, and `litpro-plus`
+- [x] Implement the `litpro-2017`, `pieceful-2020`, and `litpro-plus`
       dialects, plus `legacy`, `flat`, and `none` heading-level modes.
 - [ ] Import the historical H5/H6, repeated-heading, minor-block, pipeline,
       load/save, templating, and path-resolution fixtures. Label every fixture
       with the historical dialect it proves.
-- [ ] Keep unsafe legacy directives as planned effects. Exact structural
+- [x] Keep unsafe legacy directives as planned effects. Exact structural
       compatibility must not imply ambient shell, network, eval, or filesystem
       authority.
 

@@ -28,6 +28,8 @@ website:
             href: cookbook.md
           - text: "Markdown fences"
             href: markdown-fences.md
+          - text: "LitPro Markdown"
+            href: markdown-litpro.md
           - text: "Pipes and directives"
             href: pipes-and-directives.md
           - text: "Provenance maps"
@@ -57,6 +59,7 @@ website:
       - section: "Language"
         contents:
           - markdown-fences.md
+          - markdown-litpro.md
           - live-execution.md
           - chunk-syntax.md
           - pipes-and-directives.md

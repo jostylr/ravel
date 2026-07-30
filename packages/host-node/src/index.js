@@ -9,6 +9,7 @@ import {
   provenanceMapVersion
 } from "@pieceful/ravel-core";
 import { markdownToMap } from "@pieceful/ravel-markdown";
+import { isLitproMarkdown, litproMarkdownToMap } from "@pieceful/ravel-markdown-litpro";
 import { assertRavelMap } from "@pieceful/ravel-map";
 
 const missing = (error) => error?.code === "ENOENT";
@@ -181,10 +182,24 @@ const readMap = async (path) => {
   return assertRavelMap(map, { uri: path });
 };
 
-const loadMarkdownFile = async (path, options = {}) => markdownToMap(
-  await readInputText(path, "Markdown input", "RM201"),
-  { uri: path, document: options.document, mode: options.mode, profile: options.profile }
-);
+const loadMarkdownFile = async (path, options = {}) => {
+  const text = await readInputText(path, "Markdown input", "RM201");
+  if (options.adapter === "markdown-litpro" || options.profile === "litpro" ||
+      (options.adapter === undefined && options.profile === undefined && isLitproMarkdown(text))) {
+    return litproMarkdownToMap(text, {
+      uri: path,
+      document: options.document,
+      dialect: options.dialect,
+      headings: options.headings
+    });
+  }
+  return markdownToMap(text, {
+    uri: path,
+    document: options.document,
+    mode: options.mode,
+    profile: options.profile
+  });
+};
 
 const collectPretransformMaps = async (entryPath, entryOptions = {}, scope) => {
   const activeScope = scope ?? await createInputScope(dirname(resolve(entryPath)));
@@ -218,7 +233,13 @@ const collectPretransformMaps = async (entryPath, entryOptions = {}, scope) => {
       if (typeof target !== "string" || !target) {
         throw inputError("RH102", "in directive requires a target path.", directive.source?.uri ?? absolutePath);
       }
-      await visit(resolve(dirname(absolutePath), target));
+      const adapter = directive.metadata?.adapter;
+      const alias = directive.metadata?.legacy?.alias;
+      await visit(resolve(dirname(absolutePath), target), {
+        ...(adapter ? { adapter } : {}),
+        ...(directive.metadata?.dialect ? { dialect: directive.metadata.dialect } : {}),
+        ...(typeof alias === "string" && alias ? { document: alias } : {})
+      });
     }
     maps.push(map);
   };
@@ -337,16 +358,30 @@ export const loadTomlBuild = async (configPath) => {
   const live = await loadLiveConfiguration(config.live, scope, absoluteConfig);
   const results = await Promise.all(config.files.map(async (file, index) => {
     if (!file || typeof file !== "object") throw inputError("RC102", "files[" + index + "] must be a table.", absoluteConfig);
-    reportUnknownKeys(file, new Set(["path", "document", "mode", "profile"]), "files[" + index + "]", absoluteConfig);
+    reportUnknownKeys(file, new Set(["path", "document", "mode", "profile", "adapter", "dialect"]), "files[" + index + "]", absoluteConfig);
     const path = requireConfigString(file.path, "files[" + index + "].path", absoluteConfig);
     if (file.document !== undefined) requireConfigString(file.document, "files[" + index + "].document", absoluteConfig);
     const mode = file.mode ?? "opt-in";
     if (!["opt-in", "primary"].includes(mode)) throw inputError("RC102", "files[" + index + "].mode must be opt-in or primary.", absoluteConfig);
     const profile = file.profile;
-    if (profile !== undefined && !["fences", "modern"].includes(profile)) {
-      throw inputError("RC102", "files[" + index + "].profile must be fences or modern.", absoluteConfig);
+    if (profile !== undefined && !["fences", "modern", "litpro"].includes(profile)) {
+      throw inputError("RC102", "files[" + index + "].profile must be fences, modern, or litpro.", absoluteConfig);
     }
-    return collectPretransformMaps(resolve(baseDirectory, path), { document: file.document, mode, profile }, scope);
+    const adapter = file.adapter;
+    if (adapter !== undefined && !["markdown", "markdown-litpro"].includes(adapter)) {
+      throw inputError("RC102", "files[" + index + "].adapter must be markdown or markdown-litpro.", absoluteConfig);
+    }
+    const dialect = file.dialect;
+    if (dialect !== undefined && !["litpro-2017", "pieceful-2020", "litpro-plus"].includes(dialect)) {
+      throw inputError("RC102", "files[" + index + "].dialect is not a supported LitPro dialect.", absoluteConfig);
+    }
+    return collectPretransformMaps(resolve(baseDirectory, path), {
+      document: file.document,
+      mode,
+      profile,
+      adapter,
+      dialect
+    }, scope);
   }));
   const pretransform = combineMaps(results.flatMap((result) => result.maps));
   pretransform.diagnostics.push(...results.flatMap((result) => result.diagnostics));

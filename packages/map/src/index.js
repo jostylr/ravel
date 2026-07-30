@@ -1,7 +1,8 @@
 import ravelMapSchema from "../schema/ravel-map.schema.json" with { type: "json" };
 
 const componentPattern = /^[a-z][a-z0-9-]*$/;
-const addressPattern = /^(?:[a-z][a-z0-9-]*::(?:[a-z][a-z0-9-]*)?(?::[a-z][a-z0-9-]*)?(?:\.[a-z][a-z0-9-]*)?|[a-z][a-z0-9-]*(?::[a-z][a-z0-9-]*)?(?:\.[a-z][a-z0-9-]*)?)$/;
+const chunkPathPattern = /^[a-z][a-z0-9-]*(?:\/(?:[a-z][a-z0-9-]*)?)*$/;
+const addressPattern = /^(?:[a-z][a-z0-9-]*::(?:[a-z][a-z0-9-]*(?:\/(?:[a-z][a-z0-9-]*)?)*)?(?::[a-z][a-z0-9-]*)?(?:\.[a-z][a-z0-9-]*)?|[a-z][a-z0-9-]*(?:\/(?:[a-z][a-z0-9-]*)?)*(?::[a-z][a-z0-9-]*)?(?:\.[a-z][a-z0-9-]*)?)$/;
 const mapKeys = new Set(["version", "document", "chunks", "directives", "metadata"]);
 const documentKeys = new Set(["id", "uri", "format"]);
 const chunkKeys = new Set(["id", "identity", "name", "body", "definitionPipeline", "metadata", "source", "fragments"]);
@@ -98,7 +99,11 @@ export const validateRavelMap = (map, { uri } = {}) => {
         for (const key of Object.keys(identity)) if (!identityKeys.has(key)) report(path + ".identity." + key, "is not a recognized identity field.");
         for (const key of identityKeys) {
           if (!Object.hasOwn(identity, key)) report(path + ".identity." + key, "is required.");
-          else if (identity[key] !== null && !componentPattern.test(identity[key] ?? "")) report(path + ".identity." + key, "must be null or a lowercase Ravel identifier.");
+          else if (key === "chunk" && identity[key] !== null && !chunkPathPattern.test(identity[key] ?? "")) {
+            report(path + ".identity.chunk", "must be null or a slash-separated lowercase Ravel path.");
+          } else if (key !== "chunk" && identity[key] !== null && !componentPattern.test(identity[key] ?? "")) {
+            report(path + ".identity." + key, "must be null or a lowercase Ravel identifier.");
+          }
         }
         if (identity.document === null && identity.chunk === null) report(path + ".identity", "must have a document or chunk component.");
         if (typeof map.document?.id === "string" && identity.document !== map.document.id) report(path + ".identity.document", "must match document.id.");

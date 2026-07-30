@@ -1,4 +1,6 @@
 const componentPattern = /^[a-z][a-z0-9-]*$/;
+const chunkPathPattern = /^[a-z][a-z0-9-]*(?:\/(?:[a-z][a-z0-9-]*)?)*$/;
+const relativeChunkPathPattern = /^(?:\.\.?)(?:\/(?:\.\.?|[a-z][a-z0-9-]*))*$/;
 
 export { directiveKinds, compose, append, newline, pipe, pass, createDirective, aliasDirective } from "./directives.js";
 export {
@@ -205,6 +207,7 @@ const diagnostic = (code, message, source, related = []) => ({
 });
 
 const validComponent = (value) => value === null || (typeof value === "string" && componentPattern.test(value));
+const validChunkPath = (value) => value === null || (typeof value === "string" && chunkPathPattern.test(value));
 
 export const formatChunkId = (identity) => {
   const prefix = identity.document === null ? "" : identity.document + "::";
@@ -230,7 +233,8 @@ export const parseChunkId = (input, { reference = false } = {}) => {
 
   let type = null;
   const typeIndex = remainder.lastIndexOf(".");
-  if (typeIndex !== -1) {
+  const pathIndex = remainder.lastIndexOf("/");
+  if (typeIndex > pathIndex) {
     type = remainder.slice(typeIndex + 1);
     remainder = remainder.slice(0, typeIndex);
     if (!componentPattern.test(type)) return null;
@@ -243,11 +247,16 @@ export const parseChunkId = (input, { reference = false } = {}) => {
     chunk = remainder.slice(0, minorIndex);
     minor = remainder.slice(minorIndex + 1);
     if (!componentPattern.test(minor)) return null;
+    if (chunk.endsWith("/") && /^\.{1,2}(?:\/|$)/.test(chunk)) chunk = chunk.slice(0, -1);
   }
 
   if (chunk === "") chunk = null;
-  if (!validComponent(chunk)) return null;
+  const relativePath = reference && typeof chunk === "string" && relativeChunkPathPattern.test(chunk)
+    ? chunk
+    : null;
+  if (relativePath === null && !validChunkPath(chunk)) return null;
   if (!validComponent(document) || !validComponent(minor) || !validComponent(type)) return null;
+  if (relativePath !== null && explicitDocument) return null;
 
   if (!reference && document === null && chunk === null) return null;
   if (!reference && document === null && chunk !== null && input.includes("::")) return null;
@@ -260,7 +269,14 @@ export const parseChunkId = (input, { reference = false } = {}) => {
   }
   if (reference && !explicitDocument && chunk === null && minor === null && type === null) return null;
 
-  return { document, chunk, minor, type, explicitDocument };
+  return {
+    document,
+    chunk,
+    minor,
+    type,
+    explicitDocument,
+    ...(relativePath === null ? {} : { relativePath })
+  };
 };
 
 const validateIdentity = (identity) => {
@@ -274,7 +290,7 @@ const validateIdentity = (identity) => {
     type: identity.type,
     explicitDocument: identity.document !== null
   };
-  if (!validComponent(result.document) || !validComponent(result.chunk) ||
+  if (!validComponent(result.document) || !validChunkPath(result.chunk) ||
       !validComponent(result.minor) || !validComponent(result.type)) {
     return null;
   }
@@ -490,6 +506,27 @@ const parseExpression = (expression, source, expressionOffset, diagnostics, { al
   };
 };
 
+/**
+ * Parse a definition-time transform pipeline without executing it.
+ * Adapters use this entry point so every markup dialect shares one grammar.
+ */
+export const parseDefinitionPipeline = (text, source) => {
+  const diagnostics = [];
+  if (typeof text !== "string" || !text.trim()) return { pipeline: [], diagnostics };
+  const expression = text.trim();
+  const pipeline = [];
+  for (const part of splitTopLevel(expression, "|")) {
+    const step = parsePipeStep(part, expression, source, 0, diagnostics);
+    if (!step) continue;
+    if (step.type !== "transform") {
+      diagnostics.push(diagnostic("RV120", "Definition pipelines accept transform calls only.", step.source ?? source));
+      continue;
+    }
+    pipeline.push({ name: step.name, arguments: step.arguments });
+  }
+  return { pipeline, diagnostics };
+};
+
 // An embedded reference inherits the indentation of its containing source line
 // on continuation lines. The first line is already positioned by the literal
 // text before the reference, so it deliberately remains untouched.
@@ -527,6 +564,47 @@ export const parseChunk = (body, source) => {
   let index = 0;
 
   while (index < body.length) {
+    const counted = body[index] === "\\"
+      ? /^\\([1-9][0-9]*)_(["'`])/.exec(body.slice(index))
+      : null;
+    if (counted) {
+      const quote = counted[2];
+      const expressionStart = index + counted[0].length;
+      let end = expressionStart;
+      let escaped = false;
+      while (end < body.length) {
+        if (escaped) escaped = false;
+        else if (body[end] === "\\") escaped = true;
+        else if (body[end] === quote) break;
+        end += 1;
+      }
+      if (end >= body.length) {
+        diagnostics.push(diagnostic("RV110", "Unterminated counted chunk reference.", span(source, body, index, body.length)));
+        break;
+      }
+      if (literalStart < index) {
+        nodes.push({ type: "literal", value: body.slice(literalStart, index), source: span(source, body, literalStart, index) });
+      }
+      const expression = body.slice(expressionStart, end);
+      const parsed = parseExpression(expression, source, expressionStart, diagnostics, { allowDelay: false });
+      if (parsed) {
+        nodes.push({
+          type: "delay",
+          value: {
+            kind: "ravel-command-argument",
+            command: { type: "chunk", expression, value: parsed, source: span(source, body, expressionStart, end) }
+          },
+          expression,
+          phase: Number(counted[1]),
+          safeSymbol: undefined,
+          source: span(source, body, index, end + 1),
+          continuationIndent: continuationIndentAt(body, index)
+        });
+      }
+      index = end + 1;
+      literalStart = index;
+      continue;
+    }
     if (body[index] === "\\" && body[index + 1] === "_" && ["\"", "'", "`"].includes(body[index + 2])) {
       index += 3;
       continue;
@@ -828,9 +906,22 @@ const definitionFromComposeEmission = (owner, capture, emit) => {
 };
 
 const resolveTarget = (target, owner, definitions) => {
-  const withOwnerChunk = target.chunk === null && !target.explicitDocument
-    ? owner.identity.chunk
-    : target.chunk;
+  let withOwnerChunk;
+  if (target.relativePath) {
+    const segments = (owner.identity.chunk ?? "").split("/").filter((segment, index, entries) =>
+      segment || (index > 0 && index < entries.length - 1)
+    );
+    for (const segment of target.relativePath.split("/")) {
+      if (segment === ".") continue;
+      if (segment === "..") segments.pop();
+      else segments.push(segment);
+    }
+    withOwnerChunk = segments.join("/");
+  } else {
+    withOwnerChunk = target.chunk === null && !target.explicitDocument
+      ? owner.identity.chunk
+      : target.chunk;
+  }
   const parts = {
     chunk: withOwnerChunk,
     minor: target.minor,

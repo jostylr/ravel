@@ -24,9 +24,13 @@
       "type": "string",
       "pattern": "^[a-z][a-z0-9-]*$"
     },
+    "chunkPath": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*(?:/(?:[a-z][a-z0-9-]*)?)*$"
+    },
     "address": {
       "type": "string",
-      "pattern": "^(?:[a-z][a-z0-9-]*::(?:[a-z][a-z0-9-]*)?(?::[a-z][a-z0-9-]*)?(?:\\.[a-z][a-z0-9-]*)?|[a-z][a-z0-9-]*(?::[a-z][a-z0-9-]*)?(?:\\.[a-z][a-z0-9-]*)?)$"
+      "pattern": "^(?:[a-z][a-z0-9-]*::(?:[a-z][a-z0-9-]*(?:/(?:[a-z][a-z0-9-]*)?)*)?(?::[a-z][a-z0-9-]*)?(?:\\.[a-z][a-z0-9-]*)?|[a-z][a-z0-9-]*(?:/(?:[a-z][a-z0-9-]*)?)*(?::[a-z][a-z0-9-]*)?(?:\\.[a-z][a-z0-9-]*)?)$"
     },
     "position": {
       "type": "object",
@@ -137,7 +141,7 @@
       ],
       "properties": {
         "document": { "anyOf": [{ "$ref": "#/$defs/component" }, { "type": "null" }] },
-        "chunk": { "anyOf": [{ "$ref": "#/$defs/component" }, { "type": "null" }] },
+        "chunk": { "anyOf": [{ "$ref": "#/$defs/chunkPath" }, { "type": "null" }] },
         "minor": { "anyOf": [{ "$ref": "#/$defs/component" }, { "type": "null" }] },
         "type": { "anyOf": [{ "$ref": "#/$defs/component" }, { "type": "null" }] }
       }

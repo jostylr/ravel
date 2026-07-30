@@ -23,6 +23,12 @@ execution stage. Markdown entries in `ravel.toml` may select
 `profile = "modern"` or retain the compatibility profile with
 `profile = "fences"`.
 
+Historical projects select the independent LitPro adapter with
+`adapter = "markdown-litpro"` and may choose `dialect = "litpro-2017"`,
+`"pieceful-2020"`, or `"litpro-plus"`. Legacy `load:` directives retain the
+adapter and dialect while loading their declared input; parsing never performs
+other legacy effects.
+
 Requires Node.js 22 or newer. This package is intentionally Node-specific;
 browser and Bun hosts should supply their own I/O boundary around
 `@pieceful/ravel-core`.
