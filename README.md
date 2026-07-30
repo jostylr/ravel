@@ -40,7 +40,7 @@ examples live at [ravel.jostylr.com](https://ravel.jostylr.com/).
 | [@pieceful/ravel-myst-plugin](https://www.npmjs.com/package/@pieceful/ravel-myst-plugin) | Native MyST `{ravel:piece}` and `{ravel}` rendering with visible names, pipelines, labels, and optional code cells. |
 | [@pieceful/ravel-noweb](https://www.npmjs.com/package/@pieceful/ravel-noweb) | Lossless strict-noweb and pipe-extended noweb-plus adapter. |
 | [@pieceful/ravel-org](https://www.npmjs.com/package/@pieceful/ravel-org) | Lossless Org/Babel names, groups, references, metadata, and ownership adapter. |
-| [@pieceful/ravel-quarto](https://www.npmjs.com/package/@pieceful/ravel-quarto) | Pure Quarto graph decoration, piece indexes, cache inputs, and temporary-source maps over modern Markdown. |
+| [@pieceful/ravel-quarto](https://www.npmjs.com/package/@pieceful/ravel-quarto) | Portable Quarto graph preparation plus an isolated Node project renderer, cache inputs, and temporary-source maps. |
 | [@pieceful/ravel-host-node](https://www.npmjs.com/package/@pieceful/ravel-host-node) | Node filesystem host for project loading, safe artifact writes, manifests, and backups. |
 | `@pieceful/ravel-js-live` (0.2 development) | Worker-backed QuickJS/Wasm provider plus Node-only preparation of allowlisted npm modules. |
 

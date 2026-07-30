@@ -469,6 +469,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#no-extension-baseline" id="toc-no-extension-baseline" class="nav-link" data-scroll-target="#no-extension-baseline">No-extension baseline</a></li>
   <li><a href="#graph-aware-render-preparation" id="toc-graph-aware-render-preparation" class="nav-link" data-scroll-target="#graph-aware-render-preparation">Graph-aware render preparation</a></li>
   <li><a href="#execution-boundary" id="toc-execution-boundary" class="nav-link" data-scroll-target="#execution-boundary">Execution boundary</a></li>
+  <li><a href="#node-project-host" id="toc-node-project-host" class="nav-link" data-scroll-target="#node-project-host">Node project host</a></li>
+  <li><a href="#why-there-is-no-required-lua-filter" id="toc-why-there-is-no-required-lua-filter" class="nav-link" data-scroll-target="#why-there-is-no-required-lua-filter">Why there is no required Lua filter</a></li>
   </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/jostylr/ravel/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></nav>
@@ -522,9 +524,46 @@ See @lst-lp-main.</code></pre>
 print(_"prepared-data | trim()")
 ```</code></pre>
 <p>Cell options remain in the temporary <code>.qmd</code> but are excluded from the Ravel piece body. For <code>ravel-execution-owner="quarto"</code>, references are resolved before Quarto sees the cell. For owner <code>ravel</code>, the bridge inserts <code>eval: false</code> unless already present, preventing native double execution. Combining Quarto ownership with a Ravel <code>.run</code> marker is diagnosed.</p>
-<p>The pure bridge now composes authored, woven-code, and generated-decoration mappings. The remaining project-host phase will materialize a complete temporary source tree, add transform/provider versions to project cache keys, invoke Quarto, and translate native-engine failures through those maps.</p>
+<p>The pure bridge composes authored, woven-code, and generated-decoration mappings. <code>prepareQuartoProject()</code> performs the same operation across multiple documents using one graph, including cross-document <code>Uses</code> and <code>Used by</code> links.</p>
+</section>
+<section id="node-project-host" class="level2">
+<h2 class="anchored" data-anchor-id="node-project-host">Node project host</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { renderQuartoProject } <span class="im">from</span> <span class="st">"@pieceful/ravel-quarto/node"</span><span class="op">;</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> rendered <span class="op">=</span> <span class="cf">await</span> <span class="fu">renderQuartoProject</span>(<span class="st">"./report"</span><span class="op">,</span> {</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">to</span><span class="op">:</span> <span class="st">"html"</span><span class="op">,</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">transformVersions</span><span class="op">:</span> { <span class="dt">customTransforms</span><span class="op">:</span> <span class="st">"2.1.0"</span> }<span class="op">,</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">providerVersions</span><span class="op">:</span> { <span class="dt">pythonEnvironment</span><span class="op">:</span> <span class="st">"lock-2026-07"</span> }</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="cf">try</span> {</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="op">!</span>rendered<span class="op">.</span><span class="at">ok</span>) {</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    <span class="bu">console</span><span class="op">.</span><span class="fu">error</span>(rendered<span class="op">.</span><span class="at">diagnostics</span>)<span class="op">;</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    <span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(rendered<span class="op">.</span><span class="at">outputDirectory</span>)<span class="op">;</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>} <span class="cf">finally</span> {</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>  <span class="cf">await</span> rendered<span class="op">.</span><span class="at">prepared</span><span class="op">.</span><span class="fu">cleanup</span>()<span class="op">;</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The host:</p>
+<ol type="1">
+<li>rejects a symlinked project root and does not follow project symlinks;</li>
+<li>copies source and resources to an isolated temporary tree;</li>
+<li>prepares every <code>.qmd</code> against one resolved graph;</li>
+<li>invokes Quarto with a host-owned output directory and structured log;</li>
+<li>maps renderer locations through temporary and woven source maps;</li>
+<li>leaves the authored project untouched.</li>
+</ol>
+<p>The caller owns the temporary result and must copy or publish authorized output before calling <code>cleanup()</code>. Generated directories, <code>.git</code>, and <code>node_modules</code> are excluded by default. Extra ignored directory names can be supplied.</p>
+<p>Quarto projects may declare arbitrary <code>pre-render</code> and <code>post-render</code> commands. Ravel detects those declarations and refuses to invoke the project unless the caller supplies <code>allowProjectScripts: true</code>. Quarto documents that these scripts run in the project directory and receive project input/output environment variables; see <a href="https://quarto.org/docs/projects/scripts.html">Quarto project scripts</a>.</p>
+<p>All project files contribute SHA-256 dependency records to <code>cacheKeyMaterial</code>. Prepared/authored sources, output-link format, adapter and bridge versions, transform versions, provider versions, and the discovered Quarto version are also included. The Node result exposes the SHA-256 <code>cacheKey</code>. That key is added as a generated trailing comment to every temporary <code>.qmd</code>, so <code>freeze: auto</code> sees changes in non-source inputs while authored offsets stay stable. Supplying a different <code>previousCacheKey</code> also adds Quarto’s <code>--cache-refresh</code> option for computation caches.</p>
 <p>Quarto cache invalidation normally follows cell source and cache attributes. Ravel therefore exposes prepared-source cache material rather than relying on the unmodified <code>.qmd</code> alone. See <a href="https://quarto.org/docs/projects/code-execution.html">Quarto execution and cache management</a>.</p>
-<p>The fixtures at <code>fixtures/quarto/static-listing.qmd</code> and <code>fixtures/quarto/executable-cell.qmd</code> exercise native listings, cross references, pipelines, graph decoration, ownership, and pre-execution weaving.</p>
+<p>The renderer suite exercises static and executable-cell presentation plus a multi-document project in HTML and PDF. A structured renderer-failure fixture verifies that a failure in woven code maps to its authored definition.</p>
+</section>
+<section id="why-there-is-no-required-lua-filter" class="level2">
+<h2 class="anchored" data-anchor-id="why-there-is-no-required-lua-filter">Why there is no required Lua filter</h2>
+<p>The bridge intentionally emits ordinary Markdown, native listing attributes, and native links before Pandoc builds its AST. A Lua filter would only move already-generated blocks within that AST; it cannot safely discover or resolve new pieces after validation. Since the current HTML and PDF output already has visible captions and working navigation, no filter is required. A small placement-only filter can still be added later if a concrete output format needs it. Quarto recommends Lua when AST transformation is actually needed; see the <a href="https://quarto.org/docs/extensions/filters.html">filter extension guide</a>.</p>
+<p>The fixtures under <code>fixtures/quarto/</code> exercise native listings, cross references, pipelines, graph decoration, ownership, pre-execution weaving, cross-document links, resource copying, HTML, and PDF.</p>
 
 
 </section>

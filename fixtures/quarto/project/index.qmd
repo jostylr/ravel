@@ -1,0 +1,13 @@
+---
+title: "Ravel Quarto project"
+execute:
+  enabled: false
+ravel:
+  document: project-main
+---
+
+# Project entry
+
+```{#lst-lp-main .javascript .lp-piece lst-cap="Project main"}
+console.log(_"project-helper::value");
+```

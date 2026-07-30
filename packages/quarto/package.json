@@ -2,7 +2,7 @@
   "name": "@pieceful/ravel-quarto",
   "version": "0.1.1",
   "type": "module",
-  "description": "Pure Quarto render and pre-execution bridge for Ravel Markdown.",
+  "description": "Portable Quarto preparation and isolated Node project rendering for Ravel.",
   "license": "MIT",
   "author": "James Taylor",
   "repository": {
@@ -27,7 +27,11 @@
     "access": "public"
   },
   "exports": {
-    ".": "./src/index.js"
+    ".": "./src/index.js",
+    "./node": {
+      "types": "./src/node.d.ts",
+      "default": "./src/node.js"
+    }
   },
   "types": "./src/index.d.ts",
   "files": [
@@ -37,6 +41,7 @@
   ],
   "dependencies": {
     "@pieceful/ravel-core": "0.1.1",
-    "@pieceful/ravel-markdown": "0.1.1"
+    "@pieceful/ravel-markdown": "0.1.1",
+    "yaml": "^2.9.0"
   }
 }

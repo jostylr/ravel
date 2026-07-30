@@ -10,6 +10,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
 import { prepareQuartoRender } from "../packages/quarto/src/index.js";
+import { renderQuartoProject } from "../packages/quarto/src/node.js";
 
 const run = promisify(execFile);
 const sandbox = await mkdtemp(join(tmpdir(), "ravel-quarto-smoke-"));
@@ -55,8 +56,49 @@ try {
     executableRender.html,
     /<span class="bu">print<\/span>\(<span class="dv">40<\/span>/
   );
+
+  const projectDirectory = new URL(
+    "../fixtures/quarto/project",
+    import.meta.url
+  ).pathname;
+  const projectHtml = await renderQuartoProject(projectDirectory, {
+    to: "html"
+  });
+  try {
+    assert.equal(
+      projectHtml.ok,
+      true,
+      JSON.stringify(projectHtml.diagnostics)
+    );
+    const html = await readFile(
+      join(projectHtml.outputDirectory, "index.html"),
+      "utf8"
+    );
+    assert.match(html, /Listing(?:&nbsp;|\s)+1: Project main/);
+    assert.match(html, /href="shared\/helper\.html#lst-lp-value"/);
+    assert.match(html, /Shared value/);
+  } finally {
+    await projectHtml.prepared.cleanup();
+  }
+
+  const projectPdf = await renderQuartoProject(projectDirectory, {
+    to: "pdf"
+  });
+  try {
+    assert.equal(
+      projectPdf.ok,
+      true,
+      JSON.stringify(projectPdf.diagnostics)
+    );
+    const pdf = join(projectPdf.outputDirectory, "index.pdf");
+    const extracted = await run("pdftotext", [pdf, "-"]);
+    assert.match(extracted.stdout, /Listing 1:? Project main/);
+    assert.match(extracted.stdout, /Shared value/);
+  } finally {
+    await projectPdf.prepared.cleanup();
+  }
   console.log(
-    "Quarto renders native listings, woven code, graph links, and the piece index."
+    "Quarto renders native listings, woven code, project links, HTML, and PDF."
   );
 } finally {
   await rm(sandbox, { recursive: true, force: true });

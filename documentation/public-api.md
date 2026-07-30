@@ -97,6 +97,17 @@ Use this package at adapter, editor, and host boundaries.
 - `weaveQuartoExecutions(text, map, program)` replaces Quarto-owned cell source
   with resolved code while preserving cell options and provenance. Ravel-owned
   cells receive an `eval: false` guard.
+- `prepareQuartoProject(documents, options)` resolves all supplied `.qmd`
+  documents against one graph and emits format-aware cross-document links.
+- `stampQuartoProjectCache(project, stamp)` adds a generated trailing cache
+  token to temporary sources without shifting authored mappings.
+- `remapQuartoDiagnostic(diagnostic, project)` translates a temporary renderer
+  position through authored, woven, and generated source-map segments.
+- `@pieceful/ravel-quarto/node` exports
+  `prepareQuartoProjectDirectory()`, `renderPreparedQuartoProject()`, and
+  `renderQuartoProject()` for isolated project-tree preparation and explicit
+  Quarto invocation. Returned temporary trees remain caller-owned until
+  `cleanup()`.
 
 ## `@pieceful/ravel-myst`
 

@@ -1,5 +1,6 @@
 import {
   combineMaps,
+  sourceAtGeneratedOffset,
   transformGraph
 } from "@pieceful/ravel-core";
 import { modernMarkdownToMap } from "@pieceful/ravel-markdown";
@@ -37,10 +38,30 @@ const sourceRange = (uri, starts, start, end) => ({
 
 const code = (value) => "`" + String(value).replace(/`/g, "\\`") + "`";
 
+const canonicalValue = (value) => {
+  if (Array.isArray(value)) return value.map(canonicalValue);
+  if (!value || typeof value !== "object") return value;
+  return Object.fromEntries(
+    Object.keys(value)
+      .sort()
+      .filter((key) => value[key] !== undefined)
+      .map((key) => [key, canonicalValue(value[key])])
+  );
+};
+
+const cacheMaterial = (value) => JSON.stringify(canonicalValue(value));
+
 const anchorFor = (chunk) =>
   chunk.metadata?.data?.ravel?.renderedAnchor ?? null;
 
-const graphFor = (map, program) => {
+const graphFor = (
+  map,
+  program,
+  linkTarget = (chunk) => {
+    const anchor = anchorFor(chunk);
+    return anchor ? "#" + anchor : null;
+  }
+) => {
   const sourceChunks = new Map(map.chunks.map((chunk) => [chunk.id, chunk]));
   const reverse = new Map([...sourceChunks.keys()].map((id) => [id, []]));
   for (const [id, chunk] of Object.entries(program.chunks ?? {})) {
@@ -54,9 +75,9 @@ const graphFor = (map, program) => {
     const chunk = sourceChunks.get(id);
     if (!chunk) return code(id);
     const label = chunk.name ?? chunk.identity?.chunk ?? id;
-    const anchor = anchorFor(chunk);
-    return anchor
-      ? "[" + label + "](#" + anchor + ")"
+    const target = linkTarget(chunk);
+    return target
+      ? "[" + label + "](" + target + ")"
       : code(label);
   };
   return [...sourceChunks.values()].map((chunk) => ({
@@ -311,6 +332,9 @@ export const decorateQuartoMarkdown = (
   program,
   {
     includeIndex = true,
+    indexScope = "document",
+    graphMap = map,
+    linkTarget,
     baseSourceMap = identitySourceMap(text, map.document.uri),
     authoredText = text
   } = {}
@@ -319,7 +343,7 @@ export const decorateQuartoMarkdown = (
   if (text.includes(startMarker)) {
     return { source: text, sourceMap: baseSourceMap };
   }
-  const graph = graphFor(map, program);
+  const graph = graphFor(graphMap, program, linkTarget);
   const insertions = graph
     .filter((entry) => entry.chunk.source?.uri === uri)
     .map((entry) => {
@@ -333,8 +357,11 @@ export const decorateQuartoMarkdown = (
         : { offset, value: relationBlock(entry) };
     })
     .filter(Boolean);
-  if (includeIndex && graph.length) {
-    insertions.push({ offset: text.length, value: indexBlock(graph) });
+  const indexEntries = indexScope === "project"
+    ? graph
+    : graph.filter((entry) => entry.chunk.source?.uri === uri);
+  if (includeIndex && indexEntries.length) {
+    insertions.push({ offset: text.length, value: indexBlock(indexEntries) });
   }
   insertions.sort((left, right) =>
     left.offset - right.offset || left.value.localeCompare(right.value)
@@ -406,11 +433,14 @@ export const prepareQuartoRender = (text, options = {}) => {
         baseSourceMap: woven.sourceMap,
         authoredText: text
       });
-  const cacheKeyMaterial = JSON.stringify({
+  const cacheKeyMaterial = cacheMaterial({
     bridgeVersion,
     adapterFormat: adapted.map.document.format,
     source: text,
-    preparedSource: decorated.source
+    preparedSource: decorated.source,
+    providerVersions: options.providerVersions ?? {},
+    transformVersions: options.transformVersions ?? {},
+    dependencies: options.dependencies ?? []
   });
   return {
     source: decorated.source,
@@ -419,5 +449,299 @@ export const prepareQuartoRender = (text, options = {}) => {
     diagnostics,
     sourceMap: decorated.sourceMap,
     cacheKeyMaterial
+  };
+};
+
+const portablePath = (value) => String(value).replace(/\\/g, "/");
+
+const relativeDocumentPath = (from, to) => {
+  const fromParts = portablePath(from).split("/");
+  const toParts = portablePath(to).split("/");
+  fromParts.pop();
+  while (fromParts.length && toParts.length &&
+      fromParts[0] === toParts[0]) {
+    fromParts.shift();
+    toParts.shift();
+  }
+  return [
+    ..."../".repeat(fromParts.filter(Boolean).length).split("/").filter(Boolean),
+    ...toParts
+  ].join("/") || portablePath(to).split("/").pop();
+};
+
+const withOutputExtension = (uri, outputExtension) => {
+  if (!outputExtension) return uri;
+  return uri.replace(/\.[^./]+$/, "") +
+    (outputExtension.startsWith(".")
+      ? outputExtension
+      : "." + outputExtension);
+};
+
+const projectLinkTarget = (currentUri, chunk, outputExtension) => {
+  const anchor = anchorFor(chunk);
+  if (!anchor) return null;
+  const targetUri = chunk.source?.uri;
+  if (!targetUri || targetUri === currentUri) return "#" + anchor;
+  return relativeDocumentPath(
+    currentUri,
+    withOutputExtension(targetUri, outputExtension)
+  ) + "#" + anchor;
+};
+
+/**
+ * Prepare a complete set of Quarto documents against one resolved Ravel graph.
+ * This remains portable and effect-free; the Node subpath owns filesystem and
+ * process capabilities.
+ */
+export const prepareQuartoProject = (documents, options = {}) => {
+  if (!Array.isArray(documents) || documents.length === 0) {
+    throw new TypeError("prepareQuartoProject requires one or more documents.");
+  }
+  const uris = new Set();
+  const adapted = documents.map((document) => {
+    if (!document || typeof document.uri !== "string" ||
+        typeof document.source !== "string") {
+      throw new TypeError("Each Quarto project document requires uri and source strings.");
+    }
+    if (uris.has(document.uri)) {
+      throw new TypeError("Duplicate Quarto project document URI: " + document.uri);
+    }
+    uris.add(document.uri);
+    return {
+      ...document,
+      adapted: modernMarkdownToMap(document.source, {
+        uri: document.uri,
+        document: document.document,
+        headings: document.headings
+      })
+    };
+  });
+  const graph = combineMaps(adapted.map((entry) => entry.adapted.map));
+  const program = transformGraph(graph, {
+    transforms: options.transforms
+  });
+  const diagnostics = [
+    ...adapted.flatMap((entry) => entry.adapted.diagnostics),
+    ...program.diagnostics
+  ];
+  const graphBlocked = diagnostics.some((entry) => entry.severity === "error");
+  const wovenDocuments = adapted.map((entry) => ({
+    entry,
+    woven: graphBlocked
+      ? {
+          source: entry.source,
+          sourceMap: identitySourceMap(entry.source, entry.uri),
+          diagnostics: []
+        }
+      : weaveQuartoExecutions(
+          entry.source,
+          entry.adapted.map,
+          program
+        )
+  }));
+  diagnostics.push(...wovenDocuments.flatMap((item) =>
+    item.woven.diagnostics
+  ));
+  const blocked = diagnostics.some((entry) => entry.severity === "error");
+  const preparedDocuments = wovenDocuments.map(({ entry, woven }) => {
+    if (blocked) {
+      return {
+        uri: entry.uri,
+        source: entry.source,
+        preparedSource: entry.source,
+        map: entry.adapted.map,
+        sourceMap: identitySourceMap(entry.source, entry.uri),
+        diagnostics: [
+          ...entry.adapted.diagnostics,
+          ...woven.diagnostics
+        ]
+      };
+    }
+    const decorated = decorateQuartoMarkdown(
+      woven.source,
+      entry.adapted.map,
+      program,
+      {
+        includeIndex: options.includeIndex,
+        indexScope: options.indexScope ?? "document",
+        graphMap: graph,
+        linkTarget: (chunk) => projectLinkTarget(
+          entry.uri,
+          chunk,
+          options.outputExtension
+        ),
+        baseSourceMap: woven.sourceMap,
+        authoredText: entry.source
+      }
+    );
+    return {
+      uri: entry.uri,
+      source: entry.source,
+      preparedSource: decorated.source,
+      map: entry.adapted.map,
+      sourceMap: decorated.sourceMap,
+      diagnostics: [
+        ...entry.adapted.diagnostics,
+        ...woven.diagnostics
+      ]
+    };
+  });
+  const cacheKeyMaterial = cacheMaterial({
+    bridgeVersion,
+    adapterFormats: preparedDocuments.map((entry) =>
+      entry.map.document.format
+    ),
+    documents: preparedDocuments.map((entry) => ({
+      uri: entry.uri,
+      source: entry.source,
+      preparedSource: entry.preparedSource
+    })),
+    providerVersions: options.providerVersions ?? {},
+    transformVersions: options.transformVersions ?? {},
+    dependencies: options.dependencies ?? [],
+    outputExtension: options.outputExtension ?? null
+  });
+  return {
+    documents: preparedDocuments,
+    graph,
+    program,
+    diagnostics,
+    cacheKeyMaterial
+  };
+};
+
+/**
+ * Add a generated project cache stamp without disturbing authored offsets.
+ * Node hosts use this after hashing cacheKeyMaterial so Quarto freeze:auto sees
+ * non-source dependency and provider-version changes.
+ */
+export const stampQuartoProjectCache = (project, stamp) => {
+  if (typeof stamp !== "string" ||
+      !/^[A-Za-z0-9][A-Za-z0-9._:-]*$/.test(stamp)) {
+    throw new TypeError("A Quarto project cache stamp must be a safe token.");
+  }
+  return {
+    ...project,
+    cacheStamp: stamp,
+    documents: project.documents.map((document) => {
+      const value = "\n<!-- ravel:project-cache " + stamp + " -->\n";
+      const generatedStart = document.preparedSource.length;
+      return {
+        ...document,
+        preparedSource: document.preparedSource + value,
+        sourceMap: {
+          ...document.sourceMap,
+          generatedLength: generatedStart + value.length,
+          segments: [
+            ...(document.sourceMap.segments ?? []),
+            {
+              generated: {
+                start: generatedStart,
+                end: generatedStart + value.length
+              },
+              source: null,
+              precision: "generated",
+              kind: "project-cache-stamp"
+            }
+          ]
+        }
+      };
+    })
+  };
+};
+
+const offsetAtPosition = (
+  text,
+  line,
+  column,
+  lineBase,
+  columnBase
+) => {
+  if (!Number.isInteger(line) || !Number.isInteger(column)) return null;
+  const starts = lineStarts(text);
+  const lineIndex = line - lineBase;
+  if (lineIndex < 0 || lineIndex >= starts.length) return null;
+  const start = starts[lineIndex];
+  const next = starts[lineIndex + 1] ?? text.length;
+  return Math.min(next, Math.max(start, start + column - columnBase));
+};
+
+const pointSource = (uri, text, offset) => {
+  const starts = lineStarts(text);
+  const safe = Math.min(text.length, Math.max(0, offset));
+  const end = safe < text.length ? safe + 1 : safe;
+  return sourceRange(uri, starts, safe, end);
+};
+
+/**
+ * Translate a Quarto/Pandoc location in temporary source back to authored
+ * source. Exact woven segments can point into another project document.
+ */
+export const remapQuartoDiagnostic = (
+  diagnostic,
+  project,
+  {
+    lineBase = 1,
+    columnBase = 1
+  } = {}
+) => {
+  const documents = project?.documents ?? [];
+  const generatedUri = diagnostic.uri ?? diagnostic.file ??
+    diagnostic.source?.uri;
+  const document = documents.find((entry) =>
+    entry.uri === generatedUri ||
+    entry.temporaryUri === generatedUri ||
+    portablePath(entry.uri) === portablePath(generatedUri ?? "")
+  );
+  const line = diagnostic.line ??
+    diagnostic.source?.range?.start?.line;
+  const column = diagnostic.column ??
+    diagnostic.source?.range?.start?.column ??
+    columnBase;
+  if (!document) return {
+    ...diagnostic,
+    code: diagnostic.code ?? "RQ201",
+    severity: diagnostic.severity ?? "error"
+  };
+  const generatedOffset = offsetAtPosition(
+    document.preparedSource,
+    line,
+    column,
+    lineBase,
+    columnBase
+  );
+  const mapped = generatedOffset === null
+    ? null
+    : sourceAtGeneratedOffset(document.sourceMap, generatedOffset);
+  const origin = documents.find((entry) =>
+    entry.uri === mapped?.source?.uri
+  );
+  const source = Number.isInteger(mapped?.sourceOffset) && origin
+    ? pointSource(origin.uri, origin.source, mapped.sourceOffset)
+    : mapped?.source ?? pointSource(document.uri, document.source, 0);
+  const related = (mapped?.via ?? [])
+    .map((entry) => entry.source)
+    .filter(Boolean)
+    .map((entry) => ({
+      message: "Ravel " + (entry.kind ?? "derivation") + " source",
+      source: entry
+    }));
+  return {
+    ...diagnostic,
+    code: diagnostic.code ?? "RQ201",
+    severity: diagnostic.severity ?? "error",
+    source,
+    ...(related.length ? { related } : {}),
+    metadata: {
+      ...(diagnostic.metadata ?? {}),
+      ravel: {
+        ...(diagnostic.metadata?.ravel ?? {}),
+        generatedUri,
+        generatedLine: line,
+        generatedColumn: column,
+        precision: mapped?.precision ?? "unmapped",
+        kind: mapped?.kind ?? null
+      }
+    }
   };
 };

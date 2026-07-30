@@ -530,6 +530,10 @@ ul.task-list li input[type="checkbox"] {
 <li><code>sourceMap</code> maps authored temporary-source regions exactly and marks inserted graph prose as generated. <code>cacheKeyMaterial</code> includes authored source, prepared source, adapter format, and bridge version.</li>
 <li><code>decorateQuartoMarkdown(text, map, program, options)</code> exposes the pure decoration stage for hosts that already own graph construction.</li>
 <li><code>weaveQuartoExecutions(text, map, program)</code> replaces Quarto-owned cell source with resolved code while preserving cell options and provenance. Ravel-owned cells receive an <code>eval: false</code> guard.</li>
+<li><code>prepareQuartoProject(documents, options)</code> resolves all supplied <code>.qmd</code> documents against one graph and emits format-aware cross-document links.</li>
+<li><code>stampQuartoProjectCache(project, stamp)</code> adds a generated trailing cache token to temporary sources without shifting authored mappings.</li>
+<li><code>remapQuartoDiagnostic(diagnostic, project)</code> translates a temporary renderer position through authored, woven, and generated source-map segments.</li>
+<li><code>@pieceful/ravel-quarto/node</code> exports <code>prepareQuartoProjectDirectory()</code>, <code>renderPreparedQuartoProject()</code>, and <code>renderQuartoProject()</code> for isolated project-tree preparation and explicit Quarto invocation. Returned temporary trees remain caller-owned until <code>cleanup()</code>.</li>
 </ul>
 </section>
 <section id="piecefulravel-myst" class="level2">

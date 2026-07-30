@@ -71,16 +71,82 @@ before Quarto sees the cell. For owner `ravel`, the bridge inserts
 `eval: false` unless already present, preventing native double execution.
 Combining Quarto ownership with a Ravel `.run` marker is diagnosed.
 
-The pure bridge now composes authored, woven-code, and generated-decoration
-mappings. The remaining project-host phase will materialize a complete
-temporary source tree, add transform/provider versions to project cache keys,
-invoke Quarto, and translate native-engine failures through those maps.
+The pure bridge composes authored, woven-code, and generated-decoration
+mappings. `prepareQuartoProject()` performs the same operation across multiple
+documents using one graph, including cross-document `Uses` and `Used by`
+links.
+
+## Node project host
+
+```js
+import { renderQuartoProject } from "@pieceful/ravel-quarto/node";
+
+const rendered = await renderQuartoProject("./report", {
+  to: "html",
+  transformVersions: { customTransforms: "2.1.0" },
+  providerVersions: { pythonEnvironment: "lock-2026-07" }
+});
+
+try {
+  if (!rendered.ok) {
+    console.error(rendered.diagnostics);
+  } else {
+    console.log(rendered.outputDirectory);
+  }
+} finally {
+  await rendered.prepared.cleanup();
+}
+```
+
+The host:
+
+1. rejects a symlinked project root and does not follow project symlinks;
+2. copies source and resources to an isolated temporary tree;
+3. prepares every `.qmd` against one resolved graph;
+4. invokes Quarto with a host-owned output directory and structured log;
+5. maps renderer locations through temporary and woven source maps;
+6. leaves the authored project untouched.
+
+The caller owns the temporary result and must copy or publish authorized output
+before calling `cleanup()`. Generated directories, `.git`, and `node_modules`
+are excluded by default. Extra ignored directory names can be supplied.
+
+Quarto projects may declare arbitrary `pre-render` and `post-render` commands.
+Ravel detects those declarations and refuses to invoke the project unless the
+caller supplies `allowProjectScripts: true`. Quarto documents that these
+scripts run in the project directory and receive project input/output
+environment variables; see
+[Quarto project scripts](https://quarto.org/docs/projects/scripts.html).
+
+All project files contribute SHA-256 dependency records to
+`cacheKeyMaterial`. Prepared/authored sources, output-link format, adapter and
+bridge versions, transform versions, provider versions, and the discovered
+Quarto version are also included. The Node result exposes the SHA-256
+`cacheKey`. That key is added as a generated trailing comment to every
+temporary `.qmd`, so `freeze: auto` sees changes in non-source inputs while
+authored offsets stay stable. Supplying a different `previousCacheKey` also
+adds Quarto's `--cache-refresh` option for computation caches.
 
 Quarto cache invalidation normally follows cell source and cache attributes.
 Ravel therefore exposes prepared-source cache material rather than relying on
 the unmodified `.qmd` alone. See
 [Quarto execution and cache management](https://quarto.org/docs/projects/code-execution.html).
 
-The fixtures at `fixtures/quarto/static-listing.qmd` and
-`fixtures/quarto/executable-cell.qmd` exercise native listings, cross
-references, pipelines, graph decoration, ownership, and pre-execution weaving.
+The renderer suite exercises static and executable-cell presentation plus a
+multi-document project in HTML and PDF. A structured renderer-failure fixture
+verifies that a failure in woven code maps to its authored definition.
+
+## Why there is no required Lua filter
+
+The bridge intentionally emits ordinary Markdown, native listing attributes,
+and native links before Pandoc builds its AST. A Lua filter would only move
+already-generated blocks within that AST; it cannot safely discover or resolve
+new pieces after validation. Since the current HTML and PDF output already has
+visible captions and working navigation, no filter is required. A small
+placement-only filter can still be added later if a concrete output format
+needs it. Quarto recommends Lua when AST transformation is actually needed;
+see the [filter extension guide](https://quarto.org/docs/extensions/filters.html).
+
+The fixtures under `fixtures/quarto/` exercise native listings, cross
+references, pipelines, graph decoration, ownership, pre-execution weaving,
+cross-document links, resource copying, HTML, and PDF.

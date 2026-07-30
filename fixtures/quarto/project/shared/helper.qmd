@@ -1,0 +1,11 @@
+---
+title: "Shared helper"
+ravel:
+  document: project-helper
+---
+
+# Shared code
+
+```{#lst-lp-value .javascript .lp-piece lst-cap="Shared value"}
+const value = 42;
+```

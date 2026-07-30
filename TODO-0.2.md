@@ -545,23 +545,27 @@ Exit criteria:
 - [x] Add pure single-document pre-execution preparation that weaves Quarto-
       owned cells before Jupyter or Knitr sees them and never overwrites
       authored source.
-- [ ] Add the project host that materializes a complete temporary `.qmd` tree
+- [x] Add the project host that materializes a complete temporary `.qmd` tree
       and invokes Quarto against that tree.
 - [x] Compose authored, woven-code, and graph-decoration source mappings and
       include authored/prepared content, adapter format, and bridge version in
       cache-key material.
-- [ ] Add transform/provider versions and project-level dependency inputs to
+- [x] Add transform/provider versions and project-level dependency inputs to
       Quarto freeze/cache keys.
 - [x] Add pure render preparation that retains native chunk captions and
       generates `uses`, `used by`, definition links, and a chunk/dependency
       index from the resolved graph.
-- [ ] Add an optional Lua filter for shorthand caption generation and
-      Pandoc-AST placement without moving graph compilation into the filter.
+- [x] Keep a Lua filter optional: native listings and generated Markdown cover
+      current HTML/PDF placement, so add a placement-only filter later only for
+      a demonstrated output-format need.
 - [x] Prevent Quarto execution and Ravel execution from both claiming the same
       cell. Filters and executed output may not declare new chunks after graph
       validation.
-- [ ] Add HTML and PDF golden renders plus an executable-cell failure mapped
-      back through the temporary source to the authored definition/reference.
+- [x] Add HTML and PDF render assertions plus a structured executable-cell
+      failure mapped through temporary woven source to its authored definition.
+- [ ] Add a real Jupyter or Knitr failure fixture when either runtime is
+      available in the CI matrix; the host-level mapping contract is covered
+      without requiring those runtimes locally.
 
 Exit criteria:
 
