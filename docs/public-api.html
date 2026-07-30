@@ -130,6 +130,10 @@ ul.task-list li input[type="checkbox"] {
  <span class="dropdown-text">noweb</span></a>
   </li>  
         <li>
+    <a class="dropdown-item" href="./org.html">
+ <span class="dropdown-text">Org/Babel</span></a>
+  </li>  
+        <li>
     <a class="dropdown-item" href="./pipes-and-directives.html">
  <span class="dropdown-text">Pipes and directives</span></a>
   </li>  
@@ -253,6 +257,12 @@ ul.task-list li input[type="checkbox"] {
   <div class="sidebar-item-container"> 
   <a href="./noweb.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">noweb</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./org.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Org and Babel</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -385,6 +395,7 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#piecefulravel-markdown" id="toc-piecefulravel-markdown" class="nav-link" data-scroll-target="#piecefulravel-markdown"><code>@pieceful/ravel-markdown</code></a></li>
   <li><a href="#piecefulravel-markdown-litpro" id="toc-piecefulravel-markdown-litpro" class="nav-link" data-scroll-target="#piecefulravel-markdown-litpro"><code>@pieceful/ravel-markdown-litpro</code></a></li>
   <li><a href="#piecefulravel-noweb" id="toc-piecefulravel-noweb" class="nav-link" data-scroll-target="#piecefulravel-noweb"><code>@pieceful/ravel-noweb</code></a></li>
+  <li><a href="#piecefulravel-org" id="toc-piecefulravel-org" class="nav-link" data-scroll-target="#piecefulravel-org"><code>@pieceful/ravel-org</code></a></li>
   <li><a href="#piecefulravel-core" id="toc-piecefulravel-core" class="nav-link" data-scroll-target="#piecefulravel-core"><code>@pieceful/ravel-core</code></a></li>
   <li><a href="#piecefulravel-js-live-0.2-development" id="toc-piecefulravel-js-live-0.2-development" class="nav-link" data-scroll-target="#piecefulravel-js-live-0.2-development"><code>@pieceful/ravel-js-live</code> (0.2 development)</a></li>
   <li><a href="#piecefulravel-host-node" id="toc-piecefulravel-host-node" class="nav-link" data-scroll-target="#piecefulravel-host-node"><code>@pieceful/ravel-host-node</code></a></li>
@@ -435,6 +446,15 @@ ul.task-list li input[type="checkbox"] {
 <li><code>options.references</code> selects <code>noweb</code>, <code>underscore-quote</code>, or <code>both</code>.</li>
 <li><code>options.language</code> and <code>options.languages</code> supply languages that classic noweb declarations do not encode; recognizable filename extensions are inferred when neither is present.</li>
 <li><code>options.run</code> and <code>options.provider</code> retain live intent as metadata only.</li>
+</ul>
+</section>
+<section id="piecefulravel-org" class="level2">
+<h2 class="anchored" data-anchor-id="piecefulravel-org"><code>@pieceful/ravel-org</code></h2>
+<ul>
+<li><code>orgToMap(text, options)</code> scans named Babel source blocks and returns <code>{ map, diagnostics, surface }</code>.</li>
+<li><code>#+NAME</code> and <code>#+LP_NAME</code> declare individual pieces; <code>:noweb-ref</code> contributes the same source body to a repeated aggregate piece.</li>
+<li><code>options.references</code> selects <code>org-noweb</code>, <code>underscore-quote</code>, or <code>both</code>; <code>options.nowebPipes</code> explicitly enables piped Org-noweb uses.</li>
+<li><code>options.executionOwner</code> selects <code>org</code> or <code>pieceful</code>. Execution and tangling requests without one owner are diagnosed, and parsing performs neither.</li>
 </ul>
 </section>
 <section id="piecefulravel-core" class="level2">

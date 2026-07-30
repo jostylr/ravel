@@ -585,13 +585,13 @@ Exit criteria:
 
 ### D5. Implement Org, noweb, and MyST
 
-- [ ] Implement Org `#+NAME`, `:noweb-ref` aggregation, `#+LP_NAME`,
+- [x] Implement Org `#+NAME`, `:noweb-ref` aggregation, `#+LP_NAME`,
       `#+LP_PIPE`, source languages, exact block bodies, and both Org-noweb and
       underscore-quote reference policies.
-- [ ] Preserve Babel header arguments, results, sessions, cache, execution, and
+- [x] Preserve Babel header arguments, results, sessions, cache, execution, and
       tangling requests as metadata/effect plans. Require an explicit owner so
       Babel and Ravel cannot both execute or tangle the same block.
-- [ ] Support `<<name | pipeline>>` only under the configured extended Org
+- [x] Support `<<name | pipeline>>` only under the configured extended Org
       reference policy and emit a portability diagnostic because unmodified
       Babel treats the pipe as part of the block ID.
 - [x] Implement a small lossless noweb scanner for documentation chunks,

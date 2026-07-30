@@ -287,6 +287,53 @@ test("Node host loads noweb extensions and TOML noweb-plus settings", async () =
   }
 });
 
+test("Node host loads Org extensions and TOML ownership/reference settings", async () => {
+  const sandbox = await mkdtemp(join(tmpdir(), "ravel-org-host-"));
+  const input = join(sandbox, "program.org");
+  const config = join(sandbox, "ravel.toml");
+  try {
+    await writeFile(input, [
+      "#+LP_NAME: message",
+      "#+BEGIN_SRC javascript",
+      "  hello  ",
+      "#+END_SRC",
+      "",
+      "#+LP_NAME: main | trim()",
+      "#+BEGIN_SRC javascript :eval yes",
+      "  <<message | trim()>>  ",
+      "#+END_SRC",
+      ""
+    ].join("\n"));
+    await writeFile(config, [
+      "version = 1",
+      "",
+      "[[files]]",
+      "path = \"program.org\"",
+      "adapter = \"org\"",
+      "references = \"both\"",
+      "noweb_pipes = true",
+      "execution_owner = \"pieceful\"",
+      "run = true",
+      "provider = \"quickjs-wasm-worker\"",
+      ""
+    ].join("\n"));
+
+    const direct = await loadBuildInput(input);
+    assert.equal(direct.pretransform.documents[0].format, "org+ravel-v1");
+    assert.equal(direct.pretransform.chunks[1].metadata.data.ravel.run, undefined);
+    assert.ok(direct.pretransform.diagnostics.some((entry) => entry.code === "LPA115"));
+
+    const loaded = await loadBuildInput(config);
+    assert.equal(loaded.pretransform.documents[0].format, "org+ravel-v1");
+    assert.equal(loaded.pretransform.chunks[1].metadata.data.ravel.run, true);
+    assert.equal(loaded.pretransform.chunks[1].metadata.data.ravel.provider, "quickjs-wasm-worker");
+    const program = transformGraph(loaded.pretransform);
+    assert.equal(program.chunks["program::main"].value, "hello");
+  } finally {
+    await rm(sandbox, { recursive: true, force: true });
+  }
+});
+
 test("LitPro load directives retain the adapter and document alias", async () => {
   const sandbox = await mkdtemp(join(tmpdir(), "ravel-litpro-load-"));
   const entry = join(sandbox, "entry.md");

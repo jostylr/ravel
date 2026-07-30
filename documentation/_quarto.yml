@@ -32,6 +32,8 @@ website:
             href: markdown-litpro.md
           - text: "noweb"
             href: noweb.md
+          - text: "Org/Babel"
+            href: org.md
           - text: "Pipes and directives"
             href: pipes-and-directives.md
           - text: "Provenance maps"
@@ -63,6 +65,7 @@ website:
           - markdown-fences.md
           - markdown-litpro.md
           - noweb.md
+          - org.md
           - live-execution.md
           - chunk-syntax.md
           - pipes-and-directives.md

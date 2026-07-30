@@ -1,0 +1,21 @@
+#+PROPERTY: pieceful-reference-style org-noweb
+#+PROPERTY: pieceful-execution-owner org
+#+PROPERTY: header-args :cache yes
+
+* Program
+
+#+NAME: main
+#+HEADER: :session *node*
+#+BEGIN_SRC javascript :noweb yes :tangle dist/main.js :results output :var greeting="hello world"
+console.log(<<format-greeting>>);
+#+END_SRC
+
+#+RESULTS[abc123]: main
+: Hello
+
+#+NAME: format-greeting
+#+BEGIN_SRC javascript
+function formatGreeting(name) {
+  return `Hello, ${name}`;
+}
+#+END_SRC

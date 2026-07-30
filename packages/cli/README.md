@@ -1,7 +1,8 @@
 # @pieceful/ravel
 
 Ravel's Node.js command-line interface builds static literate-programming
-projects from Markdown, Ravel Maps, or a `ravel.toml` project configuration.
+projects from supported markup sources—including Markdown, Org, and
+noweb—Ravel Maps, or a `ravel.toml` project configuration.
 
 ```sh
 npm install --save-dev @pieceful/ravel

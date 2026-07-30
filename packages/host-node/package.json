@@ -22,6 +22,7 @@
     "@pieceful/ravel-markdown-litpro": "0.1.1",
     "@pieceful/ravel-map": "0.1.1",
     "@pieceful/ravel-noweb": "0.1.1",
+    "@pieceful/ravel-org": "0.1.1",
     "smol-toml": "^1.7.0"
   }
 }

@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>contracts-and-configuration – Ravel</title>
+<title>org – Ravel</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -218,7 +218,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./contracts-and-configuration.html">Reference</a></li><li class="breadcrumb-item"><a href="./contracts-and-configuration.html">0.1 contracts and configuration</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./markdown-fences.html">Language</a></li><li class="breadcrumb-item"><a href="./org.html">Org and Babel</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -296,7 +296,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./org.html" class="sidebar-item-text sidebar-link">
+  <a href="./org.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Org and Babel</span></a>
   </div>
 </li>
@@ -331,7 +331,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./contracts-and-configuration.html" class="sidebar-item-text sidebar-link active">
+  <a href="./contracts-and-configuration.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">0.1 contracts and configuration</span></a>
   </div>
 </li>
@@ -424,196 +424,115 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#contracts-and-configuration" id="toc-contracts-and-configuration" class="nav-link active" data-scroll-target="#contracts-and-configuration">0.1 contracts and configuration</a>
+  <li><a href="#org-and-babel" id="toc-org-and-babel" class="nav-link active" data-scroll-target="#org-and-babel">Org and Babel</a>
   <ul class="collapse">
-  <li><a href="#stable-versioned-surfaces" id="toc-stable-versioned-surfaces" class="nav-link" data-scroll-target="#stable-versioned-surfaces">Stable versioned surfaces</a></li>
-  <li><a href="#canonical-ravel.toml" id="toc-canonical-ravel.toml" class="nav-link" data-scroll-target="#canonical-ravel.toml">Canonical <code>ravel.toml</code></a></li>
-  <li><a href="#cli-contract" id="toc-cli-contract" class="nav-link" data-scroll-target="#cli-contract">CLI contract</a></li>
-  <li><a href="#diagnostics" id="toc-diagnostics" class="nav-link" data-scroll-target="#diagnostics">Diagnostics</a></li>
-  <li><a href="#output-manifests" id="toc-output-manifests" class="nav-link" data-scroll-target="#output-manifests">Output manifests</a></li>
+  <li><a href="#native-named-blocks" id="toc-native-named-blocks" class="nav-link" data-scroll-target="#native-named-blocks">Native named blocks</a></li>
+  <li><a href="#repeated-noweb-ref-groups" id="toc-repeated-noweb-ref-groups" class="nav-link" data-scroll-target="#repeated-noweb-ref-groups">Repeated <code>:noweb-ref</code> groups</a></li>
+  <li><a href="#compact-pieceful-declarations" id="toc-compact-pieceful-declarations" class="nav-link" data-scroll-target="#compact-pieceful-declarations">Compact Pieceful declarations</a></li>
+  <li><a href="#reference-compatibility" id="toc-reference-compatibility" class="nav-link" data-scroll-target="#reference-compatibility">Reference compatibility</a></li>
+  <li><a href="#execution-results-and-tangling" id="toc-execution-results-and-tangling" class="nav-link" data-scroll-target="#execution-results-and-tangling">Execution, results, and tangling</a></li>
+  <li><a href="#node-host-configuration" id="toc-node-host-configuration" class="nav-link" data-scroll-target="#node-host-configuration">Node host configuration</a></li>
   </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/jostylr/ravel/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
-<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./contracts-and-configuration.html">Reference</a></li><li class="breadcrumb-item"><a href="./contracts-and-configuration.html">0.1 contracts and configuration</a></li></ol></nav></header>
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./markdown-fences.html">Language</a></li><li class="breadcrumb-item"><a href="./org.html">Org and Babel</a></li></ol></nav></header>
 
 
 
 
-<section id="contracts-and-configuration" class="level1">
-<h1>0.1 contracts and configuration</h1>
-<p>This reference distinguishes Ravel’s implemented 0.1 contracts from planned work. A value described as a versioned contract may be consumed by tools; other object shapes and implementation details are not public API.</p>
-<section id="stable-versioned-surfaces" class="level2">
-<h2 class="anchored" data-anchor-id="stable-versioned-surfaces">Stable versioned surfaces</h2>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 33%">
-<col style="width: 33%">
-<col style="width: 33%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Surface</th>
-<th>Current contract</th>
-<th>Compatibility rule</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>Ravel Map</td>
-<td>version <code>1</code></td>
-<td>Reject any other map version.</td>
-</tr>
-<tr class="even">
-<td>Markdown profile</td>
-<td>documented <code>markdown+ravel-v1</code> fenced profile</td>
-<td>The documented opt-in and primary modes are stable; undocumented fence behavior is not.</td>
-</tr>
-<tr class="odd">
-<td>TOML run config</td>
-<td><code>version = 1</code></td>
-<td>Reject unsupported fields or versions.</td>
-</tr>
-<tr class="even">
-<td>Output manifest</td>
-<td>version <code>2</code></td>
-<td>Readers accept legacy version <code>1</code> manifests for managed cleanup; writers emit version <code>2</code>.</td>
-</tr>
-<tr class="odd">
-<td>Generated provenance map</td>
-<td>version <code>1</code></td>
-<td>Sidecars and aggregate bundles use UTF-16 ranges; unknown versions must not be interpreted as version 1.</td>
-</tr>
-<tr class="even">
-<td>CLI results and diagnostics</td>
-<td>documented commands, exits, and JSON shapes</td>
-<td>Additive fields may appear; consumers should use documented fields.</td>
-</tr>
-</tbody>
-</table>
-<p>Generated provenance maps distinguish exact character correspondence from coarse transform attribution. See <a href="./provenance-maps.html">Generated-output provenance maps</a> for the format, derivation chains, query API, and current precision boundary.</p>
+<section id="org-and-babel" class="level1">
+<h1>Org and Babel</h1>
+<p><code>@pieceful/ravel-org</code> maps Org source blocks into Ravel without invoking Emacs, Babel, an Org exporter, or a language runtime. It retains the visible, native-compatible names and metadata that already make Org a strong literate programming format.</p>
+<p>The adapter follows Org’s documented source-block structure and affiliated keywords. See the official references for <a href="https://orgmode.org/manual/Structure-of-Code-Blocks.html">source-block structure</a>, <a href="https://orgmode.org/manual/Using-Header-Arguments.html">header arguments</a>, and <a href="https://orgmode.org/manual/Noweb-Reference-Syntax.html">noweb references</a>.</p>
+<section id="native-named-blocks" class="level2">
+<h2 class="anchored" data-anchor-id="native-named-blocks">Native named blocks</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode org code-with-copy"><code class="sourceCode orgmode"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#+PROPERTY: pieceful-reference-style org-noweb</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#+PROPERTY: pieceful-execution-owner org</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="pp">#+NAME: main</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="pp">#+HEADER: :session *node*</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>#+LP_PIPE: trim()</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="in">#+BEGIN_SRC java</span>script <span class="op">:</span>noweb yes <span class="op">:</span>results output</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>console<span class="op">.</span><span class="fu">log</span><span class="op">(&lt;&lt;</span>message<span class="op">&gt;&gt;);</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="in">#+END_SRC</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><code>#+NAME</code> declares a piece. Adjacent <code>#+HEADER</code>, <code>#+HEADERS</code>, <code>#+LP_PIPE</code>, and <code>#+CAPTION</code> lines are retained as declaration affiliations with exact ranges. The language and switches come from <code>#+BEGIN_SRC</code>; the source body is preserved exactly through the start of <code>#+END_SRC</code>.</p>
+<p>File <code>#+PROPERTY: header-args...</code> settings and inherited subtree <code>:header-args:</code> properties are combined with affiliated and block-local arguments in Babel precedence order. Repeated arguments such as <code>:var</code> remain ordered instead of being flattened into a lossy object.</p>
 </section>
-<section id="canonical-ravel.toml" class="level2">
-<h2 class="anchored" data-anchor-id="canonical-ravel.toml">Canonical <code>ravel.toml</code></h2>
-<p><code>ravel.toml</code> is the conventional project file. From its directory, a plain <code>ravel</code> is equivalent to <code>ravel build --config ravel.toml</code>. Other TOML names remain useful for alternate build paths and must be selected explicitly with <code>--config</code>. The <code>[build]</code> table is required only when that configuration is used with <code>build</code>; a no-write <code>run</code> configuration may omit it.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dt">version</span> <span class="op">=</span> <span class="dv">1</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="kw">[build]</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="dt">name</span> <span class="op">=</span> <span class="st">"site"</span>                    <span class="co"># optional descriptive name</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="dt">out_dir</span> <span class="op">=</span> <span class="st">".ravel/runs/site"</span>     <span class="co"># required, relative to this file</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="dt">clean</span> <span class="op">=</span> <span class="cn">false</span>                     <span class="co"># optional; default false</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="dt">backup</span> <span class="op">=</span> <span class="cn">false</span>                    <span class="co"># false, true, or a relative .zip path</span></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="kw">[[files]]</span></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="dt">path</span> <span class="op">=</span> <span class="st">"guide.md"</span>                <span class="co"># required, relative to this file</span></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="dt">document</span> <span class="op">=</span> <span class="st">"guide"</span>               <span class="co"># optional document override</span></span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="dt">mode</span> <span class="op">=</span> <span class="st">"primary"</span>                 <span class="co"># opt-in (default) or primary</span></span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="kw">[[outputs]]</span></span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="dt">name</span> <span class="op">=</span> <span class="st">"dist/main.js"</span>            <span class="co"># required output-relative path</span></span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="dt">from</span> <span class="op">=</span> <span class="st">"guide::main.javascript"</span>  <span class="co"># required canonical chunk address</span></span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="kw">[[live.modules]]</span></span>
-<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="dt">specifier</span> <span class="op">=</span> <span class="st">"@example/csv"</span>       <span class="co"># exact import visible inside live code</span></span>
-<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="dt">from</span> <span class="op">=</span> <span class="st">"csv-parse/browser/esm/sync"</span> <span class="co"># installed package export to bundle</span></span>
-<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="kw">[[live.resources]]</span></span>
-<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="dt">name</span> <span class="op">=</span> <span class="st">"cool.csv"</span>                <span class="co"># exact load("cool.csv") name</span></span>
-<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="dt">path</span> <span class="op">=</span> <span class="st">"data/cool.csv"</span>           <span class="co"># UTF-8 file below the project root</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Markup entries may select <code>adapter = "markdown"</code>, <code>"markdown-litpro"</code>, <code>"noweb"</code>, or <code>"org"</code>. Org entries additionally accept <code>references = "org-noweb" | "underscore-quote" | "both"</code>, <code>noweb_pipes = true | false</code>, and <code>execution_owner = "org" | "pieceful"</code>. See <a href="./org.html">Org and Babel</a> for the ownership boundary. Noweb uses its corresponding reference policies and <code>dialect = "noweb" | "noweb-plus"</code>.</p>
-<p>All file, import, output, and backup paths are confined to the directory that contains the TOML file. Ravel rejects escaping paths and symbolic-link traversal. TOML configs are individual runs and are not merged.</p>
-<p><code>build.clean = true</code> behaves like <code>ravel build --clean</code>: it removes only files recorded in the preceding Ravel manifest. <code>build.backup = true</code> writes the default dated archive under <code>backups/</code>; a string names a relative <code>.zip</code> archive. A backup is made before Ravel cleans or replaces output, and Ravel refuses to overwrite an existing archive.</p>
+<section id="repeated-noweb-ref-groups" class="level2">
+<h2 class="anchored" data-anchor-id="repeated-noweb-ref-groups">Repeated <code>:noweb-ref</code> groups</h2>
+<p>Org permits several blocks to share a <code>noweb-ref</code>. Ravel maps that group to one piece with repeated fragments:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode org code-with-copy"><code class="sourceCode orgmode"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="in">#+BEGIN_SRC java</span>script <span class="op">:</span>noweb<span class="op">-</span>ref setup</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">first</span><span class="op">();</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="in">#+END_SRC</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="in">#+BEGIN_SRC java</span>script <span class="op">:</span>noweb<span class="op">-</span>ref setup</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="fu">second</span><span class="op">();</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="in">#+END_SRC</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>If a block also has <code>#+NAME</code>, its exact body contributes both to the individually named piece and the aggregate group. This preserves Babel’s distinction rather than forcing authors to choose one identity.</p>
 </section>
-<section id="cli-contract" class="level2">
-<h2 class="anchored" data-anchor-id="cli-contract">CLI contract</h2>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 50%">
-<col style="width: 50%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Command</th>
-<th>Effect</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><code>ravel check &lt;input&gt;</code></td>
-<td>Validate and evaluate without writing artifacts.</td>
-</tr>
-<tr class="even">
-<td><code>ravel inspect &lt;input&gt;</code></td>
-<td>Show the completed program, <code>--chunks</code>, <code>--graph</code>, <code>--trace</code>, or a <code>--provenance &lt;deliverable&gt;</code> query.</td>
-</tr>
-<tr class="odd">
-<td><code>ravel run &lt;input&gt;</code></td>
-<td>Execute only <code>.run</code> blocks through registered providers and print their exported values without writing artifacts.</td>
-</tr>
-<tr class="even">
-<td><code>ravel build &lt;input&gt;</code></td>
-<td>Execute <code>.run</code> blocks, materialize permitted live-result text, and build declared artifacts. TOML supplies <code>out_dir</code>; direct inputs require <code>--out-dir</code>.</td>
-</tr>
-<tr class="odd">
-<td><code>ravel refresh &lt;output-dir&gt;</code></td>
-<td>Remove only stale managed outputs retained by a prior build.</td>
-</tr>
-</tbody>
-</table>
-<p><code>--dry-run</code> previews build or refresh effects. <code>--json</code> emits machine-readable command results or diagnostics. <code>--clean</code> and <code>--backup [file.zip]</code> apply to builds. Explicit CLI options take priority over the corresponding TOML setting when both name a value.</p>
-<p>Exit status <code>0</code> means success, <code>1</code> means a source/configuration/validation error, <code>2</code> means command usage is invalid, and <code>3</code> means an unexpected host or filesystem failure.</p>
+<section id="compact-pieceful-declarations" class="level2">
+<h2 class="anchored" data-anchor-id="compact-pieceful-declarations">Compact Pieceful declarations</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode org code-with-copy"><code class="sourceCode orgmode"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>#+LP_NAME: main | normalize-eol() | trim()</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="in">#+BEGIN_SRC java</span>script</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>console<span class="op">.</span><span class="fu">log</span><span class="op">(</span>_<span class="st">"message | indent(2)"</span><span class="op">);</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="in">#+END_SRC</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><code>#+LP_NAME</code> may coexist with <code>#+NAME</code> only when their names agree. Its compact pipeline and an adjacent <code>#+LP_PIPE</code> must also agree. Definition pipelines use the shared Ravel grammar and run once after all fragments are concatenated.</p>
 </section>
-<section id="diagnostics" class="level2">
-<h2 class="anchored" data-anchor-id="diagnostics">Diagnostics</h2>
-<p>Diagnostics have <code>code</code>, <code>severity</code>, <code>message</code>, and source URI/range fields. Human output is <code>path:line:column severity[code]: message</code>; <code>--json</code> writes the same diagnostic objects to standard error.</p>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 33%">
-<col style="width: 33%">
-<col style="width: 33%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Prefix</th>
-<th>Owner</th>
-<th>Examples</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><code>RM</code></td>
-<td>Ravel Map and Markdown adapters</td>
-<td><code>RM101</code> fence syntax, <code>RM200</code> map shape, <code>RM201</code> unreadable/malformed JSON input</td>
-</tr>
-<tr class="even">
-<td><code>RC</code></td>
-<td>TOML configuration</td>
-<td><code>RC101</code> TOML parsing, <code>RC102</code> invalid config field/value, <code>RC103</code> unavailable resource</td>
-</tr>
-<tr class="odd">
-<td><code>RH</code></td>
-<td>Node host input handling</td>
-<td><code>RH101</code> unsupported input, <code>RH102</code> incomplete import directive</td>
-</tr>
-<tr class="even">
-<td><code>RV</code></td>
-<td>Core graph evaluation</td>
-<td>references, cycles, transforms, composition, and derived chunks</td>
-</tr>
-<tr class="odd">
-<td><code>RJL</code></td>
-<td>QuickJS/Wasm JavaScript provider</td>
-<td>analysis, runtime limits, worker failure, and module preparation</td>
-</tr>
-</tbody>
-</table>
-<p>Codes describe stable user-visible failure classes. Exact prose may improve as long as the diagnosis and source location remain equivalent.</p>
+<section id="reference-compatibility" class="level2">
+<h2 class="anchored" data-anchor-id="reference-compatibility">Reference compatibility</h2>
+<p>Reference policy is selected with:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode org code-with-copy"><code class="sourceCode orgmode"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#+PROPERTY: pieceful-reference-style org-noweb</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The supported values are:</p>
+<ul>
+<li><code>org-noweb</code>: interpret <code>&lt;&lt;name&gt;&gt;</code> as a Ravel reference;</li>
+<li><code>underscore-quote</code>: leave Org-noweb syntax for Babel and interpret <code>_"name | pipe()"</code>;</li>
+<li><code>both</code>: accept both forms.</li>
+</ul>
+<p>Piped Org-noweb syntax is a separate explicit extension:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode org code-with-copy"><code class="sourceCode orgmode"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#+PROPERTY: pieceful-noweb-pipes yes</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="pp">#+NAME: main</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="in">#+BEGIN_SRC text</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>&lt;&lt;message | trim()&gt;&gt;</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>#+END_SRC</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>It produces a portability warning because unmodified Babel treats the whole text, including the pipe, as its block ID. Without the property or <code>nowebPipes: true</code>, the pipe remains part of the strict Org-noweb name.</p>
 </section>
-<section id="output-manifests" class="level2">
-<h2 class="anchored" data-anchor-id="output-manifests">Output manifests</h2>
-<p>Each successful build writes both <code>.ravel-manifest.json</code> and <code>.manifest.txt</code> in the output directory. The JSON manifest is the managed-output record; the text manifest is for review. Version 2 records the Ravel program version, build time, current deliverables with byte counts and SHA-256 hashes, and retained stale entries. The manifest is also the authority for <code>--clean</code>, <code>refresh</code>, and backup safety—Ravel never deletes arbitrary neighboring files.</p>
-<p>See the <a href="./ravel-map-schema.html">Ravel Map schema guide</a>, <a href="./markdown-fences.html">Markdown profile</a>, and <a href="../README.md#try-the-current-cli">lifecycle guide</a> for worked examples.</p>
+<section id="execution-results-and-tangling" class="level2">
+<h2 class="anchored" data-anchor-id="execution-results-and-tangling">Execution, results, and tangling</h2>
+<p><code>#+RESULTS</code> is retained as an artifact and never appended to a piece body. <code>:eval</code>, <code>:tangle</code>, <code>:results</code>, <code>:session</code>, <code>:cache</code>, and repeated <code>:var</code> requests remain in Org fragment metadata and in an inert <code>org-babel</code> effect plan.</p>
+<p>A block requesting execution or tangling must have exactly one owner:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode org code-with-copy"><code class="sourceCode orgmode"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#+PROPERTY: pieceful-execution-owner org</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li><code>org</code> means Babel remains authoritative.</li>
+<li><code>pieceful</code> lets an explicitly executable block become ordinary Ravel live metadata, still subject to the host’s provider and capability boundary.</li>
+</ul>
+<p>Parsing never evaluates or tangles. In particular, <code>:tangle</code> is not silently converted into a filesystem write.</p>
+</section>
+<section id="node-host-configuration" class="level2">
+<h2 class="anchored" data-anchor-id="node-host-configuration">Node host configuration</h2>
+<p><code>.org</code> selects the adapter automatically. TOML can make the policy explicit:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode toml code-with-copy"><code class="sourceCode toml"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="dt">version</span> <span class="op">=</span> <span class="dv">1</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="kw">[[files]]</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="dt">path</span> <span class="op">=</span> <span class="st">"program.org"</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="dt">adapter</span> <span class="op">=</span> <span class="st">"org"</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="dt">references</span> <span class="op">=</span> <span class="st">"both"</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="dt">noweb_pipes</span> <span class="op">=</span> <span class="cn">true</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="dt">execution_owner</span> <span class="op">=</span> <span class="st">"pieceful"</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="dt">run</span> <span class="op">=</span> <span class="cn">true</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="dt">provider</span> <span class="op">=</span> <span class="st">"quickjs-wasm-worker"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The portable API is:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { orgToMap } <span class="im">from</span> <span class="st">"@pieceful/ravel-org"</span><span class="op">;</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> { map<span class="op">,</span> diagnostics<span class="op">,</span> surface } <span class="op">=</span> <span class="fu">orgToMap</span>(source<span class="op">,</span> {</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">uri</span><span class="op">:</span> <span class="st">"program.org"</span><span class="op">,</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">document</span><span class="op">:</span> <span class="st">"program"</span><span class="op">,</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">references</span><span class="op">:</span> <span class="st">"org-noweb"</span><span class="op">,</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">executionOwner</span><span class="op">:</span> <span class="st">"org"</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The surface map retains definition affiliations, fragment bodies, and exact reference ranges. Commented and unnamed source blocks remain visible as ignored-block metadata rather than becoming accidental pieces.</p>
 
 
 </section>

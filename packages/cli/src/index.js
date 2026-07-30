@@ -28,13 +28,13 @@ const valueOptions = new Set([
 const booleanOptions = new Set(["--json", "--dry-run", "--debug", "--chunks", "--trace", "--clean"]);
 
 const usage = () => {
-  console.error("Usage: ravel check <map.json|document.md> [--config <run.toml>] [--document <name>] [--mode <opt-in|primary>] [--json]");
+  console.error("Usage: ravel check <input> [--config <run.toml>] [--document <name>] [--mode <opt-in|primary>] [--json]");
   console.error("       ravel                 # builds ./ravel.toml when it exists");
-  console.error("       ravel build <map.json|document.md> --out-dir <directory> [--document <name>] [--mode <opt-in|primary>] [--graph <program.json>] [--backup [file.zip]] [--clean] [--dry-run] [--json]");
+  console.error("       ravel build <input> --out-dir <directory> [--document <name>] [--mode <opt-in|primary>] [--graph <program.json>] [--backup [file.zip]] [--clean] [--dry-run] [--json]");
   console.error("       ravel build --config <run.toml> [--out-dir <directory>] [--graph <program.json>] [--backup [file.zip]] [--clean] [--dry-run] [--json]");
-  console.error("       ravel run <document.md> [--document <name>] [--mode <opt-in|primary>] [--json]");
+  console.error("       ravel run <input> [--document <name>] [--mode <opt-in|primary>] [--json]");
   console.error("       ravel run --config <run.toml> [--json]");
-  console.error("       ravel inspect <map.json|document.md> [--config <run.toml>] [--document <name>] [--mode <opt-in|primary>] [--chunks|--graph|--trace] [--json]");
+  console.error("       ravel inspect <input> [--config <run.toml>] [--document <name>] [--mode <opt-in|primary>] [--chunks|--graph|--trace] [--json]");
   console.error("       ravel inspect <input> --provenance <deliverable> [--generated-offset <offset> | --source-uri <uri> --source-offset <offset>] [--json]");
   console.error("       ravel refresh <output-directory> [--dry-run] [--json]");
 };

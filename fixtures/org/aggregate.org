@@ -1,0 +1,19 @@
+#+PROPERTY: pieceful-reference-style org-noweb
+
+* Fragments
+
+#+NAME: first-fragment
+#+BEGIN_SRC javascript :noweb-ref shared
+first();
+#+END_SRC
+
+#+BEGIN_SRC javascript :noweb-ref shared
+second();
+#+END_SRC
+
+* Consumer
+
+#+NAME: main
+#+BEGIN_SRC javascript
+<<shared>>
+#+END_SRC

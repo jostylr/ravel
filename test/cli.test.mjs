@@ -21,9 +21,12 @@ test("CLI check validates a project without writing outputs", async () => {
   assert.equal(result.stderr, "");
 });
 
-test("CLI check accepts direct Markdown and TOML project inputs", async () => {
+test("CLI check accepts direct markup and TOML project inputs", async () => {
   const markdown = await run(process.execPath, [cli, "check", "fixtures/markdown/guide.md", "--mode", "primary"]);
   assert.match(markdown.stdout, /Ravel check passed\./);
+
+  const org = await run(process.execPath, [cli, "check", "fixtures/org/native.org"]);
+  assert.match(org.stdout, /Ravel check passed\./);
 
   const toml = await run(process.execPath, [cli, "check", "--config", "fixtures/markdown/ravel-web.toml"]);
   assert.match(toml.stdout, /Ravel check passed\./);

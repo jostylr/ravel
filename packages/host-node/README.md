@@ -36,6 +36,13 @@ Noweb sources use `.nw` or `.noweb`, or may be selected explicitly with
 as chunk metadata; loading never executes a noweb chunk or writes tangled
 output.
 
+Org sources use `.org` or `adapter = "org"`. TOML can select
+`references = "org-noweb"`, `"underscore-quote"`, or `"both"`, enable
+Pieceful-only use-site pipes with `noweb_pipes = true`, and assign Babel
+authority with `execution_owner = "org"` or `"pieceful"`. The host retains
+Babel header arguments, result artifacts, and tangle requests as data; loading
+does not invoke Emacs or Babel.
+
 Requires Node.js 22 or newer. This package is intentionally Node-specific;
 browser and Bun hosts should supply their own I/O boundary around
 `@pieceful/ravel-core`.

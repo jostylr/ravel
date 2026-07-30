@@ -43,6 +43,17 @@ Use this package at adapter, editor, and host boundaries.
   inferred when neither is present.
 - `options.run` and `options.provider` retain live intent as metadata only.
 
+## `@pieceful/ravel-org`
+
+- `orgToMap(text, options)` scans named Babel source blocks and returns
+  `{ map, diagnostics, surface }`.
+- `#+NAME` and `#+LP_NAME` declare individual pieces; `:noweb-ref` contributes
+  the same source body to a repeated aggregate piece.
+- `options.references` selects `org-noweb`, `underscore-quote`, or `both`;
+  `options.nowebPipes` explicitly enables piped Org-noweb uses.
+- `options.executionOwner` selects `org` or `pieceful`. Execution and tangling
+  requests without one owner are diagnosed, and parsing performs neither.
+
 ## `@pieceful/ravel-core`
 
 - `parseChunkId` and `formatChunkId` convert canonical chunk identities.

@@ -9,7 +9,7 @@ packages.
 Ravel separates source-format policy from program composition:
 
 ```text
-Markdown, JSON Ravel Maps, or editor-produced maps
+Markdown, Org, noweb, JSON Ravel Maps, or editor-produced maps
                          ↓
                      Ravel Map
                          ↓
@@ -35,6 +35,7 @@ examples live at [ravel.jostylr.com](https://ravel.jostylr.com/).
 | [@pieceful/ravel-markdown](https://www.npmjs.com/package/@pieceful/ravel-markdown) | Portable adapter that extracts Ravel Maps from Markdown fences and directives. |
 | [@pieceful/ravel-markdown-litpro](https://www.npmjs.com/package/@pieceful/ravel-markdown-litpro) | Historical H1-H6, minor-block, and legacy-directive Markdown adapter. |
 | [@pieceful/ravel-noweb](https://www.npmjs.com/package/@pieceful/ravel-noweb) | Lossless strict-noweb and pipe-extended noweb-plus adapter. |
+| [@pieceful/ravel-org](https://www.npmjs.com/package/@pieceful/ravel-org) | Lossless Org/Babel names, groups, references, metadata, and ownership adapter. |
 | [@pieceful/ravel-host-node](https://www.npmjs.com/package/@pieceful/ravel-host-node) | Node filesystem host for project loading, safe artifact writes, manifests, and backups. |
 | `@pieceful/ravel-js-live` (0.2 development) | Worker-backed QuickJS/Wasm provider plus Node-only preparation of allowlisted npm modules. |
 
@@ -54,7 +55,7 @@ Ravel can currently:
 - compose chunks with underscore-quoted references;
 - apply built-in definition-time and use-site transforms;
 - create derived chunks with `emit`;
-- load Markdown or JSON Ravel Maps with `in`;
+- load supported markup sources or JSON Ravel Maps with `in`;
 - define graph structure with `create`, `compose`, `alias`, `pipe`, and `pass`;
 - plan named outputs with `out` or TOML `[[outputs]]` entries;
 - inspect a completed graph or write deliverables through the Node CLI;
