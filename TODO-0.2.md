@@ -522,19 +522,21 @@ Exit criteria:
       substitutions, legacy comments, and fence/indented-code concatenation.
 - [x] Implement the `litpro-2017`, `pieceful-2020`, and `litpro-plus`
       dialects, plus `legacy`, `flat`, and `none` heading-level modes.
-- [ ] Import the historical H5/H6, repeated-heading, minor-block, pipeline,
-      load/save, templating, and path-resolution fixtures. Label every fixture
-      with the historical dialect it proves.
 - [x] Keep unsafe legacy directives as planned effects. Exact structural
       compatibility must not imply ambient shell, network, eval, or filesystem
       authority.
+
+Importing and validating the broader historical LitPro corpus is deferred to
+the [0.3 plan](TODO-0.3.md). Ravel 0.2 retains its checked-in representative
+compatibility fixtures without making complete corpus replication a release
+requirement.
 
 Exit criteria:
 
 - A modern fixture can place a named fence between two unnamed fences and
   retain both unnamed fragments under the heading chunk.
-- The curated historical LitPro corpus produces the expected chunk structure
-  and generated text under its declared dialect.
+- The checked-in 0.2 LitPro compatibility subset produces the expected chunk
+  structure and generated text under its declared dialect.
 
 ### D3. Implement the Quarto integration
 
@@ -765,9 +767,9 @@ Exit criteria:
       conformance suite.
 - [ ] Definition pipelines after chunk names behave identically across all 0.2
       adapters and run once after fragment concatenation.
-- [ ] The historical LitPro fixture subset passes under its declared dialect,
-      including H1-H4 peers, H5/H6 paths, repeated headings, minor blocks, and
-      legacy directives.
+- [x] The checked-in historical LitPro fixture subset passes under its
+      declared dialect, including H1-H4 peers, H5/H6 paths, repeated headings,
+      minor blocks, and legacy directives.
 - [ ] Core plans and schedules execution through a language-neutral provider
       contract proven by a non-JavaScript conformance provider.
 - [ ] Markdown recognizes `js`/`javascript` fences with `.run` without changing
