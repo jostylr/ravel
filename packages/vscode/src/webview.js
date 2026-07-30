@@ -11,10 +11,13 @@ const lens = byId("lens");
 const orientation = byId("orientation");
 const search = byId("search");
 const status = byId("status");
+const previewBadge = byId("preview");
 
 let snapshot;
 let view;
 let selected;
+let preview = false;
+let snapshotDiff;
 let requestSequence = 0;
 
 const nextRequest = () => `webview-${++requestSequence}`;
@@ -110,14 +113,29 @@ const render = async () => {
   } else {
     await view.update(projected, { layout: layoutOptions() });
   }
-  status.textContent =
+  const counts =
     `${projected.counts.visibleNodes} nodes · ${projected.counts.visibleEdges} edges`;
+  if (preview && snapshotDiff) {
+    const nodeChanges = snapshotDiff.nodes.added.length +
+      snapshotDiff.nodes.removed.length +
+      snapshotDiff.nodes.changed.length;
+    const edgeChanges = snapshotDiff.edges.added.length +
+      snapshotDiff.edges.removed.length +
+      snapshotDiff.edges.changed.length;
+    status.textContent = `${counts} · ${nodeChanges} node changes · ${edgeChanges} edge changes`;
+  } else {
+    status.textContent = counts;
+  }
 };
 
 window.addEventListener("message", async ({ data: message }) => {
   if (message?.version !== 1 || typeof message.type !== "string") return;
   if (message.type === "view/result") {
     snapshot = message.snapshot;
+    preview = message.preview === true;
+    snapshotDiff = message.diff;
+    previewBadge.hidden = !preview;
+    previewBadge.textContent = "Preview";
     await render();
     return;
   }
@@ -143,6 +161,11 @@ window.addEventListener("message", async ({ data: message }) => {
   if (message.type === "request/error") {
     status.textContent = message.message;
     detailsPanel.innerHTML = `<h1>Explorer error</h1><p>${escapeHtml(message.message)}</p>`;
+  }
+  if (message.type === "document/changed" && message.ok === false) {
+    previewBadge.hidden = false;
+    previewBadge.textContent = "Preview unavailable";
+    status.textContent = message.message;
   }
 });
 

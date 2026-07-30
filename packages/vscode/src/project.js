@@ -118,3 +118,15 @@ export const findExplorerEntityAtSelection = (
   );
   return candidates[0]?.entity ?? null;
 };
+
+export const findExplorerDefinitionAtSelection = (
+  snapshot,
+  sourceUri,
+  selection
+) => {
+  const usage = findExplorerEntityAtSelection(snapshot, sourceUri, selection);
+  if (!usage || !["references", "consumes", "aliases", "imports"].includes(usage.kind)) {
+    return null;
+  }
+  return snapshot.nodes?.find((node) => node.id === usage.source) ?? null;
+};

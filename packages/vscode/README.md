@@ -10,7 +10,13 @@ supported Ravel source document or `ravel.toml` is active. The extension:
 - opens a bounded Explorer webview beside the normal editor;
 - reveals a graph entity's source range in the editor;
 - focuses the narrowest graph entity when the editor selection changes;
-- requests authored and evaluated chunk text only after selection.
+- requests authored and evaluated chunk text only after selection;
+- reevaluates dirty project documents as one debounced in-memory preview;
+- shows deterministic node and edge change counts without writing artifacts.
+
+Command-click a source-linked Ravel reference, or put the cursor on it and
+press F12, to jump to the defining chunk. The provider follows the exact
+authored reference ranges in the current Explorer revision.
 
 The webview defaults to a vertical ELK layout for typical editor-column
 dimensions. A toolbar control switches to horizontal layout when that better

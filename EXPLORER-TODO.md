@@ -115,6 +115,8 @@ Goal: link graph navigation with the ordinary Markdown editor.
 - [x] Send only bounded Explorer snapshots to the webview.
 - [x] Reveal and select exact source ranges from graph selection.
 - [x] Request bounded authored and evaluated chunk text only after selection.
+- [x] Provide Command-click/F12 definition navigation from exact authored
+      references to their defining chunks.
 - [x] Observe VS Code selections and focus the narrowest corresponding graph
       entity.
 - [x] Add graph/editor origin handling that suppresses the exact programmatic
@@ -180,25 +182,28 @@ Exit criteria:
 
 Goal: show the consequences of normal source edits without writing artifacts.
 
-- [ ] Add a Node-host overlay abstraction keyed by normalized source URI and
+- [x] Add a Node-host overlay abstraction keyed by normalized source URI and
       document version.
-- [ ] Make imported Markdown and Ravel Map loading consult overlays before disk.
-- [ ] Evaluate all dirty project documents as one consistent overlay revision.
-- [ ] Ensure preview evaluation cannot call artifact-writing APIs.
-- [ ] Debounce document changes and cancel superseded evaluations.
-- [ ] Keep the last valid snapshot visible when a candidate has parse or graph
+- [x] Make imported project inputs, Ravel Maps, and TOML configuration consult
+      overlays before disk.
+- [x] Evaluate all dirty project documents as one consistent overlay revision.
+- [x] Keep preview evaluation on the non-writing load/transform/projection path.
+- [x] Debounce document changes and discard superseded evaluation results.
+- [ ] Add active cancellation for an evaluation already in progress.
+- [x] Keep the last valid snapshot visible when a candidate has parse or graph
       diagnostics.
-- [ ] Define and implement deterministic snapshot diffing.
-- [ ] Compare added/removed edges and nodes, changed chunk values, diagnostics,
-      deliverables, provenance precision/origins, and generated ranges.
+- [x] Define and implement deterministic snapshot diffing.
+- [x] Compare added/removed/changed nodes and edges, including changed chunk
+      and deliverable fingerprints and diagnostic summaries.
+- [ ] Compare provenance precision/origins and generated ranges.
 - [ ] Add the change lens and source/output/graph/diagnostic change filters.
 - [ ] Decorate changed source and generated ranges.
 - [ ] Add before/after output diffs for changed deliverables.
-- [ ] Show a visible "preview unavailable" reason when configured transforms
-      cannot run with the same semantics.
+- [x] Show a visible "preview unavailable" reason when the candidate cannot be
+      evaluated or has error diagnostics.
 - [ ] Add performance instrumentation for parse, evaluation, projection, diff,
       layout, and transport.
-- [ ] Test that previewing never creates deliverables, manifests, sidecars,
+- [x] Test that previewing never creates deliverables, manifests, sidecars,
       backups, or stale-output changes.
 
 Exit criteria:

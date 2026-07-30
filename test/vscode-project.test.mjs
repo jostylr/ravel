@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  findExplorerDefinitionAtSelection,
   findExplorerEntityAtSelection,
   findNearestProjectConfig,
   isSupportedRavelInput,
@@ -47,8 +48,23 @@ test("editor selection chooses the narrowest source-linked graph entity", () => 
     }
   };
   const snapshot = {
-    nodes: [{ id: "chunk:main", kind: "chunk", source: chunkSource }],
-    edges: [{ id: "edge:reference", kind: "references", authoredAt: referenceSource }]
+    nodes: [
+      { id: "chunk:definition", kind: "chunk", source: {
+        uri: "library.md",
+        range: {
+          start: { line: 4, column: 0, offset: 20 },
+          end: { line: 6, column: 0, offset: 80 }
+        }
+      } },
+      { id: "chunk:main", kind: "chunk", source: chunkSource }
+    ],
+    edges: [{
+      id: "edge:reference",
+      kind: "references",
+      source: "chunk:definition",
+      target: "chunk:main",
+      authoredAt: referenceSource
+    }]
   };
 
   assert.equal(findExplorerEntityAtSelection(snapshot, "guide.md", {
@@ -63,6 +79,10 @@ test("editor selection chooses the narrowest source-linked graph entity", () => 
     start: { line: 12, column: 5 },
     end: { line: 12, column: 5 }
   }), null);
+  assert.equal(findExplorerDefinitionAtSelection(snapshot, "guide.md", {
+    start: { line: 12, column: 5 },
+    end: { line: 12, column: 5 }
+  }).id, "chunk:definition");
 });
 
 test("VS Code project discovery falls back to a supported active source", async () => {

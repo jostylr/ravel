@@ -184,6 +184,52 @@ test("Node host follows in directives from Markdown into another Markdown map", 
   assert.equal(program.deliverables["dist/main.js"].value, "export const helper = true;\n");
 });
 
+test("Node host evaluates dirty document overlays without changing inputs or writing outputs", async () => {
+  const sandbox = await mkdtemp(join(tmpdir(), "ravel-overlay-"));
+  const entry = join(sandbox, "entry.md");
+  const library = join(sandbox, "library.md");
+  const diskLibrary = [
+    "---",
+    "ravel:",
+    "  document: library",
+    "---",
+    "",
+    "```text {.ravel #message type=text}",
+    "from disk",
+    "```",
+    ""
+  ].join("\n");
+  try {
+    await writeFile(entry, [
+      "---",
+      "ravel:",
+      "  document: entry",
+      "---",
+      "",
+      "```ravel",
+      "in(\"library.md\")",
+      "out(\"dist.txt\", _\"library::message.text\")",
+      "```",
+      ""
+    ].join("\n"));
+    await writeFile(library, diskLibrary);
+
+    const loaded = await loadBuildInput(entry, {
+      overlays: new Map([[
+        library,
+        { text: diskLibrary.replace("from disk", "from dirty buffer"), version: 7 }
+      ]])
+    });
+    const program = transformGraph(loaded.pretransform);
+
+    assert.equal(program.deliverables["dist.txt"].value, "from dirty buffer\n");
+    assert.equal(await readFile(library, "utf8"), diskLibrary);
+    assert.deepEqual((await readdir(sandbox)).sort(), ["entry.md", "library.md"]);
+  } finally {
+    await rm(sandbox, { recursive: true, force: true });
+  }
+});
+
 test("Node host loads Quarto sources through the modern Markdown adapter", async () => {
   const sandbox = await mkdtemp(join(tmpdir(), "ravel-quarto-"));
   const input = join(sandbox, "analysis.qmd");

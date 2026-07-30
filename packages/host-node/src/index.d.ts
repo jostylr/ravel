@@ -18,10 +18,11 @@ export interface SourceAdapterOptions {
   executionOwner?: "org" | "myst" | "ravel";
   run?: boolean;
   provider?: string;
+  overlays?: Map<string, string | { text: string; version?: number }> | Record<string, string | { text: string; version?: number }>;
 }
 export class RavelInputError extends Error { diagnostics: Diagnostic[]; }
 export function loadPretransformGraph(entryPath: string, options?: SourceAdapterOptions): Promise<unknown>;
-export function loadTomlBuild(configPath: string): Promise<BuildInput>;
+export function loadTomlBuild(configPath: string, options?: SourceAdapterOptions): Promise<BuildInput>;
 export function loadBuildInput(inputPath: string, options?: SourceAdapterOptions): Promise<BuildInput>;
 export function planDeliverables(program: RavelProgram, outputDirectory: string): { version: 1; outputDirectory: string; manifest: string; deliverables: Array<Record<string, unknown>> };
 export function planStaleDeliverables(program: RavelProgram, outputDirectory: string, options?: { rootDirectory?: string; staleSince?: string }): Promise<Array<Record<string, unknown>>>;

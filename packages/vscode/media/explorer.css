@@ -74,6 +74,17 @@ input {
   white-space: nowrap;
 }
 
+.preview {
+  padding: 0.15rem 0.4rem;
+  border: 1px solid var(--vscode-editorWarning-foreground);
+  border-radius: 999px;
+  color: var(--vscode-editorWarning-foreground);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 .workspace {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(17rem, 30%);

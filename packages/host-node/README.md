@@ -13,6 +13,22 @@ completed program, or use the higher-level `@pieceful/ravel` CLI. Inputs and
 outputs are contained beneath an explicit project root; path escapes and
 symlink traversal are rejected.
 
+Editor hosts can evaluate unsaved project state by supplying absolute,
+normalized in-memory overlays. Imported inputs and configuration consult the
+overlay before disk:
+
+```js
+const loaded = await loadBuildInput("ravel.toml", {
+  overlays: new Map([
+    [absoluteMarkdownPath, { text: dirtyEditorText, version: 12 }]
+  ])
+});
+```
+
+Loading overlays never writes source, deliverables, manifests, provenance
+sidecars, backups, or stale-output changes. Artifact writes remain separate,
+explicit host operations.
+
 Version-1 TOML projects may declare text `[[live.resources]]` and installed
 package exports in `[[live.modules]]`. The host validates and loads those
 declarations; provider-specific package preparation remains outside this

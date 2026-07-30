@@ -713,12 +713,13 @@ Exit criteria:
 
 ### E4. Preview and apply source-shaped edits
 
-- [ ] Add a Node-host overlay abstraction so dirty project documents are
+- [x] Add a Node-host overlay abstraction so dirty project documents are
       evaluated before disk contents without writing artifacts.
-- [ ] Debounce and cancel superseded previews while keeping the last valid
+- [x] Debounce previews, discard superseded results, and keep the last valid
       snapshot visible when a candidate has diagnostics.
-- [ ] Diff candidate and accepted revisions across nodes, edges, chunk values,
-      outputs, provenance, traces, and diagnostics.
+- [ ] Add active cancellation for preview evaluation already in progress.
+- [ ] Extend the implemented node, edge, chunk, output, and diagnostic snapshot
+      diff to provenance origins/ranges and traces.
 - [ ] Add source, graph, output, provenance, and diagnostic change views.
 - [ ] Define and validate edit proposals with base revisions and document
       versions.

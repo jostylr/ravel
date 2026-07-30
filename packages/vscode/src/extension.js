@@ -5,10 +5,12 @@ import { transformGraph } from "@pieceful/ravel-core";
 import {
   assertExplorerMessage,
   createExplorerEntityDetails,
-  createExplorerSnapshot
+  createExplorerSnapshot,
+  diffExplorerSnapshots
 } from "@pieceful/ravel-explorer";
 import { loadBuildInput } from "@pieceful/ravel-host-node";
 import {
+  findExplorerDefinitionAtSelection,
   findExplorerEntityAtSelection,
   resolveProjectInput
 } from "./project.js";
@@ -16,6 +18,8 @@ import {
 let activePanel;
 let activeProject;
 let pendingSourceReveal;
+let refreshTimer;
+let refreshGeneration = 0;
 const webviewRequestTypes = new Set([
   "view/request",
   "entity/select",
@@ -95,6 +99,16 @@ const entityFor = (project, id) =>
   project.snapshot.nodes.find((node) => node.id === id) ??
   project.snapshot.edges.find((edge) => edge.id === id);
 
+const postSnapshot = (panel, requestId, project) => panel.webview.postMessage({
+  version: 1,
+  type: "view/result",
+  requestId,
+  revision: project.snapshot.revision,
+  snapshot: project.snapshot,
+  preview: project.preview,
+  diff: project.diff
+});
+
 const handleMessage = async (panel, message) => {
   try {
     assertExplorerMessage(message);
@@ -108,13 +122,7 @@ const handleMessage = async (panel, message) => {
     }
 
     if (message.type === "view/request") {
-      await panel.webview.postMessage({
-        version: 1,
-        type: "view/result",
-        requestId: message.requestId,
-        revision: activeProject.snapshot.revision,
-        snapshot: activeProject.snapshot
-      });
+      await postSnapshot(panel, message.requestId, activeProject);
       return;
     }
 
@@ -185,6 +193,7 @@ const getHtml = (webview, extensionUri) => {
         <input id="search" type="search" aria-label="Find entity"
           placeholder="Find chunk, transform, output…">
         <button id="fit" type="button">Fit</button>
+        <span id="preview" class="preview" hidden>Preview</span>
         <output id="status" aria-live="polite">Loading…</output>
       </nav>
       <section class="workspace">
@@ -200,31 +209,111 @@ const getHtml = (webview, extensionUri) => {
 </html>`;
 };
 
+const documentOverlays = () => new Map(
+  vscode.workspace.textDocuments
+    .filter((document) => document.uri.scheme === "file" && document.isDirty)
+    .map((document) => [
+      resolve(document.uri.fsPath),
+      { text: document.getText(), version: document.version }
+    ])
+);
+
+const evaluateProject = async (
+  inputPath,
+  sourceColumn,
+  overlays = new Map()
+) => {
+  const loaded = await loadBuildInput(inputPath, { overlays });
+  const program = transformGraph(loaded.pretransform);
+  const context = {
+    program,
+    pretransform: loaded.pretransform,
+    project: {
+      id: relative(loaded.rootDirectory, inputPath) || "ravel",
+      label: relative(loaded.rootDirectory, inputPath) || "Ravel project"
+    }
+  };
+  const snapshot = createExplorerSnapshot(context, { maxNodes: 500 });
+  return {
+    context: { ...context, revision: snapshot.revision },
+    snapshot,
+    inputPath,
+    rootDirectory: loaded.rootDirectory,
+    sourceColumn
+  };
+};
+
+const evaluateProjectState = async (inputPath, sourceColumn) => {
+  const baseline = await evaluateProject(inputPath, sourceColumn);
+  const overlays = documentOverlays();
+  const candidate = overlays.size
+    ? await evaluateProject(inputPath, sourceColumn, overlays)
+    : baseline;
+  const preview = candidate.snapshot.revision !== baseline.snapshot.revision;
+  return {
+    ...candidate,
+    baselineSnapshot: baseline.snapshot,
+    preview,
+    diff: preview
+      ? diffExplorerSnapshots(baseline.snapshot, candidate.snapshot)
+      : undefined
+  };
+};
+
 const loadProject = async (inputPath, sourceColumn) =>
   vscode.window.withProgress({
     location: vscode.ProgressLocation.Notification,
     title: "Ravel: loading Explorer",
     cancellable: false
-  }, async () => {
-    const loaded = await loadBuildInput(inputPath);
-    const program = transformGraph(loaded.pretransform);
-    const context = {
-      program,
-      pretransform: loaded.pretransform,
-      project: {
-        id: relative(loaded.rootDirectory, inputPath) || "ravel",
-        label: relative(loaded.rootDirectory, inputPath) || "Ravel project"
-      }
+  }, () => evaluateProjectState(inputPath, sourceColumn));
+
+const refreshProject = async (generation) => {
+  const current = activeProject;
+  if (!activePanel || !current) return;
+  try {
+    const next = await evaluateProjectState(
+      current.inputPath,
+      current.sourceColumn
+    );
+    if (generation !== refreshGeneration || activeProject !== current) return;
+    const errors = next.context.program.diagnostics
+      ?.filter((diagnostic) => diagnostic.severity === "error") ?? [];
+    if (next.preview && errors.length) {
+      throw new Error(
+        "Preview has diagnostics: " +
+        errors.slice(0, 3).map((diagnostic) => diagnostic.message).join(" ")
+      );
+    }
+    activeProject = {
+      ...next,
+      lastEditorEntityId: current.lastEditorEntityId
     };
-    const snapshot = createExplorerSnapshot(context, { maxNodes: 500 });
-    return {
-      context: { ...context, revision: snapshot.revision },
-      snapshot,
-      inputPath,
-      rootDirectory: loaded.rootDirectory,
-      sourceColumn
-    };
-  });
+    await postSnapshot(activePanel, "document-preview-" + generation, activeProject);
+  } catch (error) {
+    if (generation !== refreshGeneration || activeProject !== current) return;
+    await activePanel.webview.postMessage({
+      version: 1,
+      type: "document/changed",
+      requestId: "document-preview-" + generation,
+      revision: current.snapshot.revision,
+      ok: false,
+      message: error?.message ?? String(error)
+    });
+  }
+};
+
+const scheduleProjectRefresh = (document) => {
+  if (!activeProject || document.uri.scheme !== "file" ||
+      !contained(activeProject.rootDirectory, document.uri.fsPath)) {
+    return;
+  }
+  refreshGeneration += 1;
+  const generation = refreshGeneration;
+  clearTimeout(refreshTimer);
+  refreshTimer = setTimeout(() => {
+    void refreshProject(generation);
+  }, 250);
+};
 
 const openExplorer = async (extensionUri, requestedUri) => {
   const sourceEditor = vscode.window.activeTextEditor;
@@ -275,13 +364,7 @@ const openExplorer = async (extensionUri, requestedUri) => {
     });
   } else {
     activePanel.reveal(vscode.ViewColumn.Beside);
-    await activePanel.webview.postMessage({
-      version: 1,
-      type: "view/result",
-      requestId: "project-reload",
-      revision: activeProject.snapshot.revision,
-      snapshot: activeProject.snapshot
-    });
+    await postSnapshot(activePanel, "project-reload", activeProject);
   }
   activePanel.title = `Ravel Explorer · ${activeProject.snapshot.project.label}`;
 };
@@ -337,6 +420,32 @@ const editorSelectionChanged = async (event) => {
   });
 };
 
+const definitionAt = (document, position) => {
+  if (!activeProject || document.uri.scheme !== "file" ||
+      !contained(activeProject.rootDirectory, document.uri.fsPath)) {
+    return null;
+  }
+  const uri = relative(activeProject.rootDirectory, document.uri.fsPath)
+    .split(sep).join("/");
+  const definition = findExplorerDefinitionAtSelection(activeProject.snapshot, uri, {
+    start: { line: position.line, column: position.character },
+    end: { line: position.line, column: position.character }
+  });
+  const source = definition?.source;
+  const target = sourceUri(activeProject, source);
+  if (!target) return null;
+  const range = source.range
+    ? new vscode.Range(
+      new vscode.Position(source.range.start.line, source.range.start.column),
+      new vscode.Position(source.range.end.line, source.range.end.column)
+    )
+    : new vscode.Range(
+      new vscode.Position(0, 0),
+      new vscode.Position(0, 0)
+    );
+  return new vscode.Location(target, range);
+};
+
 export const activate = (context) => {
   context.subscriptions.push(
     vscode.commands.registerCommand("ravel.openExplorer", (uri) =>
@@ -344,8 +453,18 @@ export const activate = (context) => {
     ),
     vscode.window.onDidChangeTextEditorSelection((event) => {
       void editorSelectionChanged(event);
+    }),
+    vscode.workspace.onDidChangeTextDocument((event) => {
+      scheduleProjectRefresh(event.document);
+    }),
+    vscode.workspace.onDidSaveTextDocument(scheduleProjectRefresh),
+    vscode.workspace.onDidCloseTextDocument(scheduleProjectRefresh),
+    vscode.languages.registerDefinitionProvider({ scheme: "file" }, {
+      provideDefinition: definitionAt
     })
   );
 };
 
-export const deactivate = () => {};
+export const deactivate = () => {
+  clearTimeout(refreshTimer);
+};
