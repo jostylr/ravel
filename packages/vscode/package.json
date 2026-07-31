@@ -75,7 +75,7 @@
     }
   },
   "scripts": {
-    "build": "esbuild src/extension.js --bundle --platform=node --format=cjs --external:vscode --outfile=dist/extension.cjs && esbuild src/webview.js --bundle --platform=browser --format=esm --outfile=dist/webview.mjs"
+    "build": "esbuild src/extension.js --bundle --platform=node --format=cjs --external:vscode --outfile=dist/extension.cjs && esbuild src/webview.js --bundle --platform=browser --format=esm --outfile=dist/webview.mjs && node ../../scripts/copy-typescript-libs.mjs"
   },
   "dependencies": {
     "@pieceful/ravel-core": "0.1.1",

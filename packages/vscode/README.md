@@ -86,6 +86,13 @@ TypeScript projects and registries. Pending dirty-buffer projection work is
 completed before an interactive request, and stale native results are
 discarded.
 
+The extension build copies TypeScript's `lib*.d.ts` standard-library
+declarations beside `dist/extension.cjs`. The bundled compiler therefore sees
+the same default globals as an installed TypeScript runtime, including
+`Array`, `Promise`, and the libraries selected by `target`/`lib` compiler
+options. The package smoke test exercises this copied-library layout rather
+than relying on the repository's `node_modules` path.
+
 Call hierarchy keeps the chosen target, artifact, and occurrence on each item.
 The language service's `selectionRange` is reverse-mapped independently and is
 used as the cursor for later incoming/outgoing requests, avoiding a re-query at

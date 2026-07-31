@@ -111,6 +111,33 @@ try {
   ], { cwd: root })).stdout);
   assert.deepEqual(new Set(packed.map((entry) => entry.name)), expectedPackages);
 
+  const vscodePacked = JSON.parse((await npm([
+    "pack",
+    "--workspace",
+    "packages/vscode",
+    "--pack-destination",
+    archives,
+    "--ignore-scripts",
+    "--json"
+  ], { cwd: root })).stdout);
+  assert.equal(vscodePacked.length, 1);
+  assert.equal(vscodePacked[0].name, "@pieceful/ravel-vscode");
+  const vscodeContents = await archiveContents(join(
+    archives,
+    vscodePacked[0].filename
+  ));
+  assert.ok(vscodeContents.includes("package/dist/extension.cjs"));
+  assert.ok(vscodeContents.includes("package/dist/webview.mjs"));
+  assert.ok(vscodeContents.includes("package/dist/lib.d.ts"));
+  assert.ok(vscodeContents.includes("package/dist/lib.es5.d.ts"));
+  assert.ok(vscodeContents.includes("package/dist/lib.es2022.full.d.ts"));
+  assert.ok(
+    vscodeContents.filter((path) =>
+      /^package\/dist\/lib(?:\..+)?\.d\.ts$/.test(path)
+    ).length >= 90,
+    "VS Code package must contain the complete TypeScript standard-library set"
+  );
+
   for (const entry of packed) {
     const contents = await archiveContents(join(archives, entry.filename));
     assert.ok(contents.includes("package/package.json"), entry.name + " must contain package.json");
