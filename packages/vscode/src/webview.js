@@ -2,6 +2,7 @@ import {
   createExplorerView,
   explorerLayoutOptions
 } from "@pieceful/ravel-explorer/browser";
+import { diffText } from "./text-diff.js";
 
 const vscode = acquireVsCodeApi();
 const byId = (id) => document.getElementById(id);
@@ -83,19 +84,49 @@ const samePreview = (before, current) =>
   before?.length === current?.length &&
   before?.truncated === current?.truncated;
 
+const diffCode = (value, parts, side) => {
+  const visible = parts
+    .filter(({ type }) => type === "equal" ||
+      (side === "saved" ? type === "removed" : type === "added"))
+    .map(({ type, text }) => type === "equal"
+      ? escapeHtml(text)
+      : `<span class="diff-${type}">${escapeHtml(text)}</span>`)
+    .join("");
+  const remainder = value.truncated
+    ? `\n\n… ${value.length - value.text.length} more characters`
+    : "";
+  return `<pre class="diff"><code>${visible}${escapeHtml(remainder)}</code></pre>`;
+};
+
 const comparisonPreview = (heading, before, current) => {
-  if (!before) return textPreview(heading, current);
+  if (!before) {
+    if (!preview || !current) return textPreview(heading, current);
+    return `
+      <h2>${escapeHtml(heading)}</h2>
+      <div class="comparison single added-copy">
+        <section><h3>Candidate · added</h3>${diffCode(
+          current,
+          [{ type: "added", text: current.text }],
+          "candidate"
+        )}</section>
+      </div>`;
+  }
   if (!current) return `
     <h2>${escapeHtml(heading)}</h2>
     <div class="comparison single removed-copy">
-      <section><h3>Saved · removed</h3>${previewCode(before)}</section>
+      <section><h3>Saved · removed</h3>${diffCode(
+        before,
+        [{ type: "removed", text: before.text }],
+        "saved"
+      )}</section>
     </div>`;
   if (samePreview(before, current)) return textPreview(heading, current);
+  const parts = diffText(before.text, current.text);
   return `
     <h2>${escapeHtml(heading)}</h2>
     <div class="comparison">
-      <section><h3>Saved</h3>${previewCode(before)}</section>
-      <section><h3>Candidate</h3>${previewCode(current)}</section>
+      <section><h3>Saved</h3>${diffCode(before, parts, "saved")}</section>
+      <section><h3>Candidate</h3>${diffCode(current, parts, "candidate")}</section>
     </div>`;
 };
 

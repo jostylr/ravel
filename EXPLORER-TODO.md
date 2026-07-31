@@ -200,7 +200,8 @@ Goal: show the consequences of normal source edits without writing artifacts.
       nodes and edges.
 - [ ] Add source/output/provenance/diagnostic change filters.
 - [ ] Decorate changed source and generated ranges.
-- [x] Add saved/candidate text comparisons for changed chunks and deliverables.
+- [x] Add saved/candidate text comparisons for changed chunks and deliverables,
+      with inline removed/added highlighting.
 - [x] Show a visible "preview unavailable" reason when the candidate cannot be
       evaluated or has error diagnostics.
 - [ ] Add performance instrumentation for parse, evaluation, projection, diff,

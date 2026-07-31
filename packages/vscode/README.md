@@ -16,7 +16,8 @@ supported Ravel source document or `ravel.toml` is active. The extension:
 - enables a Changes lens that keeps removed entities visible and distinguishes
   added, changed, and removed graph structure;
 - compares saved and candidate authored/evaluated text after selecting a
-  changed chunk, transform, directive, or deliverable.
+  changed chunk, transform, directive, or deliverable, highlighting removals
+  in red and additions in green.
 
 Command-click a source-linked Ravel reference, or put the cursor on it and
 press F12, to jump to the defining chunk. The provider follows the exact
