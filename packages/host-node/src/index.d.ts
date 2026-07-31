@@ -4,8 +4,23 @@ export interface SourceLocation { uri: string; range: SourceRange; }
 export interface Diagnostic { code: string; severity: "error" | "warning" | "info"; message: string; source: SourceLocation; }
 export interface RavelProgram { version?: number; deliverables: Record<string, { name: string; from: string; value: string; segments?: unknown[] }>; }
 export interface LiveModuleDeclaration { specifier: string; from: string; source?: SourceLocation; }
-export interface LiveConfiguration { modules: LiveModuleDeclaration[]; resources: Record<string, string>; }
-export interface BuildInput { pretransform: unknown; outputDirectory?: string; rootDirectory: string; buildOptions?: { clean: boolean; backup: boolean | string }; live?: LiveConfiguration; }
+export interface LiveResourceDeclaration { name: string; path: string; source?: SourceLocation; }
+export interface LiveConfiguration { modules: LiveModuleDeclaration[]; resources: Record<string, string>; resourceDeclarations?: LiveResourceDeclaration[]; }
+export interface BuildInput {
+  pretransform: unknown;
+  outputDirectory?: string;
+  rootDirectory: string;
+  /** Relative source documents actually parsed through a source adapter. */
+  authoredSourceUris: string[];
+  /** Exact authored text consumed by source adapters for this evaluation. */
+  authoredSourceTexts: Record<string, string>;
+  /** Relative JSON/markup/config inputs whose overlays invalidate analysis. */
+  loadedInputUris: string[];
+  /** False when any supplied JSON map makes automatic edit provenance unverified. */
+  sourceEditsAllowed: boolean;
+  buildOptions?: { clean: boolean; backup: boolean | string };
+  live?: LiveConfiguration;
+}
 export interface SourceAdapterOptions {
   document?: string;
   mode?: "opt-in" | "primary";
@@ -19,6 +34,9 @@ export interface SourceAdapterOptions {
   run?: boolean;
   provider?: string;
   overlays?: Map<string, string | { text: string; version?: number }> | Record<string, string | { text: string; version?: number }>;
+  /** Keep live resource declarations but do not read their contents. Intended for editor analysis. */
+  readLiveResources?: boolean;
+  signal?: AbortSignal;
 }
 export class RavelInputError extends Error { diagnostics: Diagnostic[]; }
 export function loadPretransformGraph(entryPath: string, options?: SourceAdapterOptions): Promise<unknown>;

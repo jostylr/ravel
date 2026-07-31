@@ -1,9 +1,12 @@
-# Pieceful virtual documents — implementation and checkoff plan
+# Ravel virtual documents — implementation and checkoff plan
 
-**Status:** Proposed  
-**Date:** 2026-07-31  
-**Companion specification:** `virtual-documents-design-07-31-26.md`  
-**Parent plan:** `plan-07-17-26.md`
+**Status:** Implementation in progress; no milestone gate is claimed complete
+**Date:** 2026-07-31
+**Companion specification:** [virtual-documents-design-07-31-26.md](virtual-documents-design-07-31-26.md)
+
+This plan was drafted while the project still used **Pieceful** as a working
+name. Checklist identifiers and some normative text retain that name; package
+and product references in the implementation use **Ravel**.
 
 ## How to use this checklist
 
@@ -45,6 +48,56 @@ For each implementation pull request:
 The first shippable vertical slice ends at G6. G7 is the recommended public
 preview threshold. G8 validates that the architecture is not accidentally tied
 to VS Code or TypeScript.
+
+## Implementation status — 2026-07-31
+
+This table records what is present in the repository, independently of the
+milestone gates below. A milestone can have substantial working code while its
+gate remains open. In particular, a unit-tested primitive is not treated as a
+completed editor workflow, and a headless router is not described as an LSP
+transport.
+
+| Milestone | Evidence-backed implementation | Gate status and material gaps |
+| --- | --- | --- |
+| M0 | The accepted [TypeScript bridge ADR](documentation/adr/typescript-language-service-api.md) is backed by the in-process native harness in [language-typescript.test.mjs](test/language-typescript.test.mjs). The virtual-document fixture and deterministic fake bridge support projection and routing tests. A repeatable [100k-line performance harness](scripts/virtual-document-performance.mjs) reports cold, warm, mapping, cache, and cancellation phases. | **Partial; G0 open.** The repository does not contain separate `tsserver` or third-party LSP-wrapper spikes or a complete set of URI, identity, target-persistence, import-policy, and second-language ADRs. The current URI and occurrence identity are tested, but their long-term stability policy is not yet fully decided. |
+| M1 | [`@pieceful/ravel-projection`](packages/projection/README.md) builds immutable virtual documents, exact/anchored/transformed/opaque/synthetic segments, repeated expansion occurrences, reverse indexes, line indexes, and presentation-neutral generated context. [projection.test.mjs](test/projection.test.mjs) covers nested/repeated expansion, affinity, typed stale/invalid results, synthetic navigation, breadcrumbs, siblings, coalescing, and UTF-8/16/32 conversion. | **Substantial; G1 open.** The fixture corpus is narrower than VD-FIX-01 through VD-FIX-12, exact round trips are example-based rather than property-based, and generated API documentation is not present. |
+| M2 | The projection service emits opened/changed/unchanged/closed deltas, reuses unchanged indexes, creates minimal or full text changes, bounds retained snapshot metadata, cancels superseded work, and rejects stale publication. Transform helpers cover identity, indentation/dedentation, EOL normalization, source-map decoding/composition, opaque fallback, and purity/effect checks. On the initial 100k-line run, cold projection was 137 ms, warm incremental projection 121 ms, and each 10k-direction mapping batch stayed below 47 ms. | **Partial; G2 open.** The measurements are informational rather than CI budgets; allocation and 1,000-edit retention runs, dependency-granular parse/graph invalidation, and broader representative workloads remain. |
+| M3 | [`@pieceful/ravel-language-bridge`](packages/language-bridge/README.md) defines normalized requests, capabilities, structured errors, lifecycle policy, cancellation, and a deterministic fake. [`@pieceful/ravel-language-typescript`](packages/language-typescript/README.md) uses the native Language Service API with in-memory overlays and exercises TS/JS/TSX/JSX, configured options, imports, navigation, diagnostics, symbols, calls, rename, and completion edits in the headless harness. The router gives an adapter a reduced generated-file record, not projection mappings, authored source, or router internals. TypeScript configuration discovery and explicit configuration paths are confined to a canonical search root. The VS Code host bundles TypeScript 5.9 and creates the adapter only after workspace trust. | **Integrated in-process slice; G3 remains open under the strict gate.** The adapter can still accept an optional peer/injected runtime in other hosts. The selected mode needs no shadow workspace; process isolation and a real process-supervisor implementation remain future work. Trust and confinement have focused tests, but not a complete adapter threat model. |
+| M4 | [`@pieceful/ravel-language-service`](packages/language-service/README.md) contains a transport-neutral router for target/stage/occurrence selection, bridge synchronization, exact-cursor requirements, cancellation, stale-result rejection, read-only result mapping, diagnostics, call hierarchy, and trace events. Its Ravel-native index supplies symbols, definitions, references, hover, completion, and structural diagnostics. The VS Code host now routes native completion/details, hover, signatures, navigation, symbols, diagnostics, rename preparation, and calls through current unsaved projections; [the activation smoke](test/vscode-extension-activation.test.mjs) verifies provider registration. Requests with several artifacts or unresolved occurrences require an explicit choice instead of silently sorting to one. Primary completion and prepare-rename ranges are reverse-mapped only through the chosen occurrence and are exposed as authored ranges only when one unique exact writable destination remains. In untrusted workspaces the target bridge is absent while Ravel-native features remain available. | **Editor-integrated prototype; G4 open.** There is no JSON-RPC/LSP server transport or full Extension Host behavior suite. Diagnostic-to-generated navigation and all context-rich transformed/synthetic cases still need acceptance coverage. |
+| M5 | The VS Code host wires the tested generated-document [registry](test/vscode-generated-document-registry.test.mjs) and [content provider](test/vscode-generated-document-provider.test.mjs) into open/next/previous/return-to-source commands. It assigns the target language, displays projection status and breadcrumb context, applies provenance-category decorations, marks/replaces stale views, contributes source CodeLens summaries, and exposes persisted document target/artifact selection plus piece-scoped projection/occurrence selection. The originating source selection is retained across open and adjacent-occurrence actions so the exact source fragment receives the `selected-fragment` overlay. Presentation and return-to-source navigation require the open virtual editor text to equal the current registry projection text. | **Integrated prototype; G5 open.** End-to-end Extension Host acceptance is still missing, as are diagnostic-centered generated context, accessibility coverage, disappearing-occurrence acceptance, and explicit proof that virtual documents cannot be saved. |
+| M6 | The [workspace-edit classifier tests](test/language-service-edits.test.mjs) cover exact automatic edits, repeated-expansion deduplication, ambiguous/coarse preview, synthetic import routing through an explicit destination, conflicts, stale projections, resource operations, workspace confinement, apply-time source-version validation, malformed edit collections, and bounded response sizes. It fails closed when the host does not prove source writability or cannot supply a nonnegative current source version. The VS Code host supplies versions only for open authored inputs, exposes exact primary completion edits and version-revalidated exact rename edits, and withholds completion entries requiring unresolved code actions. | **Safe exact slice; G6 open.** Closed or otherwise unversioned files deliberately cannot receive automatic workspace edits. No editor preview transaction exists for non-automatic edits. Configured imports-piece discovery/creation, structural-action UI, post-rename verification, and separate piece-ID rename remain unfinished. |
+| M7 | [target-selection tests](test/vscode-target-selection.test.mjs) cover piece-over-document priority, ambiguity, persistence serialization, occurrence-context survival across other pieces, and invalidation. The host contributes a persisted document target/artifact selector with piece-scoped projection/occurrence context and incoming/outgoing call hierarchy; mapped call-hierarchy `selectionRange` values are used for both item selection and follow-up requests while retaining routing context. Native TypeScript tests isolate same-path browser/server targets and authoring/assembled stages in separate projects and document registries, and verify cancellation cannot leave bridge/project state divergent after a native mutation commits. Target diagnostics retain exact projection/occurrence routing and stale diagnostic failures cannot erase the active project's collection. Editor analysis can omit live-resource reads and observes cancellation. Authored-source authority is derived from actual non-JSON inputs; JSON map overlays are evaluated, but paths merely declared by a map are not made writable. Source and configuration paths are confined and canonicalized. | **Integrated foundations; G7 open.** Multi-target project configuration and semantic-conflict labeling still need end-to-end acceptance. There is no production process crash-loop supervisor, one-hour soak test, complete cache audit/threat model, accessibility review, or complete user/adapter/transform troubleshooting documentation. |
+
+The latest M3–M7 hardening adds target-plus-stage TypeScript project identity,
+whole-request serialization against projection updates, prompt queued
+cancellation, mutation-commit coherence, and explicit same-artifact occurrence
+ambiguity. Persisted target selection retains document fallback plus
+piece-scoped projection/occurrence context. Evaluation overlays, projection
+source text/version metadata, registry publication, diagnostics, rename, and
+completion share one captured editor snapshot; any relevant open/close, text,
+version, or dirty-state change retries synchronization or fails closed.
+Read-only navigation may adopt a newly opened clean source only when its bytes
+equal the exact authored text consumed by evaluation; write-capable features
+still require the captured open-document version. Automatic edits require the
+host-current source version to equal the selected projection's captured
+version, and completion also checks project, generation, projection, selected
+occurrence, and editor authority. Generated presentation additionally checks
+registry-to-editor text equality, and diagnostic publication is guarded by
+project, generation, source, projection, and occurrence authority. Focused
+regressions cover these races and ambiguity boundaries.
+
+One explicit M7 security gap remains: after workspace trust is granted, native
+TypeScript configuration, project-reference, module, declaration, and standard
+library lookup still delegates to TypeScript's filesystem host and can read a
+dependency outside the Ravel project root. Returned editor navigation is
+root-confined, but a configurable file-access-root policy is still required.
+
+The checkboxes below deliberately remain unchanged until each item's full
+implementation, tests, and documentation satisfy the checkoff rule. The
+highest-value remaining integration path is: add full Extension Host
+acceptance, build the safe preview/import-piece/piece-ID workflows, expose a
+portable JSON-RPC/LSP transport, and run the performance, resilience, security,
+and accessibility gates.
 
 ## 0. Prerequisites and scope
 
@@ -373,6 +426,18 @@ unstable source identity.
 - [ ] **VD-TS-10** Recover from service failure and reopen current documents
       without user-source loss.
 
+Current partial implementation confines explicit and discovered `tsconfig.json`
+paths to `configSearchRoot`, including canonical/symlink checks; the VS Code host
+sets that root to the loaded Ravel project. The router synchronizes only a
+minimal generated document (identity, version, language, text, target/artifact/
+stage, and allowlisted path/config metadata) to the adapter. Projection maps,
+authored source text, line indexes, and routing internals do not cross the
+bridge boundary. A lifecycle regression verifies that cancellation before a
+TypeScript mutation leaves no document behind, while cancellation observed
+after `open` or `change` commits preserves the committed bridge/project state
+instead of recording two different realities. These facts do not close G3's
+process-recovery requirements.
+
 ### Native feature verification
 
 - [ ] **VD-TS-11** Member completion uses a type declared in another piece.
@@ -452,6 +517,17 @@ mark the section not applicable rather than checked.
       version.
 - [ ] **VD-RTE-10** Preserve target, artifact, stage, occurrence, and mapping
       quality metadata through result conversion.
+
+Current partial implementation returns `target-required` when one selected
+target still contains several candidate artifacts and no artifact was selected.
+It likewise reports `ambiguityKind: "occurrence"` when several exact
+occurrences remain within the chosen target and artifact. It does not silently
+pick the first artifact or occurrence. The complete native request is
+serialized against projection updates, and per-document lifecycle queues
+prevent duplicate or out-of-order open/change/close mutations. Target-language
+routing has no bridge until VS Code workspace trust is granted; the trust-grant
+event resets and resynchronizes the router, while Ravel-native requests remain
+available.
 
 ### Read-only result mapping
 
@@ -533,6 +609,17 @@ mark the section not applicable rather than checked.
 - [ ] **VD-VSC-10** Mark a view stale during recomputation and replace it only
       with a complete current projection.
 
+Current partial implementation carries the originating source selection through
+the generated-document provider and adjacent-occurrence navigation. Generated
+context uses it to add `selected-fragment` independently of the broader
+`selected-piece` and descendant categories. The presenter and return-to-source
+command refuse a virtual editor whose current text differs from the registry's
+current projection, including the short refresh interval after a provider
+change notification. Read-only source navigation may open a previously closed
+clean document only when its exact bytes match the authored text retained from
+evaluation. Full Extension Host visual, save/read-only, and accessibility
+acceptance remains open.
+
 ### Literate-source affordances
 
 - [ ] **VD-VSC-11** Add CodeLens or equivalent occurrence summary above piece
@@ -594,6 +681,17 @@ mark the section not applicable rather than checked.
       an atomic source workspace edit.
 - [ ] **VD-EDT-10** Trace classification and outcome without logging source text
       by default.
+
+Current partial implementation fails closed unless the host supplies both a
+writability predicate and a current nonnegative version for every mapped source.
+The VS Code host's version set contains only open authored inputs, so an edit to
+a closed or otherwise unversioned file is rejected instead of being assumed
+current. Malformed collections and responses exceeding the classifier's
+document, edit-count, or replacement-text limits are rejected before mapping.
+Completion replacement spans and prepare-rename ranges are constrained to the
+occurrence selected for the native request and remain generated-only when they
+do not have exactly one writable exact/identity source destination. Preview and
+structural-action paths remain open.
 
 ### Completion edits
 
@@ -684,6 +782,13 @@ mark the section not applicable rather than checked.
 - [ ] **VD-HIE-08** Test a call site expanded twice and two distinct source call
       sites that look identical after generation.
 
+Current partial implementation reverse-maps a language service's call-item
+`selectionRange`, constrains it to the mapped source item range, uses that
+selection for the VS Code item, and starts subsequent incoming/outgoing
+requests at the selection rather than the broader declaration range. It also
+retains target, artifact, and occurrence routing context. The hierarchy UX and
+repeated-call acceptance cases above remain open.
+
 ### Resilience
 
 - [ ] **VD-ROB-01** Restart a crashed target service with bounded exponential
@@ -720,6 +825,21 @@ mark the section not applicable rather than checked.
       edits, path traversal, URI spoofing, symlink escapes, and resource
       exhaustion.
 - [ ] **VD-SEC-08** Add regression tests for every accepted security finding.
+
+Current partial implementation derives its authored-source allowlist from the
+non-JSON inputs actually loaded by the host. Dirty JSON Ravel Map overlays are
+still honored when evaluating the graph, but arbitrary source paths named by a
+map do not thereby gain navigation or write authority; any project containing
+a JSON map is conservatively read-only for automatic mapped source edits.
+JSON maps remain in a separate loaded-input invalidation set, so their dirty
+overlays still mark generated state stale and trigger reevaluation.
+The host also retains the exact text consumed for each authored input. That text
+can authorize read-only adoption of a newly opened clean source, but never
+supplies the editor version required for an automatic edit. Target-language
+tooling is disabled until VS Code workspace trust is granted, `tsconfig.json` search is
+confined to the canonical project root, and target-result navigation rejects
+untrusted, unsupported, or out-of-root URIs. This focused hardening is not a
+complete threat model or security gate.
 
 ### Accessibility and documentation
 

@@ -19,6 +19,12 @@ import { orgToMap } from "@pieceful/ravel-org";
 
 const missing = (error) => error?.code === "ENOENT";
 
+const throwIfAborted = (signal) => {
+  if (!signal?.aborted) return;
+  if (signal.reason instanceof Error) throw signal.reason;
+  throw new DOMException("The Ravel input operation was cancelled.", "AbortError");
+};
+
 const inputSource = (uri) => ({
   uri: typeof uri === "string" && uri.length ? uri : "<ravel-input>",
   range: {
@@ -49,6 +55,14 @@ const overlayText = (overlays, path) => {
   const entry = overlays instanceof Map ? overlays.get(key) : overlays[key];
   if (typeof entry === "string") return entry;
   return typeof entry?.text === "string" ? entry.text : undefined;
+};
+
+const overlaysWithText = (overlays, path, text) => {
+  const captured = overlays instanceof Map
+    ? new Map(overlays)
+    : new Map(Object.entries(overlays ?? {}).map(([key, value]) => [resolve(key), value]));
+  captured.set(resolve(path), { text });
+  return captured;
 };
 
 const readInputText = async (path, description, code, overlays) => {
@@ -279,59 +293,88 @@ const collectPretransformMaps = async (
   scope,
   overlays = entryOptions.overlays
 ) => {
+  const signal = entryOptions.signal;
+  throwIfAborted(signal);
   const activeScope = scope ?? await createInputScope(dirname(resolve(entryPath)));
   const visited = new Set();
   const maps = [];
   const diagnostics = [];
+  const authoredSourcePaths = new Set();
+  const authoredSourceTexts = new Map();
+  let containsJsonMaps = false;
 
   const visit = async (path, options = {}) => {
+    throwIfAborted(signal);
     const absolutePath = await activeScope.path(path, "Ravel input");
     if (visited.has(absolutePath)) return;
     visited.add(absolutePath);
 
     const extension = extname(absolutePath).toLowerCase();
     let map;
+    let sourceOverlays = overlays;
+    let sourceText;
     const mystExtension = absolutePath.toLowerCase().endsWith(".myst.md");
     if (extension === ".json") {
+      containsJsonMaps = true;
       map = await readMap(absolutePath, overlays);
     } else if (mystExtension || options.adapter === "myst") {
-      const result = await loadMystFile(absolutePath, options, overlays);
+      authoredSourcePaths.add(absolutePath);
+      sourceText = await readInputText(absolutePath, "MyST input", "RM201", overlays);
+      sourceOverlays = overlaysWithText(overlays, absolutePath, sourceText);
+      const result = await loadMystFile(absolutePath, options, sourceOverlays);
       map = result.map;
       diagnostics.push(...result.diagnostics);
       assertRavelMap(map, { uri: absolutePath });
     } else if (extension === ".adoc" || extension === ".asciidoc" ||
         options.adapter === "asciidoc") {
-      const result = await loadAsciiDocFile(absolutePath, options, overlays);
+      authoredSourcePaths.add(absolutePath);
+      sourceText = await readInputText(absolutePath, "AsciiDoc input", "RM201", overlays);
+      sourceOverlays = overlaysWithText(overlays, absolutePath, sourceText);
+      const result = await loadAsciiDocFile(absolutePath, options, sourceOverlays);
       map = result.map;
       diagnostics.push(...result.diagnostics);
       assertRavelMap(map, { uri: absolutePath });
     } else if (extension === ".html" || extension === ".htm" ||
         options.adapter === "html") {
-      const result = await loadHtmlFile(absolutePath, options, overlays);
+      authoredSourcePaths.add(absolutePath);
+      sourceText = await readInputText(absolutePath, "HTML input", "RM201", overlays);
+      sourceOverlays = overlaysWithText(overlays, absolutePath, sourceText);
+      const result = await loadHtmlFile(absolutePath, options, sourceOverlays);
       map = result.map;
       diagnostics.push(...result.diagnostics);
       assertRavelMap(map, { uri: absolutePath });
     } else if (extension === ".org" || options.adapter === "org") {
-      const result = await loadOrgFile(absolutePath, options, overlays);
+      authoredSourcePaths.add(absolutePath);
+      sourceText = await readInputText(absolutePath, "Org input", "RM201", overlays);
+      sourceOverlays = overlaysWithText(overlays, absolutePath, sourceText);
+      const result = await loadOrgFile(absolutePath, options, sourceOverlays);
       map = result.map;
       diagnostics.push(...result.diagnostics);
       assertRavelMap(map, { uri: absolutePath });
     } else if (extension === ".nw" || extension === ".noweb" || options.adapter === "noweb") {
-      const result = await loadNowebFile(absolutePath, options, overlays);
+      authoredSourcePaths.add(absolutePath);
+      sourceText = await readInputText(absolutePath, "noweb input", "RM201", overlays);
+      sourceOverlays = overlaysWithText(overlays, absolutePath, sourceText);
+      const result = await loadNowebFile(absolutePath, options, sourceOverlays);
       map = result.map;
       diagnostics.push(...result.diagnostics);
       assertRavelMap(map, { uri: absolutePath });
     } else if (extension === ".md" || extension === ".markdown" || extension === ".mdown" || extension === ".qmd") {
+      authoredSourcePaths.add(absolutePath);
+      sourceText = await readInputText(absolutePath, "Markdown input", "RM201", overlays);
+      sourceOverlays = overlaysWithText(overlays, absolutePath, sourceText);
       const result = await loadMarkdownFile(absolutePath, {
         ...options,
         profile: options.profile ?? (extension === ".qmd" ? "modern" : undefined)
-      }, overlays);
+      }, sourceOverlays);
       map = result.map;
       diagnostics.push(...result.diagnostics);
       assertRavelMap(map, { uri: absolutePath });
     } else {
       throw inputError("RH101", "Ravel input must be a .json map or supported markup source.", absolutePath);
     }
+    if (sourceText !== undefined) authoredSourceTexts.set(absolutePath, sourceText);
+    throwIfAborted(signal);
     for (const directive of map.directives ?? []) {
       if (directive.kind !== "in") continue;
       const target = directive.target ?? directive.name;
@@ -350,19 +393,51 @@ const collectPretransformMaps = async (
   };
 
   await visit(entryPath, entryOptions);
-  return { maps, diagnostics, rootDirectory: activeScope.root };
+  throwIfAborted(signal);
+  return {
+    maps,
+    diagnostics,
+    rootDirectory: activeScope.root,
+    authoredSourcePaths: [...authoredSourcePaths].sort(),
+    authoredSourceTexts,
+    loadedInputPaths: [...visited].sort(),
+    containsJsonMaps
+  };
 };
 
+const graphFromCollectedMaps = (collected) => {
+  const graph = combineMaps(collected.maps);
+  graph.diagnostics.push(...collected.diagnostics);
+  return relativizeSourceUris(graph, collected.rootDirectory);
+};
+
+const authoredSourceUris = (collected) => collected.authoredSourcePaths
+  .map((path) => relative(collected.rootDirectory, path).split(sep).join("/"))
+  .sort();
+
+const loadedInputUris = (collected) => collected.loadedInputPaths
+  .map((path) => relative(collected.rootDirectory, path).split(sep).join("/"))
+  .sort();
+
+const authoredSourceTexts = (collected) => Object.fromEntries(
+  [...collected.authoredSourceTexts.entries()]
+    .map(([path, text]) => [
+      relative(collected.rootDirectory, path).split(sep).join("/"),
+      text
+    ])
+    .sort(([left], [right]) => left.localeCompare(right))
+);
+
 export const loadPretransformGraph = async (entryPath, options = {}) => {
+  throwIfAborted(options.signal);
   const collected = await collectPretransformMaps(
     resolve(entryPath),
     options,
     undefined,
     options.overlays
   );
-  const graph = combineMaps(collected.maps);
-  graph.diagnostics.push(...collected.diagnostics);
-  return relativizeSourceUris(graph, collected.rootDirectory);
+  throwIfAborted(options.signal);
+  return graphFromCollectedMaps(collected);
 };
 
 const configSource = inputSource;
@@ -380,7 +455,13 @@ const reportUnknownKeys = (value, allowed, description, configPath) => {
   }
 };
 
-const loadLiveConfiguration = async (live, scope, configPath, overlays) => {
+const loadLiveConfiguration = async (
+  live,
+  scope,
+  configPath,
+  overlays,
+  { readResources = true } = {}
+) => {
   if (live === undefined) return undefined;
   if (!live || typeof live !== "object" || Array.isArray(live)) {
     throw inputError("RC102", "live must be a [live] table.", configPath);
@@ -410,7 +491,7 @@ const loadLiveConfiguration = async (live, scope, configPath, overlays) => {
   });
 
   const resourceNames = new Set();
-  const resourceEntries = await Promise.all((live.resources ?? []).map(async (entry, index) => {
+  const resourceResults = await Promise.all((live.resources ?? []).map(async (entry, index) => {
     const description = "live.resources[" + index + "]";
     if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
       throw inputError("RC102", description + " must be a table.", configPath);
@@ -423,18 +504,30 @@ const loadLiveConfiguration = async (live, scope, configPath, overlays) => {
     }
     resourceNames.add(name);
     const absolutePath = await scope.path(path, description + ".path");
-    return [name, await readInputText(
-      absolutePath,
-      "live resource",
-      "RC103",
-      overlays
-    )];
+    const declaration = { name, path, source: configSource(configPath) };
+    if (!readResources) return { declaration };
+    return {
+      declaration,
+      entry: [name, await readInputText(
+        absolutePath,
+        "live resource",
+        "RC103",
+        overlays
+      )]
+    };
   }));
 
-  return { modules, resources: Object.fromEntries(resourceEntries) };
+  return {
+    modules,
+    resources: Object.fromEntries(resourceResults.flatMap((result) =>
+      result.entry ? [result.entry] : []
+    )),
+    resourceDeclarations: resourceResults.map(({ declaration }) => declaration)
+  };
 };
 
 export const loadTomlBuild = async (configPath, options = {}) => {
+  throwIfAborted(options.signal);
   const absoluteConfig = resolve(configPath);
   const scope = await createInputScope(dirname(absoluteConfig));
   const configFile = await scope.path(absoluteConfig, "Ravel TOML config");
@@ -446,6 +539,7 @@ export const loadTomlBuild = async (configPath, options = {}) => {
       "RC101",
       options.overlays
     ));
+    throwIfAborted(options.signal);
   } catch (error) {
     if (Array.isArray(error?.diagnostics)) throw error;
     throw inputError("RC101", "Invalid Ravel TOML config: " + (error?.message ?? String(error)), absoluteConfig);
@@ -479,7 +573,8 @@ export const loadTomlBuild = async (configPath, options = {}) => {
     config.live,
     scope,
     absoluteConfig,
-    options.overlays
+    options.overlays,
+    { readResources: options.readLiveResources !== false }
   );
   const results = await Promise.all(config.files.map(async (file, index) => {
     if (!file || typeof file !== "object") throw inputError("RC102", "files[" + index + "] must be a table.", absoluteConfig);
@@ -562,9 +657,11 @@ export const loadTomlBuild = async (configPath, options = {}) => {
       nowebPipes: file.noweb_pipes,
       executionOwner,
       run: file.run,
-      provider: file.provider
+      provider: file.provider,
+      signal: options.signal
     }, scope, options.overlays);
   }));
+  throwIfAborted(options.signal);
   const pretransform = combineMaps(results.flatMap((result) => result.maps));
   pretransform.diagnostics.push(...results.flatMap((result) => result.diagnostics));
   for (const output of config.outputs ?? []) {
@@ -579,6 +676,13 @@ export const loadTomlBuild = async (configPath, options = {}) => {
   }
   return {
     pretransform: relativizeSourceUris(pretransform, scope.root),
+    authoredSourceUris: [...new Set(results.flatMap(authoredSourceUris))].sort(),
+    authoredSourceTexts: Object.assign({}, ...results.map(authoredSourceTexts)),
+    loadedInputUris: [...new Set([
+      relative(scope.root, absoluteConfig).split(sep).join("/"),
+      ...results.flatMap(loadedInputUris)
+    ])].sort(),
+    sourceEditsAllowed: results.every((result) => !result.containsJsonMaps),
     ...(outDirectory === undefined ? {} : { outputDirectory: await scope.path(outDirectory, "build.out_dir") }),
     rootDirectory: scope.root,
     buildOptions: {
@@ -591,24 +695,28 @@ export const loadTomlBuild = async (configPath, options = {}) => {
 
 /** Load a JSON map, one markup source document, or a Ravel TOML build run. */
 export const loadBuildInput = async (inputPath, options = {}) => {
+  throwIfAborted(options.signal);
   const extension = extname(inputPath).toLowerCase();
   if (extension === ".toml") return loadTomlBuild(inputPath, options);
   if (extension === ".md" || extension === ".markdown" || extension === ".mdown" || extension === ".qmd" ||
       extension === ".nw" || extension === ".noweb" || extension === ".org" ||
       extension === ".adoc" || extension === ".asciidoc" ||
-      extension === ".html" || extension === ".htm") {
-    const rootDirectory = dirname(resolve(inputPath));
+      extension === ".html" || extension === ".htm" || extension === ".json") {
+    const collected = await collectPretransformMaps(
+      resolve(inputPath),
+      options,
+      undefined,
+      options.overlays
+    );
+    throwIfAborted(options.signal);
     return {
-      pretransform: await loadPretransformGraph(resolve(inputPath), options),
+      pretransform: graphFromCollectedMaps(collected),
       outputDirectory: undefined,
-      rootDirectory
-    };
-  }
-  if (extension === ".json") {
-    return {
-      pretransform: await loadPretransformGraph(inputPath),
-      outputDirectory: undefined,
-      rootDirectory: dirname(resolve(inputPath))
+      rootDirectory: collected.rootDirectory,
+      authoredSourceUris: authoredSourceUris(collected),
+      authoredSourceTexts: authoredSourceTexts(collected),
+      loadedInputUris: loadedInputUris(collected),
+      sourceEditsAllowed: !collected.containsJsonMaps
     };
   }
   throw inputError("RH101", "Ravel input must be a .json map, supported markup document, or .toml build config.", inputPath);

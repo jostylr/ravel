@@ -5,7 +5,9 @@ import {
   findExplorerEntityAtSelection,
   findNearestProjectConfig,
   isSupportedRavelInput,
-  resolveProjectInput
+  projectIncludesPath,
+  resolveProjectInput,
+  shouldCaptureEditorPath
 } from "../packages/vscode/src/project.js";
 
 test("VS Code project discovery prefers the nearest ravel.toml", async () => {
@@ -99,4 +101,54 @@ test("VS Code project discovery falls back to a supported active source", async 
     await resolveProjectInput("/workspace/notes.txt", "/workspace", exists),
     null
   );
+});
+
+test("active project reuse is limited to loaded and authored inputs", () => {
+  const project = {
+    rootDirectory: "/workspace/project",
+    loadedInputUris: ["ravel.toml", "maps/input.json", "chapters/legacy.txt"],
+    authoredSourceUris: ["guide.md", "chapters/library.org"]
+  };
+  assert.equal(projectIncludesPath(project, "/workspace/project/guide.md"), true);
+  assert.equal(projectIncludesPath(project, "/workspace/project/ravel.toml"), true);
+  assert.equal(projectIncludesPath(project, "/workspace/project/chapters/legacy.txt"), true);
+  assert.equal(projectIncludesPath(project, "/workspace/project/src/app.ts"), false);
+  assert.equal(projectIncludesPath(project, "/workspace/other/guide.md"), false);
+  assert.equal(projectIncludesPath(
+    project,
+    "/workspace/project/ravel.toml",
+    { authoredOnly: true }
+  ), false);
+  assert.equal(projectIncludesPath(
+    project,
+    "/workspace/project/chapters/library.org",
+    { authoredOnly: true }
+  ), true);
+});
+
+test("editor capture includes configured custom extensions and supported fallbacks", () => {
+  const relevant = ["ravel.toml", "chapters/legacy.txt"];
+  assert.equal(shouldCaptureEditorPath(
+    "/workspace/project",
+    "/workspace/project/chapters/legacy.txt",
+    relevant
+  ), true);
+  assert.equal(shouldCaptureEditorPath(
+    "/workspace/project",
+    "/workspace/project/new-reference.md",
+    relevant,
+    { includeSupportedFallback: true }
+  ), true);
+  assert.equal(shouldCaptureEditorPath(
+    "/workspace/project",
+    "/workspace/project/output/app.ts",
+    relevant,
+    { includeSupportedFallback: true }
+  ), false);
+  assert.equal(shouldCaptureEditorPath(
+    "/workspace/project",
+    "/workspace/other/guide.md",
+    relevant,
+    { includeSupportedFallback: true }
+  ), false);
 });

@@ -35,6 +35,7 @@
     "example:adapters": "node examples/adapter-conformance/build-all.mjs",
     "ravel": "node packages/cli/src/index.js",
     "benchmark:assembly": "node examples/benchmark/benchmark-build.mjs",
+    "benchmark:virtual-documents": "node scripts/virtual-document-performance.mjs",
     "validate:schema": "node scripts/validate-map-example.mjs",
     "build:browser": "node scripts/build-browser.mjs",
     "build:vscode": "npm run build --workspace @pieceful/ravel-vscode",

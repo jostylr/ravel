@@ -1,0 +1,25 @@
+{
+  "name": "@pieceful/ravel-projection",
+  "version": "0.1.1",
+  "type": "module",
+  "sideEffects": false,
+  "description": "Browser-safe virtual documents, source projections, and generated-code context for Ravel.",
+  "license": "MIT",
+  "author": "James Taylor",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jostylr/ravel.git",
+    "directory": "packages/projection"
+  },
+  "bugs": { "url": "https://github.com/jostylr/ravel/issues" },
+  "homepage": "https://ravel.jostylr.com/",
+  "engines": { "node": ">=22" },
+  "keywords": ["ravel", "literate-programming", "virtual-document", "source-map"],
+  "publishConfig": { "access": "public" },
+  "exports": {
+    ".": "./src/index.js",
+    "./transforms": "./src/transforms.js"
+  },
+  "types": "./src/index.d.ts",
+  "files": ["src", "README.md", "LICENSE"]
+}

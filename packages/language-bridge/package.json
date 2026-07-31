@@ -1,0 +1,42 @@
+{
+  "name": "@pieceful/ravel-language-bridge",
+  "version": "0.1.1",
+  "type": "module",
+  "description": "Editor-neutral target-language service contracts for Ravel projections.",
+  "license": "MIT",
+  "author": "James Taylor",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jostylr/ravel.git",
+    "directory": "packages/language-bridge"
+  },
+  "bugs": {
+    "url": "https://github.com/jostylr/ravel/issues"
+  },
+  "homepage": "https://ravel.jostylr.com/",
+  "engines": {
+    "node": ">=22"
+  },
+  "keywords": [
+    "ravel",
+    "literate-programming",
+    "language-service",
+    "lsp"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    ".": "./src/index.js",
+    "./testing": {
+      "types": "./src/testing.d.ts",
+      "default": "./src/testing.js"
+    }
+  },
+  "types": "./src/index.d.ts",
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE"
+  ]
+}

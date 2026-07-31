@@ -67,6 +67,37 @@ export const resolveProjectInput = async (
   return await findNearestProjectConfig(absolute, workspaceRoot, exists) ?? absolute;
 };
 
+export const projectIncludesPath = (
+  project,
+  candidatePath,
+  { authoredOnly = false } = {}
+) => {
+  if (!project?.rootDirectory || typeof candidatePath !== "string" ||
+      !inside(project.rootDirectory, candidatePath)) return false;
+  const uri = relative(project.rootDirectory, resolve(candidatePath))
+    .split(sep).join("/");
+  const members = authoredOnly
+    ? project.authoredSourceUris ?? []
+    : [
+        ...(project.loadedInputUris ?? []),
+        ...(project.authoredSourceUris ?? [])
+      ];
+  return members.includes(uri);
+};
+
+export const shouldCaptureEditorPath = (
+  rootDirectory,
+  candidatePath,
+  relevantSourceUris,
+  { includeSupportedFallback = false } = {}
+) => {
+  if (!inside(rootDirectory, candidatePath)) return false;
+  const uri = relative(rootDirectory, resolve(candidatePath)).split(sep).join("/");
+  if (relevantSourceUris?.includes(uri)) return true;
+  return (relevantSourceUris === undefined || includeSupportedFallback) &&
+    isSupportedRavelInput(candidatePath);
+};
+
 const comparePosition = (left, right) =>
   left.line - right.line || left.column - right.column;
 

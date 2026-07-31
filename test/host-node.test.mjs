@@ -80,6 +80,11 @@ test("Node host loads one TOML build run containing multiple Markdown files", as
   const program = transformGraph(loaded.pretransform);
 
   assert.deepEqual(program.diagnostics, []);
+  assert.deepEqual(loaded.authoredSourceUris, ["guide.md", "runtime.md"]);
+  assert.match(loaded.authoredSourceTexts["guide.md"], /compiler/);
+  assert.match(loaded.authoredSourceTexts["runtime.md"], /support/);
+  assert.deepEqual(loaded.loadedInputUris, ["guide.md", "ravel-web.toml", "runtime.md"]);
+  assert.equal(loaded.sourceEditsAllowed, true);
   assert.ok(loaded.outputDirectory.endsWith(join(".ravel", "runs", "markdown-web")));
   assert.deepEqual(Object.keys(program.chunks).sort(), [
     "handbook::compiler:what.ts",
@@ -88,6 +93,54 @@ test("Node host loads one TOML build run containing multiple Markdown files", as
   ]);
   assert.equal(program.deliverables["dist/main.js"].from, "handbook::main.javascript");
   assert.match(program.deliverables["dist/main.js"].value, /export const finish/);
+});
+
+test("editor analysis retains live resource declarations without reading resource contents", async () => {
+  const sandbox = await mkdtemp(join(tmpdir(), "ravel-analysis-resources-"));
+  const config = join(sandbox, "ravel.toml");
+  try {
+    await writeFile(join(sandbox, "guide.md"), [
+      "```js {.ravel #main type=js}",
+      "export const ready = true;",
+      "```",
+      ""
+    ].join("\n"));
+    await writeFile(config, [
+      "version = 1",
+      "",
+      "[[files]]",
+      'path = "guide.md"',
+      'mode = "primary"',
+      "",
+      "[[live.resources]]",
+      'name = "private-data"',
+      'path = "not-created.txt"',
+      ""
+    ].join("\n"));
+
+    await assert.rejects(
+      loadBuildInput(config),
+      (error) => error instanceof RavelInputError && error.diagnostics[0].code === "RC103"
+    );
+    const analysis = await loadBuildInput(config, { readLiveResources: false });
+    assert.deepEqual(analysis.live.resources, {});
+    assert.deepEqual(analysis.live.resourceDeclarations.map(({ name, path }) => ({ name, path })), [{
+      name: "private-data",
+      path: "not-created.txt"
+    }]);
+  } finally {
+    await rm(sandbox, { recursive: true, force: true });
+  }
+});
+
+test("Node input loading observes editor cancellation before filesystem work", async () => {
+  const controller = new AbortController();
+  const reason = new Error("superseded editor revision");
+  controller.abort(reason);
+  await assert.rejects(
+    loadBuildInput("does-not-need-to-exist.md", { signal: controller.signal }),
+    (error) => error === reason
+  );
 });
 
 test("JavaScript Node preparation bundles only allowlisted bare package exports", async () => {
@@ -180,8 +233,58 @@ test("Node host follows in directives from Markdown into another Markdown map", 
   const program = transformGraph(loaded.pretransform);
 
   assert.deepEqual(program.diagnostics, []);
+  assert.deepEqual(loaded.authoredSourceUris, ["imported-library.md", "importing-entry.md"]);
+  assert.deepEqual(loaded.loadedInputUris, ["imported-library.md", "importing-entry.md"]);
+  assert.equal(loaded.sourceEditsAllowed, true);
   assert.deepEqual(Object.keys(program.chunks).sort(), ["entry::main.js", "library::helper.js"]);
   assert.equal(program.deliverables["dist/main.js"].value, "export const helper = true;\n");
+});
+
+test("Node host applies dirty JSON map overlays but does not trust map-declared authored files", async () => {
+  const sandbox = await mkdtemp(join(tmpdir(), "ravel-json-overlay-"));
+  const input = join(sandbox, "project.ravel-map.json");
+  const trusted = join(sandbox, "trusted.md");
+  const point = { line: 0, column: 0, offset: 0 };
+  const source = { uri: "unloaded-source.md", range: { start: point, end: point } };
+  const map = (body) => JSON.stringify({
+    version: 1,
+    document: { id: "project", uri: "unloaded-source.md", format: "ravel-map-v1" },
+    chunks: [{
+      id: "project::main.txt",
+      identity: { document: "project", chunk: "main", minor: null, type: "txt" },
+      body,
+      source
+    }],
+    directives: [
+      { kind: "in", target: "trusted.md", source },
+      { kind: "out", name: "dist.txt", from: "project::main.txt", source }
+    ]
+  });
+  try {
+    await writeFile(input, map("from disk"));
+    await writeFile(trusted, [
+      "---",
+      "ravel:",
+      "  document: trusted",
+      "---",
+      "",
+      "```text {.ravel #safe type=text}",
+      "trusted",
+      "```",
+      ""
+    ].join("\n"));
+    const loaded = await loadBuildInput(input, {
+      overlays: new Map([[input, { text: map("from dirty buffer"), version: 9 }]])
+    });
+    const program = transformGraph(loaded.pretransform);
+    assert.equal(program.deliverables["dist.txt"].value, "from dirty buffer");
+    assert.deepEqual(loaded.authoredSourceUris, ["trusted.md"]);
+    assert.deepEqual(loaded.loadedInputUris, ["project.ravel-map.json", "trusted.md"]);
+    assert.equal(loaded.sourceEditsAllowed, false);
+    assert.match(await readFile(input, "utf8"), /from disk/);
+  } finally {
+    await rm(sandbox, { recursive: true, force: true });
+  }
 });
 
 test("Node host evaluates dirty document overlays without changing inputs or writing outputs", async () => {
@@ -223,6 +326,11 @@ test("Node host evaluates dirty document overlays without changing inputs or wri
     const program = transformGraph(loaded.pretransform);
 
     assert.equal(program.deliverables["dist.txt"].value, "from dirty buffer\n");
+    assert.deepEqual(loaded.authoredSourceUris, ["entry.md", "library.md"]);
+    assert.match(loaded.authoredSourceTexts["entry.md"], /in\("library\.md"\)/);
+    assert.match(loaded.authoredSourceTexts["library.md"], /from dirty buffer/);
+    assert.deepEqual(loaded.loadedInputUris, ["entry.md", "library.md"]);
+    assert.equal(loaded.sourceEditsAllowed, true);
     assert.equal(await readFile(library, "utf8"), diskLibrary);
     assert.deepEqual((await readdir(sandbox)).sort(), ["entry.md", "library.md"]);
   } finally {

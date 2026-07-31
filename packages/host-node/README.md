@@ -29,6 +29,16 @@ Loading overlays never writes source, deliverables, manifests, provenance
 sidecars, backups, or stale-output changes. Artifact writes remain separate,
 explicit host operations.
 
+`loadBuildInput` reports `loadedInputUris` for invalidation and separately
+reports `authoredSourceUris` plus `authoredSourceTexts`. The text record contains
+the exact overlay or disk text consumed for each authored non-JSON input, keyed
+relative to the project root. Editor hosts can use it to prove that a newly
+opened clean navigation destination still matches the evaluated snapshot; it
+does not supply an editor version or write permission. A source path merely
+asserted by JSON Ravel Map data is not added to the authored set, and a load
+containing JSON map provenance reports `sourceEditsAllowed: false` for the
+current conservative automatic-edit policy.
+
 Version-1 TOML projects may declare text `[[live.resources]]` and installed
 package exports in `[[live.modules]]`. The host validates and loads those
 declarations; provider-specific package preparation remains outside this

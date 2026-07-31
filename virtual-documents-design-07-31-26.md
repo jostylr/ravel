@@ -1,18 +1,21 @@
-# Pieceful virtual documents and generated-code navigation — design specification
+# Ravel virtual documents and generated-code navigation — design specification
 
-**Status:** Proposed  
-**Date:** 2026-07-31  
-**Audience:** Pieceful core, projection, language tooling, editor, and Rix
-implementers  
-**Related:** `plan-07-17-26.md`, `syntax-proposal-07-17-26.md`,
-`virtual-documents-checklist-07-31-26.md`
+**Status:** Implementation baseline; partial through M7
+**Date:** 2026-07-31
+**Audience:** Ravel core, projection, language tooling, editor, and Rix
+implementers
+**Implementation checklist:** [virtual-documents-checklist-07-31-26.md](virtual-documents-checklist-07-31-26.md)
+
+This specification was drafted under the **Pieceful** working name. Remaining
+uses of “Pieceful” refer to the same product and model now implemented as
+**Ravel**; the public package names use `@pieceful/ravel-*`.
 
 ## 1. Summary
 
-Pieceful will provide native code intelligence while a user edits a literate
+Ravel will provide native code intelligence while a user edits a literate
 document by projecting the current immutable Piece Document into one or more
 ordinary, language-specific virtual documents. A target language service sees
-the projected program as normal source code. Pieceful translates positions,
+the projected program as normal source code. Ravel translates positions,
 diagnostics, navigation results, and safe edits between that generated program
 and the original literate source.
 
@@ -22,15 +25,34 @@ move among multiple occurrences, and inspect the complete expansion path from
 artifact root to source fragment.
 
 This design does not implement a new completion or type-analysis engine.
-Pieceful owns literate semantics, assembly, provenance, and request routing;
+Ravel owns literate semantics, assembly, provenance, and request routing;
 the target language's established tools continue to own language semantics.
 
 The central contract is:
 
-> For every analysis-stage character that came from author source, Pieceful can
+> For every analysis-stage character that came from author source, Ravel can
 > identify its source range and expansion occurrence; for every author range,
-> Pieceful can identify every current generated occurrence. Unmapped generated
+> Ravel can identify every current generated occurrence. Unmapped generated
 > text is explicitly synthetic and is never silently edited back into source.
+
+### 1.1 Current implementation profile
+
+The implementation follows the layering in this specification, with one naming
+change: transport-neutral routing lives in `language-service`; there is not yet
+a JSON-RPC/LSP transport package.
+
+| Layer | Current package | Implemented boundary |
+| --- | --- | --- |
+| Literate model and provenance | [`@pieceful/ravel-core`](packages/core/README.md) | Immutable evaluated program, dependency graph, structured source locations, and deliverable provenance consumed by projection. |
+| Projection | [`@pieceful/ravel-projection`](packages/projection/README.md) | Browser-safe virtual documents, bidirectional mappings, occurrences, generated context, incremental deltas, and transform maps. |
+| Adapter contract | [`@pieceful/ravel-language-bridge`](packages/language-bridge/README.md) | Editor-neutral capabilities, normalized requests/results, lifecycle policy, structured failure, and deterministic fake. |
+| First native adapter | [`@pieceful/ravel-language-typescript`](packages/language-typescript/README.md) | In-process TypeScript Language Service with configured-project and in-memory file overlays. |
+| Routing and edit safety | [`@pieceful/ravel-language-service`](packages/language-service/README.md) | Headless source/virtual request routing, Ravel-native semantics, diagnostic mapping, call mapping, and workspace-edit classification. |
+| First rich host | [`@pieceful/ravel-vscode`](packages/vscode/README.md) | Explorer, generated-document commands and context overlays, current-projection TypeScript/JavaScript providers, persisted document target/artifact and piece occurrence selection, exact-safe rename, diagnostics, and call hierarchy. Preview/structural edits and full Extension Host acceptance remain incomplete. |
+
+The implementation/evidence matrix in the [companion checklist](virtual-documents-checklist-07-31-26.md#implementation-status--2026-07-31)
+is the status authority. This specification remains normative; the presence of
+a package or unit test does not by itself satisfy an editor acceptance gate.
 
 ## 2. Normative language
 
@@ -165,24 +187,44 @@ the adapter MAY choose one and record the equivalence. If completion results
 are requested from multiple contexts, identical results MAY be merged;
 conflicting results MUST be labeled by target or occurrence.
 
+An active target does not implicitly select one of several artifacts. When a
+source position maps to multiple artifacts in the same target, the router MUST
+request or restore an explicit artifact choice unless the adapter has declared
+those occurrences semantically equivalent. Lexical artifact ordering is not a
+semantic selection policy. The current router returns `target-required` with
+artifact-qualified candidates in this case.
+
+The current router applies the same fail-closed rule when several distinct
+occurrences remain inside one target and artifact. It returns an occurrence
+ambiguity and accepts a persisted projection/occurrence choice; only duplicate
+candidates with identical routing context are collapsed.
+
+The VS Code host persists the broad target/artifact choice at document scope
+and the exact projection/occurrence choice at piece scope. Piece scope has
+priority over document scope, and a selection for one piece must not influence
+routing in another piece. Either scope is invalidated when its selected context
+disappears.
+
 ## 6. Architecture
 
-The target workspace gains a projection package between the graph engine and
-editor integration:
+The target workspace has a projection and routing layer between the graph
+engine and editor integration:
 
 ```text
-pieceful/
+ravel/
   packages/
     core/                 Piece Document, graph, evaluation, diagnostics
-    syntax/               reference and transform AST
     markdown/             source adapter with precise ranges
     projection/           virtual documents, occurrences, bidirectional maps
     language-bridge/      target-language service adapter contracts
     language-typescript/  first native language adapter
-    lsp/                  Pieceful LSP and request/result translation
-    editor-vscode/        generated views and VS Code-specific UX
-    notebook/             Rix/notebook model and execution state
+    language-service/     transport-neutral routing and safe edit policy
+    vscode/               generated views and VS Code-specific UX
 ```
+
+A future LSP package can adapt `language-service` to JSON-RPC. Syntax may move
+to a dedicated package, and notebook/Rix support remains planned at M8; neither
+boundary exists as a standalone package in the current tree.
 
 `projection` MUST depend only on browser-safe Pieceful model packages. It MUST
 NOT spawn processes, access the filesystem, or import an editor API.
@@ -192,10 +234,11 @@ an in-process language API, a child language-server process, an editor-provided
 language service, or a shadow workspace. These integration choices MUST NOT
 leak into `core` or `projection`.
 
-`lsp` owns Pieceful semantics and transport-neutral request translation. An
-editor-specific package MAY provide richer generated views or use an already
-installed target-language extension, but correctness cannot depend on UI-only
-state.
+`language-service` owns Ravel-native semantics and transport-neutral request
+translation. A future `lsp` adapter can expose that contract without moving
+mapping policy into transport code. An editor-specific package MAY provide
+richer generated views or use an already installed target-language extension,
+but correctness cannot depend on UI-only state.
 
 ### 6.1 Data flow
 
@@ -384,6 +427,13 @@ The logical URI format SHOULD be stable and opaque to users:
 pieceful-virtual://<workspace-id>/<target>/<artifact>/<stage>/<path>
 ```
 
+The current implementation retains the `pieceful-virtual` scheme for
+compatibility. Workspace, target, artifact, and stage components are escaped;
+snapshot and language-service versions are deliberately excluded. Stable URI
+and refresh behavior are covered by projection and VS Code registry tests. The
+long-term scheme name and occurrence-identity stability across source moves
+remain ADR work and are not declared complete by this implementation choice.
+
 Logical identity MUST NOT include the snapshot version. Language services keep
 one document open and receive monotonically versioned changes.
 
@@ -438,11 +488,28 @@ from the language name. The bridge owns target-specific project discovery,
 configuration, standard library selection, module resolution, and process
 lifecycle.
 
+The bridge boundary is intentionally narrower than a projection. An adapter
+receives the stable generated-document identity, snapshot/version, target,
+artifact, stage, language, generated text, and the small allowlist of logical
+path/configuration metadata needed by native tooling. It does not receive
+provenance mappings, occurrence trees, authored source text, source line
+indexes, writable-source authority, or router internals. Reverse mapping and
+edit authorization remain on the trusted projection/router side.
+
 The first adapter SHOULD support TypeScript and JavaScript through the native
-TypeScript project/language service. The implementation decision between the
-TypeScript library API, `tsserver` protocol, or a maintained LSP wrapper MUST be
-captured in an ADR after a small spike tests virtual files, configured projects,
-module resolution, cancellation, and diagnostic latency.
+TypeScript project/language service. The implementation decision is recorded
+in the accepted [TypeScript bridge ADR](documentation/adr/typescript-language-service-api.md):
+the first vertical slice uses the in-process Language Service API with
+in-memory overlays. A managed `tsserver` adapter remains a possible future
+isolation mode rather than a prerequisite for this adapter.
+
+Lifecycle cancellation MUST preserve one authoritative state. If cancellation
+is observed before a bridge mutation commits, no document/project mutation is
+published. If it is observed after native `open` or `change` state commits, the
+bridge records that committed state before settling the operation; otherwise a
+later request could validate against a document version the native service did
+not retain, or vice versa. The TypeScript adapter has focused tests for both
+boundaries.
 
 ## 11. Request routing and result mapping
 
@@ -471,6 +538,13 @@ result. It MUST NOT move the request to a nearby generated position silently.
 Completion text edits are applied automatically only when every affected range
 has one exact, contiguous, writable source mapping. Additional edits, especially
 imports, follow section 12.
+
+The primary completion replacement and prepare-rename ranges are special:
+reverse mapping MUST be constrained to the projection occurrence selected for
+the request. They can be exposed as authored ranges only when that context has
+one unique writable exact/identity destination. A plausible destination found
+through a sibling occurrence is not safe, and an ambiguous primary destination
+remains generated-only.
 
 Hover content SHOULD include the target and expansion path when the same source
 has context-dependent types.
@@ -514,6 +588,13 @@ source range, diagnostic identity, message, and semantic target. The rendered
 diagnostic states the number and names of affected occurrences. Diagnostics
 that differ by target configuration MUST remain distinct.
 
+When diagnostics are requested projection by projection, the request MUST
+retain both projection and occurrence identity. A diagnostic anchor chosen from
+the same target/artifact is not sufficient when another occurrence overlaps the
+source position. Publication MUST also prove that the project, source capture,
+and diagnostic generation are still current; failure from an old project MUST
+NOT clear diagnostics already published by the active project.
+
 A diagnostic wholly inside synthetic text appears in the generated view and is
 anchored to the narrowest responsible piece, artifact declaration, or project
 configuration. It MUST be labeled as generated-context diagnostics.
@@ -532,6 +613,14 @@ The generated-context UI SHOULD show both the semantic call edge and the
 Pieceful expansion path. These are different relationships and MUST NOT be
 collapsed into one graph edge.
 
+Call-item `selectionRange` is semantically significant: it identifies the name
+or span at which follow-up incoming/outgoing requests must be made. When a call
+item is reverse-mapped, the selection range MUST be reverse-mapped separately,
+must remain within the mapped item range, and MUST fall back to that item range
+rather than retain a generated offset. The editor carries target, artifact,
+and occurrence context with the mapped item so the follow-up request is routed
+back to the same semantic context.
+
 ## 12. Editing and refactoring policy
 
 Target-language tools may return workspace edits covering one or many virtual
@@ -542,11 +631,23 @@ documents. Pieceful classifies every edit before applying any of them.
 An edit MAY be applied automatically only when:
 
 - its expected projection and source versions are still current;
+- the host supplies an authoritative, nonnegative current version for every
+  source document in the operation;
+- every source URI belongs to the host's explicit writable-source allowlist;
 - its complete range maps exactly to one writable source range;
 - the replacement does not cross fragment or occurrence boundaries;
 - several generated edits mapping to the same source request the same change;
   and
 - no edit in the atomic operation is rejected.
+
+Missing authority is not permission. A closed file, unversioned file, absent
+writability callback, or mapping explicitly marked non-writable makes an
+automatic operation fail closed. A future preview workflow may reopen and
+revalidate such a file, but the direct-edit path MUST NOT assume disk state is
+current. Hosts MUST also bound document count, edit count, and replacement text
+accepted from a target-language response; the current classifier rejects more
+than 128 documents, 5,000 edits, or 1,000,000 replacement UTF-16 code units by
+default, with explicit lower host overrides available for tests or policy.
 
 ### 12.2 Requires preview or Pieceful action
 
@@ -652,6 +753,14 @@ are:
 Target-language processing time is measured separately. These are engineering
 budgets to validate during the vertical slice, not compatibility guarantees.
 
+The current in-process router uses a deliberately conservative consistency
+boundary: a complete native request (candidate selection, compatible-document
+synchronization, native execution, stale validation, and mapping) is serialized
+against projection updates. Per-document lifecycle queues prevent duplicate
+open/change/close operations, while an aborted queued caller settles promptly
+without bypassing the internal ordering. Broader request concurrency can be
+reintroduced only with a generation covering every synchronized sibling.
+
 ## 15. Generated-context presentation model
 
 The projection layer exposes presentation-neutral data:
@@ -683,6 +792,10 @@ Highlight categories are:
 Generated views SHOULD preserve syntax coloring by assigning the target
 language ID. Decorations and breadcrumbs MUST remain valid only for the exact
 projection version; the view refreshes or marks itself stale after an edit.
+The editor's currently loaded virtual text MUST also equal the registry's
+current projection text before decorations, breadcrumbs, or return-to-source
+navigation are presented. This closes the interval in which provider metadata
+has advanced but the editor has not yet consumed its change event.
 
 ## 16. Project and configuration semantics
 
@@ -698,6 +811,12 @@ Each analysis target MUST define or resolve:
 - analysis projection stage;
 - optional harness and preamble pieces; and
 - backing mode allowed for its language adapter.
+
+Project discovery MUST be confined to a host-selected configuration search
+root. An explicit `tsconfig.json` and an automatically discovered one are both
+rejected when their lexical or canonical path escapes that root; discovery
+does not walk above it, including through symlinks. The VS Code implementation
+uses the loaded Ravel project root as the TypeScript `configSearchRoot`.
 
 Configuration is declarative. Opening an editor MUST NOT execute document code,
 shell commands, fetches, or write effects. A target that lacks required trusted
@@ -721,6 +840,52 @@ Editor analysis is a restricted host mode:
 
 Untrusted workspaces MAY disable process-backed language adapters while still
 providing Pieceful syntax, graph diagnostics, and generated previews.
+
+The VS Code implementation applies the stronger rule to its in-process
+TypeScript adapter as well: no target-language bridge is constructed until the
+workspace is trusted. Granting trust resets and resynchronizes the router.
+Ravel-native parsing, graph navigation, diagnostics, and generated views do not
+depend on that bridge and remain available.
+
+Write and source-navigation authority is derived from inputs the host actually
+loaded as authored non-JSON documents. In-memory overlays, including an
+overlay for a JSON Ravel Map, are honored during evaluation. However, a source
+URI merely asserted inside JSON map data does not add that file to the authored
+allowlist and does not make it writable. Paths must also remain beneath the
+canonical project root; symlink and URI-scheme checks are applied before an
+editor location or edit is created. Because JSON map provenance is supplied
+data rather than ranges produced by a source adapter in the current load, the
+presence of any JSON map makes the VS Code project's automatic source-edit
+policy read-only. This deliberately conservative rule also covers a JSON map
+that imports an otherwise authored markup source. A separate loaded-input
+invalidation list includes JSON maps and the project configuration, so this
+write restriction does not prevent dirty map overlays from refreshing current
+projections.
+
+The VS Code host captures one immutable editor snapshot and derives both build
+overlays and projection source text/version metadata from it. Every open buffer,
+including a clean buffer, participates in evaluation. Relevant open/close,
+text, version, or dirty-state changes invalidate the capture; synchronization
+retries and then fails closed before registry publication or writable language
+features. Automatic edits additionally require equality between the selected
+projection's captured source version, the project capture, and the current
+editor document version.
+
+The Node host also returns the exact text consumed for each authored non-JSON
+input. A read-only navigation result may adopt a source that was closed during
+evaluation and subsequently opened only when the new editor document is clean
+and byte-for-byte equal to that retained text. This exception prevents an
+ordinary definition, diagnostic, call, or generated-to-source navigation from
+invalidating itself merely by opening its destination. It does not create a
+source version or writable authority: completion, rename, and every automatic
+workspace edit continue to require the strict captured open-document state.
+
+Configuration-path confinement is not yet a complete TypeScript filesystem
+sandbox. In a trusted workspace, native configuration processing, project
+references, standard module resolution, and declaration lookup still delegate
+to TypeScript's filesystem host and may read dependencies outside the Ravel
+project root. Target-result navigation remains root-confined, but an explicit
+file-access-root policy is required before the M7 security gate can close.
 
 ## 18. Observability
 
@@ -873,6 +1038,14 @@ The implementation must resolve these decisions with short spikes and ADRs:
    language forwarding.
 10. The second language adapter used as the portability test.
 
+As of 2026-07-31, decision 1 is accepted in
+[`documentation/adr/typescript-language-service-api.md`](documentation/adr/typescript-language-service-api.md).
+The code has provisional, tested choices for URI encoding, UTF-16 bridge
+offsets plus portable line indexes, transform-map normalization, and active
+target serialization. Those choices still require their own stability and
+configuration ADRs before the corresponding M0 boxes are checked. Import-piece
+syntax, cross-editor/LSP transport, and the M8 second language remain open.
+
 ## 24. Definition of done for the vertical slice
 
 The first TypeScript/JavaScript vertical slice is complete only when:
@@ -891,3 +1064,26 @@ The first TypeScript/JavaScript vertical slice is complete only when:
 - no document effect executes during analysis; and
 - measured Pieceful overhead meets the agreed interactive budgets or an ADR
   documents revised evidence-based budgets.
+
+**Current status:** this definition of done is not yet met. The repository has
+headless projection, native TypeScript, routing, a VS Code provider route,
+generated documents, persisted document and piece-scoped target context,
+exact-safe completion/rename behavior, and call hierarchy. It still lacks a
+portable LSP transport, preview/import/piece-ID edit workflows, full Extension
+Host acceptance, and the performance, resilience, security, and accessibility
+gate evidence.
+
+The implemented generated-view route now preserves the originating source
+selection, so an exact fragment receives a distinct `selected-fragment`
+overlay while piece, descendant, transform, and synthetic categories remain
+visible. Call hierarchy separately reverse-maps `selectionRange` and uses it
+for follow-up requests. Generated presentation requires exact registry/editor
+text equality, and read-only navigation can adopt only a clean, byte-identical
+evaluated destination. These close concrete integration races; they do not
+substitute for the remaining G5/G7 end-to-end and accessibility evidence.
+
+The first repeatable 100,000-line harness run on Node 26.5.0 (darwin/arm64)
+measured 137 ms cold projection, 121 ms warm incremental projection, 47 ms for
+10,000 virtual-to-source lookups, and 42 ms for 10,000 source-to-virtual
+lookups. These are development observations, not release thresholds; use
+`npm run benchmark:virtual-documents -- --json` to reproduce them.
