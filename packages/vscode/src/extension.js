@@ -30,7 +30,8 @@ import {
   diagnosticProjectionRouting,
   hasDiagnosticPublicationAuthority,
   hasDiagnosticRunAuthority,
-  publishRavelDiagnostics
+  publishRavelDiagnostics,
+  targetDiagnosticCategories
 } from "./diagnostics.js";
 import {
   isExactAuthoredRange,
@@ -64,6 +65,7 @@ let pendingSourceReveal;
 let refreshTimer;
 let refreshGeneration = 0;
 let refreshController;
+let targetDiagnosticGeneration = 0;
 let diagnosticCollection;
 let targetDiagnosticCollection;
 let projectLoadPromise;
@@ -2216,6 +2218,7 @@ const refreshTargetDiagnostics = async (project, signal) => {
   const router = languageRouter;
   const projections = projectionService;
   const diagnosticGeneration = refreshGeneration;
+  const targetGeneration = ++targetDiagnosticGeneration;
   const generationIsCurrent = () => hasDiagnosticRunAuthority({
     project,
     activeProject,
@@ -2227,14 +2230,21 @@ const refreshTargetDiagnostics = async (project, signal) => {
     projectionService: projections,
     currentProjectionService: projectionService,
     aborted: signal?.aborted === true
-  });
+  }) && targetGeneration === targetDiagnosticGeneration;
   const collected = [];
   for (const projection of projections.listProjections()) {
     signal?.throwIfAborted();
     const anchor = projection.mappings.find((mapping) =>
       mapping.source?.uri && Number.isInteger(mapping.source.range?.start?.offset)
     );
-    if (!anchor || !sourceUri(project, anchor.source)) continue;
+    const anchorUri = anchor && sourceUri(project, anchor.source);
+    if (!anchor || !anchorUri) continue;
+    const categories = targetDiagnosticCategories({
+      languageId: projection.languageId,
+      javascriptMode: vscode.workspace.getConfiguration("ravel", anchorUri)
+        .get("javascriptDiagnostics", "all")
+    });
+    if (categories.length === 0) continue;
     const response = await router.request("diagnostics", {
       uri: anchor.source.uri,
       offset: anchor.source.range.start.offset
@@ -2243,7 +2253,7 @@ const refreshTargetDiagnostics = async (project, signal) => {
       sourceVersions: project.projectionSourceState.sourceVersions,
       isWritableSource: (uri) => writableSourceUri(project, { uri }) !== null,
       request: {
-        categories: ["configuration", "compilerOptions", "syntactic", "semantic", "suggestion"]
+        categories
       }
     }, signal);
     signal?.throwIfAborted();
@@ -2319,13 +2329,15 @@ const refreshTargetDiagnostics = async (project, signal) => {
 const refreshTargetDiagnosticsBestEffort = async (project, signal) => {
   const router = languageRouter;
   const projections = projectionService;
+  const expectedTargetGeneration = targetDiagnosticGeneration + 1;
   try {
     await refreshTargetDiagnostics(project, signal);
   } catch (error) {
     if (signal?.aborted) throw error;
     // A failed request for an old project must not erase diagnostics already
     // published by the current project.
-    if (languageRouter !== router || projectionService !== projections ||
+    if (targetDiagnosticGeneration !== expectedTargetGeneration ||
+        languageRouter !== router || projectionService !== projections ||
         !currentDiagnosticProject(project)) return;
     targetDiagnosticCollection?.clear();
     console.warn("Ravel target diagnostics unavailable:", error?.message ?? String(error));
@@ -2410,6 +2422,11 @@ export const activate = (context) => {
   const activeEditorSubscription = vscode.window.onDidChangeActiveTextEditor?.((editor) => {
     void refreshActiveGeneratedPresentation(editor);
   });
+  const configurationSubscription = vscode.workspace.onDidChangeConfiguration?.((event) => {
+    if (!event.affectsConfiguration("ravel.javascriptDiagnostics")) return;
+    const project = activeProject;
+    if (project) void refreshTargetDiagnosticsBestEffort(project);
+  });
   context.subscriptions.push(
     diagnosticCollection,
     targetDiagnosticCollection,
@@ -2418,6 +2435,7 @@ export const activate = (context) => {
     ...(trustSubscription ? [trustSubscription] : []),
     generatedPresentationSubscription,
     ...(activeEditorSubscription ? [activeEditorSubscription] : []),
+    ...(configurationSubscription ? [configurationSubscription] : []),
     ...Object.values(generatedDecorations),
     vscode.commands.registerCommand("ravel.openExplorer", (uri) =>
       openExplorer(context.extensionUri, uri)
@@ -2520,6 +2538,7 @@ export const deactivate = () => {
   generatedDecorations = undefined;
   generatedPresentationTimer = undefined;
   generatedSynchronizationGeneration += 1;
+  targetDiagnosticGeneration += 1;
   targetSelectionStore = undefined;
   extensionWorkspaceState = undefined;
   projectRefreshPending = false;

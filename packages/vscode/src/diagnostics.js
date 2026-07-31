@@ -1,4 +1,27 @@
 const severityOrder = Object.freeze({ error: 0, warning: 1, info: 2, hint: 3 });
+const allTargetDiagnosticCategories = Object.freeze([
+  "configuration",
+  "compilerOptions",
+  "syntactic",
+  "semantic",
+  "suggestion"
+]);
+const syntaxTargetDiagnosticCategories = Object.freeze([
+  "configuration",
+  "compilerOptions",
+  "syntactic"
+]);
+const javascriptLanguageIds = new Set(["javascript", "javascriptreact"]);
+
+export const targetDiagnosticCategories = ({
+  languageId,
+  javascriptMode = "all"
+} = {}) => {
+  if (!javascriptLanguageIds.has(languageId)) return allTargetDiagnosticCategories;
+  if (javascriptMode === "off") return [];
+  if (javascriptMode === "syntax") return syntaxTargetDiagnosticCategories;
+  return allTargetDiagnosticCategories;
+};
 
 export const hasDiagnosticPublicationAuthority = ({
   project,

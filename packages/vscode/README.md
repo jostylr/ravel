@@ -103,6 +103,18 @@ Publication rechecks the active project, editor source capture, and diagnostic
 generation, and a failure from a stale project cannot clear diagnostics already
 published by the current one.
 
+`ravel.javascriptDiagnostics` controls diagnostics for `javascript` and
+`javascriptreact` fences without disabling completion, hover, definition, or
+the other IntelliSense features. Its values are `all` (the default), `syntax`
+(syntax/configuration diagnostics only), and `off`. The setting has resource
+scope, so it can be changed for a workspace or workspace folder.
+
+In an inferred project, Ravel treats each generated JavaScript or TypeScript
+artifact as a module. Top-level declarations in independent output files
+therefore do not collide, while explicit imports between artifacts continue to
+work. An explicit `tsconfig.json` remains authoritative; projects that choose
+classic-script semantics can instead set `moduleDetection` themselves.
+
 The manifest activates when a workspace contains `ravel.toml`, the Explorer
 command is invoked, or a Markdown, Quarto, Org, AsciiDoc, or HTML editor opens,
 so these providers do not depend on the Explorer panel having been visible

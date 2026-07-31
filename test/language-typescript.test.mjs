@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
+import { mkdtemp, rm } from "node:fs/promises";
 import test from "node:test";
 import { createRequire } from "node:module";
+import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -354,6 +356,44 @@ const loadNativeTypeScript = () => {
 };
 
 const native = loadNativeTypeScript();
+
+test("inferred JavaScript projects isolate top-level declarations by artifact", { skip: native ? false : "TypeScript runtime is not installed" }, async () => {
+  const currentDirectory = await mkdtemp(path.join(os.tmpdir(), "ravel-javascript-artifacts-"));
+  const bridge = createTypeScriptLanguageBridgeWithApi(native.typescript, { currentDirectory });
+  const document = (name, value) => ({
+    id: "projection:" + name,
+    uri: "pieceful-virtual://test/javascript/" + name,
+    version: 1,
+    stage: "assembled",
+    languageId: "javascript",
+    fileName: path.join(currentDirectory, name),
+    artifactId: name,
+    targetId: "default",
+    text: "const value = " + value + ";\n"
+  });
+  const first = document("first.js", "1");
+  const second = document("second.js", "2");
+
+  try {
+    await bridge.open(first);
+    await bridge.open(second);
+    for (const value of [first, second]) {
+      const diagnostics = await bridge.request({
+        kind: "diagnostics",
+        documentUri: value.uri,
+        categories: ["semantic"]
+      }, { version: 1 });
+      assert.equal(
+        diagnostics.some((entry) => entry.code === 2451),
+        false,
+        "independent artifacts must not share classic-script globals"
+      );
+    }
+  } finally {
+    await bridge.dispose();
+    await rm(currentDirectory, { recursive: true, force: true });
+  }
+});
 
 test("native TypeScript projects isolate and switch projection stages", { skip: native ? false : "TypeScript runtime is not installed" }, async () => {
   const bridge = createTypeScriptLanguageBridgeWithApi(native.typescript, { currentDirectory: repositoryRoot });

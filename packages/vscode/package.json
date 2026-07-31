@@ -70,6 +70,22 @@
           "type": "string",
           "default": "",
           "description": "Default generated target used for target-language analysis when more than one target applies."
+        },
+        "ravel.javascriptDiagnostics": {
+          "type": "string",
+          "enum": [
+            "all",
+            "syntax",
+            "off"
+          ],
+          "enumDescriptions": [
+            "Report syntax, type, suggestion, configuration, and compiler-option diagnostics.",
+            "Report syntax, configuration, and compiler-option diagnostics, but suppress type and suggestion diagnostics.",
+            "Do not report target-language diagnostics for JavaScript fences."
+          ],
+          "default": "all",
+          "scope": "resource",
+          "description": "Controls target-language diagnostics for JavaScript and JavaScript React fences. IntelliSense features remain enabled in every mode."
         }
       }
     }

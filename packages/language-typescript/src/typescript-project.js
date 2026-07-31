@@ -151,6 +151,9 @@ const inferredOptions = (ts, overrides = {}) => ({
   checkJs: true,
   jsx: ts.JsxEmit.Preserve,
   allowNonTsExtensions: true,
+  ...(ts.ModuleDetectionKind?.Force === undefined
+    ? {}
+    : { moduleDetection: ts.ModuleDetectionKind.Force }),
   ...overrides
 });
 

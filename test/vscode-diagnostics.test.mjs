@@ -5,7 +5,8 @@ import {
   groupRavelDiagnostics,
   hasDiagnosticPublicationAuthority,
   hasDiagnosticRunAuthority,
-  normalizeRavelDiagnostics
+  normalizeRavelDiagnostics,
+  targetDiagnosticCategories
 } from "../packages/vscode/src/diagnostics.js";
 
 const source = (uri, start, end) => ({
@@ -119,4 +120,30 @@ test("diagnostic runs pin generation, router, and projection-service identity", 
   assert.equal(authority({ currentGeneration: 8 }), false);
   assert.equal(authority({ refreshPending: true }), false);
   assert.equal(authority({ aborted: true }), false);
+});
+
+test("JavaScript diagnostic modes preserve syntax checking or disable diagnostics", () => {
+  assert.deepEqual(targetDiagnosticCategories({
+    languageId: "javascript",
+    javascriptMode: "syntax"
+  }), ["configuration", "compilerOptions", "syntactic"]);
+  assert.deepEqual(targetDiagnosticCategories({
+    languageId: "javascriptreact",
+    javascriptMode: "off"
+  }), []);
+  assert.deepEqual(targetDiagnosticCategories({
+    languageId: "javascript",
+    javascriptMode: "all"
+  }), ["configuration", "compilerOptions", "syntactic", "semantic", "suggestion"]);
+});
+
+test("JavaScript diagnostic modes do not reduce TypeScript diagnostics", () => {
+  assert.deepEqual(targetDiagnosticCategories({
+    languageId: "typescript",
+    javascriptMode: "off"
+  }), ["configuration", "compilerOptions", "syntactic", "semantic", "suggestion"]);
+  assert.deepEqual(targetDiagnosticCategories({
+    languageId: "javascript",
+    javascriptMode: "unknown"
+  }), ["configuration", "compilerOptions", "syntactic", "semantic", "suggestion"]);
 });
