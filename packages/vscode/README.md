@@ -27,7 +27,9 @@ The webview defaults to a vertical ELK layout for typical editor-column
 dimensions. A toolbar control switches to horizontal layout when that better
 matches the project. The Changes lens becomes available whenever the project
 has a valid dirty-buffer preview; saving or reverting the buffer returns to the
-normal dependency lens.
+normal dependency lens. The graph occupies the upper portion of the webview and
+the full-width selection details and diff occupy the lower portion so code
+comparisons retain useful line width.
 
 ## Development
 

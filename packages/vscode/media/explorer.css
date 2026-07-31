@@ -145,7 +145,7 @@ input {
 
 .workspace {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(17rem, 30%);
+  grid-template-rows: minmax(0, 55fr) minmax(0, 45fr);
   min-height: 0;
 }
 
@@ -158,7 +158,7 @@ input {
   min-width: 0;
   overflow: auto;
   padding: 1rem;
-  border-left: 1px solid var(--vscode-panel-border);
+  border-top: 1px solid var(--vscode-panel-border);
   background: var(--vscode-sideBar-background);
 }
 
@@ -215,6 +215,10 @@ pre {
   min-width: 0;
 }
 
+.comparison pre {
+  white-space: pre;
+}
+
 .comparison h3 {
   margin: 0 0 0.3rem;
   color: var(--vscode-descriptionForeground);
@@ -256,16 +260,6 @@ pre {
 }
 
 @media (max-width: 720px) {
-  .workspace {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: minmax(15rem, 2fr) minmax(10rem, 1fr);
-  }
-
-  #details {
-    border-top: 1px solid var(--vscode-panel-border);
-    border-left: 0;
-  }
-
   .comparison {
     grid-template-columns: minmax(0, 1fr);
   }
