@@ -1,3 +1,8 @@
+import {
+  createDeliverableProvenanceMap,
+  explainGeneratedOffset
+} from "@pieceful/ravel-core";
+
 export const EXPLORER_SNAPSHOT_VERSION = 1;
 export const EXPLORER_PROTOCOL_VERSION = 1;
 
@@ -785,6 +790,116 @@ export const createExplorerEntityDetails = (programOrContext, entityId, options 
   }
 
   return null;
+};
+
+const provenanceStepSummary = (step) => ({
+  kind: step.kind,
+  ...(step.name ? { name: step.name } : {}),
+  ...(step.from ? { from: step.from } : {}),
+  ...(step.to ? { to: step.to } : {}),
+  ...(step.source ? { source: step.source } : {})
+});
+
+const provenanceSegmentSummary = (segment, index, maximumGeneratedOffset) => ({
+  index,
+  generated: {
+    start: segment.generated.start,
+    end: Math.min(segment.generated.end, maximumGeneratedOffset)
+  },
+  chunk: segment.chunk,
+  kind: segment.kind,
+  precision: segment.precision,
+  ...(segment.source ? { source: segment.source } : {}),
+  steps: segment.via?.length ?? 0,
+  origins: segment.origins?.length ?? 0
+});
+
+export const createExplorerOutputDetails = (programOrContext, deliverableId, options = {}) => {
+  const context = normalizeContext(programOrContext);
+  const program = context.program;
+  if (!program?.deliverables) {
+    throw new TypeError("createExplorerOutputDetails requires a RavelProgram or { program } context.");
+  }
+  if (typeof deliverableId !== "string" || !deliverableId) {
+    throw new TypeError("createExplorerOutputDetails requires a nonempty deliverable ID.");
+  }
+  const name = deliverableId.startsWith("deliverable:")
+    ? deliverableId.slice("deliverable:".length)
+    : deliverableId;
+  const deliverable = program.deliverables[name];
+  if (!deliverable) return null;
+
+  const maximumText = Math.max(
+    100,
+    Number.isInteger(options.maxTextLength) ? options.maxTextLength : 20_000
+  );
+  const maximumSegments = Math.max(
+    1,
+    Number.isInteger(options.maxSegments) ? options.maxSegments : 1_000
+  );
+  const value = boundedText(deliverable.value, maximumText);
+  const map = createDeliverableProvenanceMap(deliverable);
+  const available = map.segments
+    .map((segment, index) => ({ segment, index }))
+    .filter(({ segment }) =>
+      segment.generated.start < value.text.length && segment.generated.end > 0
+    );
+  const segments = available.slice(0, maximumSegments).map(({ segment, index }) =>
+    provenanceSegmentSummary(segment, index, value.text.length)
+  );
+  const requestedOffset = options.generatedOffset;
+  const generatedOffset = requestedOffset === undefined
+    ? segments[0]?.generated.start
+    : Number.isInteger(requestedOffset) && requestedOffset >= 0 &&
+        requestedOffset < deliverable.value.length
+      ? requestedOffset
+      : undefined;
+  const rawExplanation = Number.isInteger(generatedOffset)
+    ? explainGeneratedOffset(program, name, generatedOffset)
+    : null;
+  const explanation = rawExplanation ? {
+    generatedOffset,
+    segment: {
+      generated: rawExplanation.segment.generated,
+      chunk: rawExplanation.segment.chunk,
+      kind: rawExplanation.segment.kind,
+      precision: rawExplanation.segment.precision,
+      source: rawExplanation.segment.source,
+      sourceOffset: rawExplanation.segment.sourceOffset,
+      via: (rawExplanation.segment.via ?? []).slice(0, 100).map(provenanceStepSummary),
+      origins: (rawExplanation.segment.origins ?? []).slice(0, 100).map((origin) => ({
+        chunk: origin.chunk,
+        kind: origin.kind,
+        precision: origin.precision,
+        source: origin.source
+      }))
+    },
+    definition: rawExplanation.definition ? {
+      id: rawExplanation.definition.id,
+      identity: rawExplanation.definition.identity,
+      generated: rawExplanation.definition.generated
+    } : null,
+    references: rawExplanation.references.slice(0, 100).map(provenanceStepSummary),
+    dependencyPath: rawExplanation.dependencyPath.slice(0, 100),
+    truncated: rawExplanation.references.length > 100 ||
+      rawExplanation.dependencyPath.length > 100 ||
+      (rawExplanation.segment.via?.length ?? 0) > 100 ||
+      (rawExplanation.segment.origins?.length ?? 0) > 100
+  } : null;
+
+  return {
+    version: 1,
+    entityId: deliverableNodeId(name),
+    revision: context.revision ?? defaultRevision(context),
+    name,
+    from: deliverable.from,
+    language: program.chunks[deliverable.from]?.metadata?.language,
+    value,
+    segments,
+    availableSegments: available.length,
+    truncatedSegments: available.length > segments.length,
+    explanation
+  };
 };
 
 const changedById = (before, after) => {

@@ -23,6 +23,7 @@ let selected;
 let preview = false;
 let snapshotDiff;
 let requestSequence = 0;
+let latestOutputRequest;
 
 const nextRequest = () => `webview-${++requestSequence}`;
 const escapeHtml = (value) => String(value)
@@ -130,7 +131,136 @@ const comparisonPreview = (heading, before, current) => {
     </div>`;
 };
 
-const renderDetails = (entity, content, revealed, beforeContent) => {
+const requestOutput = (entityId, generatedOffset) => {
+  const requestId = nextRequest();
+  latestOutputRequest = requestId;
+  vscode.postMessage({
+    version: 1,
+    type: "output/request",
+    requestId,
+    revision: snapshot.revision,
+    entityId,
+    ...(Number.isInteger(generatedOffset) ? { generatedOffset } : {})
+  });
+};
+
+const mappedOutput = (output) => {
+  const selectedOffset = output.explanation?.generatedOffset;
+  const segments = [...output.segments].sort((left, right) =>
+    left.generated.start - right.generated.start || left.generated.end - right.generated.end
+  );
+  let cursor = 0;
+  const fragments = [];
+  for (const segment of segments) {
+    const start = Math.max(cursor, segment.generated.start);
+    const end = Math.max(start, segment.generated.end);
+    if (start > cursor) fragments.push(escapeHtml(output.value.text.slice(cursor, start)));
+    if (end > start) {
+      const active = Number.isInteger(selectedOffset) &&
+        selectedOffset >= start && selectedOffset < end;
+      fragments.push(
+        `<span class="provenance-segment ${escapeHtml(segment.precision)}${
+          active ? " selected" : ""
+        }" role="button" tabindex="0" aria-pressed="${active}" ` +
+        `data-generated-start="${start}" data-generated-end="${end}" ` +
+        `title="${escapeHtml(segment.precision)} · ${escapeHtml(segment.chunk)} · ${
+          escapeHtml(segment.kind)
+        }">${escapeHtml(output.value.text.slice(start, end))}</span>`
+      );
+    }
+    cursor = Math.max(cursor, end);
+  }
+  if (cursor < output.value.text.length) {
+    fragments.push(escapeHtml(output.value.text.slice(cursor)));
+  }
+  return fragments.join("");
+};
+
+const pathHtml = (path) => path.length ? `
+  <ol class="dependency-path">
+    ${path.map((id) => `<li><button type="button" data-focus-entity="chunk:${
+      escapeHtml(id)
+    }">${escapeHtml(id)}</button></li>`).join("")}
+  </ol>` : "<p>No dependency path was retained.</p>";
+
+const stepLabel = (step) => [
+  step.kind,
+  step.name,
+  step.from && step.to ? `${step.from} → ${step.to}` : undefined
+].filter(Boolean).join(" · ");
+
+const explanationHtml = (explanation) => {
+  if (!explanation) return "<p>No source mapping covers this generated position.</p>";
+  const { segment } = explanation;
+  const source = segment.source
+    ? sourceText(segment.source) + (Number.isInteger(segment.sourceOffset)
+      ? ` · exact source offset ${segment.sourceOffset}`
+      : "")
+    : "No direct source range";
+  return `
+    <div class="provenance-heading">
+      <span class="precision-badge ${escapeHtml(segment.precision)}">${
+        escapeHtml(segment.precision)
+      }</span>
+      <strong>${escapeHtml(segment.chunk)}</strong>
+      <span>${escapeHtml(segment.kind)}</span>
+    </div>
+    <p class="provenance-note">${segment.precision === "exact"
+      ? "Exact mapping: this generated character corresponds directly to source text."
+      : "Coarse attribution: a transform or composition step changed character correspondence."
+    }</p>
+    <dl class="provenance-facts">
+      <div><dt>Generated</dt><dd>${segment.generated.start}–${segment.generated.end} · selected ${
+        explanation.generatedOffset
+      }</dd></div>
+      <div><dt>Source</dt><dd>${escapeHtml(source)}</dd></div>
+    </dl>
+    ${segment.source ? `<button type="button" data-reveal-generated="${
+      explanation.generatedOffset
+    }">${segment.precision === "exact" ? "Reveal exact source character" : "Reveal attributed source"}</button>` : ""}
+    ${explanation.definition ? `<button type="button" data-focus-entity="chunk:${
+      escapeHtml(explanation.definition.id)
+    }">Reveal defining chunk</button>` : ""}
+    <h3>Dependency path</h3>
+    ${pathHtml(explanation.dependencyPath)}
+    <h3>Derivation steps</h3>
+    ${(segment.via?.length ?? 0) ? `<ol class="derivation-steps">${segment.via.map((step) =>
+      `<li>${escapeHtml(stepLabel(step))}</li>`
+    ).join("")}</ol>` : "<p>Literal source text; no intermediate step.</p>"}
+    ${(segment.origins?.length ?? 0) ? `
+      <h3>Retained transform origins</h3>
+      <ul class="derivation-steps">${segment.origins.map((origin) =>
+        `<li>${escapeHtml(origin.chunk)} · ${escapeHtml(sourceText(origin.source))}</li>`
+      ).join("")}</ul>` : ""}
+    ${explanation.truncated ? "<p>Long derivation details were truncated by the host.</p>" : ""}`;
+};
+
+const renderProvenanceOutput = (output) => {
+  const container = detailsPanel.querySelector("[data-provenance-output]");
+  if (!container || selected?.id !== output.entityId) return;
+  const visibleSegments = output.segments.length;
+  container.innerHTML = `
+    <div class="provenance-title">
+      <h2>Generated provenance${output.basis === "saved" ? " · saved" : ""}</h2>
+      <span>${output.language ? `${escapeHtml(output.language)} · ` : ""}${
+        visibleSegments
+      } of ${output.availableSegments} mapped segments</span>
+    </div>
+    <p class="provenance-help">Click generated text to explain where it came from.
+      <span class="precision-key exact">Exact</span>
+      <span class="precision-key coarse">Coarse</span>
+    </p>
+    <pre class="mapped-output"><code>${mappedOutput(output)}</code></pre>
+    ${output.value.truncated
+      ? `<p>Showing the first ${output.value.text.length} of ${output.value.length} characters.</p>`
+      : ""}
+    ${output.truncatedSegments ? "<p>Additional provenance segments were not transported.</p>" : ""}
+    <section class="provenance-explanation" aria-live="polite">
+      ${explanationHtml(output.explanation)}
+    </section>`;
+};
+
+const renderDetails = (entity, content, revealed, beforeContent, generatedOffset) => {
   selected = entity;
   const source = entity?.source ?? entity?.authoredAt;
   const changeStates = (entity.state ?? [])
@@ -149,14 +279,19 @@ const renderDetails = (entity, content, revealed, beforeContent) => {
       beforeContent?.authored,
       content?.authored
     )}
-    ${comparisonPreview(
+    ${kind === "deliverable" && !preview ? "" : comparisonPreview(
       kind === "deliverable" ? "Generated output" : "Evaluated value",
       beforeContent?.evaluated,
       content?.evaluated
     )}
+    ${kind === "deliverable"
+      ? `<section data-provenance-output><p>Loading generated provenance…</p></section>`
+      : ""}
     <h2>Identity</h2>
     <pre><code>${escapeHtml(entity.id)}</code></pre>
     ${revealed === false ? "<p>Source is outside the current project.</p>" : ""}`;
+  if (kind === "deliverable") requestOutput(entity.id, generatedOffset);
+  else latestOutputRequest = undefined;
 };
 
 const requestSelection = (entity) => {
@@ -230,7 +365,8 @@ window.addEventListener("message", async ({ data: message }) => {
       message.entity,
       message.details,
       message.revealed,
-      message.beforeDetails
+      message.beforeDetails,
+      message.generatedOffset
     );
     const label = message.entity.label ?? message.entity.kind;
     status.textContent = message.origin === "editor"
@@ -240,6 +376,14 @@ window.addEventListener("message", async ({ data: message }) => {
         : message.revealed
           ? `Source highlighted for ${label}`
           : `Selected ${label}`;
+    return;
+  }
+  if (message.type === "output/result") {
+    if (message.requestId !== latestOutputRequest) return;
+    renderProvenanceOutput(message.output);
+    status.textContent = `Mapped ${message.output.availableSegments} provenance segments for ${
+      message.output.name
+    }`;
     return;
   }
   if (message.type === "request/error") {
@@ -305,14 +449,57 @@ search.addEventListener("keydown", (event) => {
 
 byId("fit").addEventListener("click", () => view?.fit());
 detailsPanel.addEventListener("click", (event) => {
-  if (!event.target.closest("[data-reveal]") || !selected) return;
-  vscode.postMessage({
-    version: 1,
-    type: "source/reveal",
-    requestId: nextRequest(),
-    revision: snapshot.revision,
-    entityId: selected.id
-  });
+  const generated = event.target.closest("[data-generated-start]");
+  if (generated && selected) {
+    const start = Number(generated.dataset.generatedStart);
+    const end = Number(generated.dataset.generatedEnd);
+    const caret = document.caretPositionFromPoint?.(event.clientX, event.clientY);
+    const range = caret ? null : document.caretRangeFromPoint?.(event.clientX, event.clientY);
+    const offsetNode = caret?.offsetNode ?? range?.startContainer;
+    const offset = caret?.offset ?? range?.startOffset;
+    const localOffset = offsetNode && generated.contains(offsetNode) && Number.isInteger(offset)
+      ? offset
+      : 0;
+    requestOutput(selected.id, Math.min(end - 1, start + localOffset));
+    return;
+  }
+  const focus = event.target.closest("[data-focus-entity]");
+  if (focus) {
+    const id = focus.dataset.focusEntity;
+    const entity = (changeSnapshot ?? snapshot).nodes.find((node) => node.id === id) ??
+      snapshot.nodes.find((node) => node.id === id);
+    if (entity) requestSelection(entity);
+    return;
+  }
+  const generatedSource = event.target.closest("[data-reveal-generated]");
+  if (generatedSource && selected) {
+    vscode.postMessage({
+      version: 1,
+      type: "source/reveal",
+      requestId: nextRequest(),
+      revision: snapshot.revision,
+      entityId: selected.id,
+      generatedOffset: Number(generatedSource.dataset.revealGenerated)
+    });
+    return;
+  }
+  if (event.target.closest("[data-reveal]") && selected) {
+    vscode.postMessage({
+      version: 1,
+      type: "source/reveal",
+      requestId: nextRequest(),
+      revision: snapshot.revision,
+      entityId: selected.id
+    });
+  }
+});
+
+detailsPanel.addEventListener("keydown", (event) => {
+  if (event.key !== "Enter" && event.key !== " ") return;
+  const generated = event.target.closest("[data-generated-start]");
+  if (!generated || !selected) return;
+  event.preventDefault();
+  requestOutput(selected.id, Number(generated.dataset.generatedStart));
 });
 
 vscode.postMessage({

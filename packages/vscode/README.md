@@ -17,7 +17,12 @@ supported Ravel source document or `ravel.toml` is active. The extension:
   added, changed, and removed graph structure;
 - compares saved and candidate authored/evaluated text after selecting a
   changed chunk, transform, directive, or deliverable, highlighting removals
-  in red and additions in green.
+  in red and additions in green;
+- renders deliverable text as selectable provenance segments and explains the
+  definition, dependency path, derivation steps, and retained transform origins
+  for the clicked generated character;
+- distinguishes exact character mappings from coarse transform attribution and
+  reveals the corresponding source range in the normal editor.
 
 Command-click a source-linked Ravel reference, or put the cursor on it and
 press F12, to jump to the defining chunk. The provider follows the exact

@@ -6,6 +6,7 @@ import {
   collapseExplorerGroups,
   createExplorerChangeSnapshot,
   createExplorerEntityDetails,
+  createExplorerOutputDetails,
   createExplorerSnapshot,
   dependencyPath,
   diffExplorerSnapshots,
@@ -274,6 +275,51 @@ test("entity details return bounded authored and evaluated chunk text on demand"
     truncated: false
   });
   assert.equal(createExplorerEntityDetails(context, "chunk:missing"), null);
+});
+
+test("output details project bounded exact provenance and derivation on demand", () => {
+  const context = fixture();
+  const output = createExplorerOutputDetails(context, "deliverable:dist/main.txt", {
+    generatedOffset: 1,
+    maxTextLength: 100,
+    maxSegments: 100
+  });
+
+  assert.equal(output.entityId, "deliverable:dist/main.txt");
+  assert.equal(output.value.text, context.program.deliverables["dist/main.txt"].value);
+  assert.ok(output.segments.length > 0);
+  assert.ok(output.segments.every(({ precision }) =>
+    precision === "exact" || precision === "coarse"
+  ));
+  assert.equal(output.explanation.generatedOffset, 1);
+  assert.equal(output.explanation.dependencyPath[0], "guide::main.text");
+  const oneSegment = createExplorerOutputDetails(context, "dist/main.txt", {
+    maxSegments: 1
+  });
+  assert.equal(oneSegment.segments.length, 1);
+  assert.equal(
+    oneSegment.truncatedSegments,
+    oneSegment.availableSegments > oneSegment.segments.length
+  );
+  const coarseProgram = structuredClone(context.program);
+  const coarseSegment = coarseProgram.deliverables["dist/main.txt"].segments[0];
+  coarseSegment.kind = "transform";
+  coarseSegment.precision = "coarse";
+  coarseSegment.origins = [{
+    source: coarseSegment.source,
+    chunk: coarseSegment.chunk,
+    kind: "literal",
+    precision: "exact",
+    via: []
+  }];
+  const coarse = createExplorerOutputDetails(
+    { ...context, program: coarseProgram },
+    "dist/main.txt",
+    { generatedOffset: coarseSegment.generated.start }
+  );
+  assert.equal(coarse.explanation.segment.precision, "coarse");
+  assert.equal(coarse.explanation.segment.origins.length, 1);
+  assert.equal(createExplorerOutputDetails(context, "deliverable:missing"), null);
 });
 
 test("validates the versioned host protocol", () => {

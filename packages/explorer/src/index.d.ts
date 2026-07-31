@@ -149,6 +149,51 @@ export interface ExplorerEntityDetails {
   evaluated?: ExplorerTextPreview;
 }
 
+export interface ExplorerOutputSegment {
+  index: number;
+  generated: { start: number; end: number };
+  chunk: string;
+  kind: string;
+  precision: "exact" | "coarse";
+  source?: SourceLocation;
+  steps: number;
+  origins: number;
+}
+
+export interface ExplorerOutputDetails {
+  version: 1;
+  entityId: string;
+  revision: string;
+  name: string;
+  from: string;
+  language?: string;
+  value: ExplorerTextPreview;
+  segments: ExplorerOutputSegment[];
+  availableSegments: number;
+  truncatedSegments: boolean;
+  explanation: null | {
+    generatedOffset: number;
+    segment: {
+      generated: { start: number; end: number };
+      chunk: string;
+      kind: string;
+      precision: "exact" | "coarse";
+      source: SourceLocation | null;
+      sourceOffset?: number;
+      via: Array<Record<string, unknown>>;
+      origins: Array<Record<string, unknown>>;
+    };
+    definition: null | {
+      id: string;
+      identity: unknown;
+      generated?: boolean;
+    };
+    references: Array<Record<string, unknown>>;
+    dependencyPath: string[];
+    truncated: boolean;
+  };
+}
+
 export type ExplorerRequestType =
   | "project/open"
   | "view/request"
@@ -202,6 +247,15 @@ export function createExplorerEntityDetails(
   entityId: string,
   options?: { maxTextLength?: number }
 ): ExplorerEntityDetails | null;
+export function createExplorerOutputDetails(
+  programOrContext: RavelProgram | ExplorerContext,
+  deliverableId: string,
+  options?: {
+    generatedOffset?: number;
+    maxTextLength?: number;
+    maxSegments?: number;
+  }
+): ExplorerOutputDetails | null;
 export function upstreamChunkIds(
   programOrContext: RavelProgram | ExplorerContext,
   focus: string | string[],

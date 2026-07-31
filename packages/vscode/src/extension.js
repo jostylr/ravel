@@ -6,6 +6,7 @@ import {
   assertExplorerMessage,
   createExplorerChangeSnapshot,
   createExplorerEntityDetails,
+  createExplorerOutputDetails,
   createExplorerSnapshot,
   diffExplorerSnapshots
 } from "@pieceful/ravel-explorer";
@@ -24,7 +25,8 @@ let refreshGeneration = 0;
 const webviewRequestTypes = new Set([
   "view/request",
   "entity/select",
-  "source/reveal"
+  "source/reveal",
+  "output/request"
 ]);
 
 const nonce = () => randomBytes(16).toString("base64");
@@ -104,6 +106,40 @@ const entityFor = (project, id) =>
   project.baselineSnapshot?.nodes.find((node) => node.id === id) ??
   project.baselineSnapshot?.edges.find((edge) => edge.id === id);
 
+const advancePosition = (position, text) => {
+  const lines = text.split("\n");
+  return {
+    line: position.line + lines.length - 1,
+    column: lines.length === 1
+      ? position.column + text.length
+      : lines.at(-1).length,
+    offset: position.offset + text.length
+  };
+};
+
+const sourceForGeneratedOffset = (project, entityId, generatedOffset) => {
+  if (!entityId.startsWith("deliverable:") || !Number.isInteger(generatedOffset)) return null;
+  const name = entityId.slice("deliverable:".length);
+  const context = project.context.program.deliverables[name]
+    ? project.context
+    : project.baselineContext;
+  const deliverable = context?.program.deliverables[name];
+  const output = createExplorerOutputDetails(context, entityId, { generatedOffset });
+  const segment = output?.explanation?.segment;
+  if (!deliverable || !segment?.source) return segment?.source ?? null;
+  if (segment.precision !== "exact" || !Number.isInteger(segment.sourceOffset) ||
+      !segment.source.range) {
+    return segment.source;
+  }
+  const generatedPrefix = deliverable.value.slice(
+    segment.generated.start,
+    generatedOffset
+  );
+  const start = advancePosition(segment.source.range.start, generatedPrefix);
+  const end = advancePosition(start, deliverable.value.slice(generatedOffset, generatedOffset + 1));
+  return { uri: segment.source.uri, range: { start, end } };
+};
+
 const postSnapshot = (panel, requestId, project) => panel.webview.postMessage({
   version: 1,
   type: "view/result",
@@ -132,13 +168,52 @@ const handleMessage = async (panel, message) => {
       return;
     }
 
+    if (message.type === "output/request") {
+      if (typeof message.entityId !== "string" ||
+          !message.entityId.startsWith("deliverable:")) {
+        throw new TypeError("output/request requires a deliverable entityId.");
+      }
+      if (message.generatedOffset !== undefined &&
+          (!Number.isInteger(message.generatedOffset) || message.generatedOffset < 0)) {
+        throw new TypeError("generatedOffset must be a nonnegative integer.");
+      }
+      const name = message.entityId.slice("deliverable:".length);
+      const current = activeProject.context.program.deliverables[name];
+      const output = createExplorerOutputDetails(
+        current ? activeProject.context : activeProject.baselineContext,
+        message.entityId,
+        {
+          generatedOffset: message.generatedOffset,
+          maxTextLength: 20_000,
+          maxSegments: 1_000
+        }
+      );
+      if (!output) throw new Error("Deliverable output is not present in this revision.");
+      await panel.webview.postMessage({
+        version: 1,
+        type: "output/result",
+        requestId: message.requestId,
+        revision: activeProject.snapshot.revision,
+        output: { ...output, basis: current ? "candidate" : "saved" }
+      });
+      return;
+    }
+
     if (message.type === "entity/select" || message.type === "source/reveal") {
       if (typeof message.entityId !== "string" || !message.entityId) {
         throw new TypeError("entityId must be a nonempty string.");
       }
       const entity = entityFor(activeProject, message.entityId);
       if (!entity) throw new Error("Explorer entity is not present in this revision.");
-      const source = entity.source ?? entity.authoredAt;
+      if (message.generatedOffset !== undefined &&
+          (!Number.isInteger(message.generatedOffset) || message.generatedOffset < 0)) {
+        throw new TypeError("generatedOffset must be a nonnegative integer.");
+      }
+      const source = sourceForGeneratedOffset(
+        activeProject,
+        message.entityId,
+        message.generatedOffset
+      ) ?? entity.source ?? entity.authoredAt;
       const revealed = await revealSource(activeProject, source, {
         preserveFocus: message.type === "entity/select"
       });
@@ -163,6 +238,7 @@ const handleMessage = async (panel, message) => {
         entity,
         details,
         beforeDetails,
+        generatedOffset: message.generatedOffset,
         revealed,
         origin: message.type === "source/reveal" ? "reveal-button" : "graph"
       });

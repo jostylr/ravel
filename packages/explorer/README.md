@@ -82,6 +82,24 @@ before/after text; directive and compose selections return the generated chunk
 or output when one exists. Each text field reports its full length and whether
 the returned preview was truncated.
 
+Generated deliverables have a separate bounded provenance projection. It sends
+only the visible output prefix and segment summaries, then explains one selected
+UTF-16 generated offset on demand:
+
+```js
+import { createExplorerOutputDetails } from "@pieceful/ravel-explorer";
+
+const output = createExplorerOutputDetails(context, "deliverable:dist/app.js", {
+  generatedOffset: 218,
+  maxTextLength: 20_000,
+  maxSegments: 1_000
+});
+```
+
+The explanation identifies exact character correspondence or honest coarse
+attribution, the defining chunk, retained origins, derivation steps, and the
+dependency path.
+
 Folding remains a projection operation so collapsed boundary edges retain Ravel
 edge kinds and counts. The renderer does not depend on the unmaintained
 Cytoscape expand/collapse extension.

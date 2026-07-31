@@ -142,11 +142,11 @@ Exit criteria:
 
 Goal: make "where did this generated text come from?" a direct visual workflow.
 
-- [ ] Add a read-only generated-output panel with language-aware plain-text
+- [x] Add a read-only generated-output panel with language-aware plain-text
       rendering.
-- [ ] Map a generated selection through `explainGeneratedOffset`.
-- [ ] Add provenance highlighting for exact and coarse segments.
-- [ ] Show the contributing definition, references, dependency path, transforms,
+- [x] Map a generated selection through `explainGeneratedOffset`.
+- [x] Add provenance highlighting for exact and coarse segments.
+- [x] Show the contributing definition, references, dependency path, transforms,
       compose steps, and retained coarse origins.
 - [ ] Add reverse lookup from the active source selection to all generated
       matches.
@@ -157,7 +157,7 @@ Goal: make "where did this generated text come from?" a direct visual workflow.
       demand.
 - [ ] Ensure large output and trace values are summarized and paged rather than
       embedded in every snapshot.
-- [ ] Add exact/coarse explanations that are understandable without reading the
+- [x] Add exact/coarse explanations that are understandable without reading the
       raw provenance JSON.
 - [ ] Add tests for nested references, greedy fragments, indentation, aliases,
       arbitrary transforms, and reused source ranges.

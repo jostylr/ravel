@@ -259,6 +259,168 @@ pre {
   box-shadow: inset 0 -1px var(--vscode-testing-iconPassed, #45d483);
 }
 
+.provenance-title {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-top: 1.2rem;
+}
+
+.provenance-title h2 {
+  margin: 0;
+}
+
+.provenance-title span,
+.provenance-help,
+.provenance-note {
+  color: var(--vscode-descriptionForeground);
+  font-size: 0.82rem;
+}
+
+.precision-key,
+.precision-badge {
+  display: inline-block;
+  margin-left: 0.35rem;
+  padding: 0.1rem 0.35rem;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.precision-key.exact,
+.precision-badge.exact {
+  color: var(--vscode-testing-iconPassed, #45d483);
+}
+
+.precision-key.coarse,
+.precision-badge.coarse {
+  border-style: dashed;
+  color: var(--vscode-editorWarning-foreground, #f6c453);
+}
+
+.mapped-output {
+  max-height: 22rem;
+  white-space: pre;
+}
+
+.provenance-segment {
+  border-radius: 2px;
+  cursor: pointer;
+  outline: none;
+}
+
+.provenance-segment.exact {
+  border-bottom: 2px solid var(--vscode-testing-iconPassed, #45d483);
+  background: color-mix(
+    in srgb,
+    var(--vscode-testing-iconPassed, #45d483) 10%,
+    transparent
+  );
+}
+
+.provenance-segment.coarse {
+  border: 1px dashed var(--vscode-editorWarning-foreground, #f6c453);
+  background: color-mix(
+    in srgb,
+    var(--vscode-editorWarning-foreground, #f6c453) 10%,
+    transparent
+  );
+}
+
+.provenance-segment:hover,
+.provenance-segment:focus-visible,
+.provenance-segment.selected {
+  background: var(--vscode-editor-selectionBackground);
+  box-shadow: 0 0 0 2px var(--vscode-focusBorder);
+}
+
+.provenance-explanation {
+  margin-top: 0.75rem;
+  padding: 0.85rem;
+  border: 1px solid var(--vscode-panel-border);
+  background: var(--vscode-editor-background);
+}
+
+.provenance-heading {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.65rem;
+  align-items: center;
+}
+
+.provenance-heading .precision-badge {
+  margin-left: 0;
+}
+
+.provenance-heading strong {
+  overflow-wrap: anywhere;
+  font-family: var(--vscode-editor-font-family);
+}
+
+.provenance-heading > span:last-child {
+  color: var(--vscode-descriptionForeground);
+}
+
+.provenance-explanation h3 {
+  margin: 0.9rem 0 0.35rem;
+  color: var(--vscode-descriptionForeground);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.provenance-facts {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.provenance-facts div {
+  display: grid;
+  grid-template-columns: 6rem minmax(0, 1fr);
+  gap: 0.5rem;
+}
+
+.provenance-facts dt {
+  color: var(--vscode-descriptionForeground);
+}
+
+.provenance-facts dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-family: var(--vscode-editor-font-family);
+}
+
+.dependency-path,
+.derivation-steps {
+  margin: 0.25rem 0 0;
+  padding-left: 1.4rem;
+}
+
+.dependency-path li + li::before {
+  content: "↓";
+  display: block;
+  margin: 0.15rem 0;
+  color: var(--vscode-descriptionForeground);
+}
+
+.dependency-path button {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  text-align: left;
+}
+
+.derivation-steps li {
+  margin: 0.2rem 0;
+  overflow-wrap: anywhere;
+  font-family: var(--vscode-editor-font-family);
+}
+
 @media (max-width: 720px) {
   .comparison {
     grid-template-columns: minmax(0, 1fr);
