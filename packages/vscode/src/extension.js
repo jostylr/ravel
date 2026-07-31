@@ -6,6 +6,7 @@ import {
   assertExplorerMessage,
   createExplorerChangeSnapshot,
   createExplorerEntityDetails,
+  createExplorerGeneratedMatches,
   createExplorerOutputDetails,
   createExplorerSnapshot,
   diffExplorerSnapshots
@@ -271,6 +272,7 @@ const getHtml = (webview, extensionUri) => {
     <main class="app">
       <nav class="toolbar" aria-label="Explorer controls">
         <strong>Ravel Explorer</strong>
+        <button id="back" type="button" title="Return to the previous graph or provenance selection" disabled>← Back</button>
         <select id="lens" aria-label="Graph lens">
           <option value="overview">Overview</option>
           <option value="dependencies" selected>Dependencies</option>
@@ -502,7 +504,7 @@ const editorSelectionChanged = async (event) => {
       column: selection.end.character
     }
   });
-  if (!entity || entity.id === activeProject.lastEditorEntityId) return;
+  if (!entity) return;
   activeProject.lastEditorEntityId = entity.id;
   const selectedEntity = entityFor(activeProject, entity.id) ?? entity;
   const details = createExplorerEntityDetails(
@@ -517,6 +519,25 @@ const editorSelectionChanged = async (event) => {
       { maxTextLength: 20_000 }
     )
     : undefined;
+  const generatedMatches = createExplorerGeneratedMatches(
+    activeProject.context,
+    {
+      uri: source,
+      range: {
+        start: {
+          line: selection.start.line,
+          column: selection.start.character,
+          offset: event.textEditor.document.offsetAt(selection.start)
+        },
+        end: {
+          line: selection.end.line,
+          column: selection.end.character,
+          offset: event.textEditor.document.offsetAt(selection.end)
+        }
+      }
+    },
+    { maxMatches: 500 }
+  );
   await activePanel.webview.postMessage({
     version: 1,
     type: "selection/changed",
@@ -525,6 +546,7 @@ const editorSelectionChanged = async (event) => {
     entity: selectedEntity,
     details,
     beforeDetails,
+    generatedMatches,
     revealed: true,
     origin: "editor"
   });

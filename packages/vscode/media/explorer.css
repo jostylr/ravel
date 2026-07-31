@@ -44,6 +44,11 @@ button:hover {
   background: var(--vscode-button-hoverBackground);
 }
 
+button:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
 input {
   min-width: 12rem;
   flex: 1 1 16rem;
@@ -418,6 +423,57 @@ pre {
 .derivation-steps li {
   margin: 0.2rem 0;
   overflow-wrap: anywhere;
+  font-family: var(--vscode-editor-font-family);
+}
+
+.generated-matches {
+  margin-top: 1rem;
+}
+
+.generated-matches ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.generated-matches li {
+  min-width: 0;
+}
+
+.generated-matches button {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.25rem 0.45rem;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  color: var(--vscode-foreground);
+  background: var(--vscode-editor-background);
+  text-align: left;
+}
+
+.generated-matches button:hover,
+.generated-matches button:focus-visible {
+  background: var(--vscode-list-hoverBackground);
+}
+
+.generated-matches .precision-badge {
+  margin-left: 0;
+}
+
+.generated-matches strong,
+.generated-matches small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.generated-matches small {
+  grid-column: 2 / -1;
+  color: var(--vscode-descriptionForeground);
   font-family: var(--vscode-editor-font-family);
 }
 

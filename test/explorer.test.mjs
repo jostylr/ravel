@@ -6,6 +6,7 @@ import {
   collapseExplorerGroups,
   createExplorerChangeSnapshot,
   createExplorerEntityDetails,
+  createExplorerGeneratedMatches,
   createExplorerOutputDetails,
   createExplorerSnapshot,
   dependencyPath,
@@ -320,6 +321,38 @@ test("output details project bounded exact provenance and derivation on demand",
   assert.equal(coarse.explanation.segment.precision, "coarse");
   assert.equal(coarse.explanation.segment.origins.length, 1);
   assert.equal(createExplorerOutputDetails(context, "deliverable:missing"), null);
+});
+
+test("source selections find bounded generated occurrences across deliverables", () => {
+  const context = fixture();
+  const matches = createExplorerGeneratedMatches(context, {
+    uri: "guide.md",
+    range: {
+      start: { line: 0, column: 2, offset: 2 },
+      end: { line: 0, column: 3, offset: 3 }
+    }
+  }, { maxMatches: 100 });
+
+  assert.ok(matches.matches.some(({ entityId }) =>
+    entityId === "deliverable:dist/main.txt"
+  ));
+  assert.ok(matches.matches.every(({ precision }) =>
+    precision === "exact" || precision === "coarse"
+  ));
+  assert.equal(matches.truncated, false);
+  const cursorMatches = createExplorerGeneratedMatches(context, {
+    ...matches.source,
+    range: {
+      start: matches.source.range.start,
+      end: matches.source.range.start
+    }
+  });
+  assert.ok(cursorMatches.matches.length > 0);
+  const bounded = createExplorerGeneratedMatches(context, matches.source, {
+    maxMatches: 1
+  });
+  assert.equal(bounded.matches.length, Math.min(1, bounded.availableMatches));
+  assert.equal(bounded.truncated, bounded.availableMatches > 1);
 });
 
 test("validates the versioned host protocol", () => {

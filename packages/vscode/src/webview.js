@@ -3,6 +3,10 @@ import {
   explorerLayoutOptions
 } from "@pieceful/ravel-explorer/browser";
 import { diffText } from "./text-diff.js";
+import {
+  createNavigationHistory,
+  sameNavigation
+} from "./navigation-history.js";
 
 const vscode = acquireVsCodeApi();
 const byId = (id) => document.getElementById(id);
@@ -15,6 +19,7 @@ const status = byId("status");
 const previewBadge = byId("preview");
 const changesLens = byId("changes-lens");
 const changeLegend = byId("change-legend");
+const backButton = byId("back");
 
 let snapshot;
 let changeSnapshot;
@@ -24,6 +29,9 @@ let preview = false;
 let snapshotDiff;
 let requestSequence = 0;
 let latestOutputRequest;
+let currentGeneratedOffset;
+let restoringNavigation = false;
+const navigationHistory = createNavigationHistory(100);
 
 const nextRequest = () => `webview-${++requestSequence}`;
 const escapeHtml = (value) => String(value)
@@ -38,6 +46,24 @@ const sourceText = (source) => {
   const { start, end } = source.range;
   return `${source.uri}:${start.line + 1}:${start.column + 1}–` +
     `${end.line + 1}:${end.column + 1}`;
+};
+
+const navigationEntry = () => selected ? {
+  entityId: selected.id,
+  generatedOffset: currentGeneratedOffset,
+  lens: lens.value
+} : null;
+
+const updateBackButton = () => {
+  backButton.disabled = navigationHistory.length === 0;
+  backButton.title = navigationHistory.length
+    ? `Return to ${navigationHistory.peek().entityId}`
+    : "No previous Explorer selection";
+};
+
+const rememberNavigation = () => {
+  const current = navigationEntry();
+  if (navigationHistory.push(current)) updateBackButton();
 };
 
 const filterSnapshot = (base, currentLens) => {
@@ -260,7 +286,45 @@ const renderProvenanceOutput = (output) => {
     </section>`;
 };
 
-const renderDetails = (entity, content, revealed, beforeContent, generatedOffset) => {
+const generatedMatchesHtml = (result) => {
+  if (!result) return "";
+  const count = result.availableMatches;
+  if (!count) return `
+    <section class="generated-matches">
+      <h2>Generated occurrences</h2>
+      <p>No generated output corresponds to the current source selection.</p>
+    </section>`;
+  return `
+    <section class="generated-matches">
+      <div class="provenance-title">
+        <h2>Generated occurrences</h2>
+        <span>${result.matches.length} of ${count} matches</span>
+      </div>
+      <p class="provenance-help">Select an occurrence to open its deliverable provenance.</p>
+      <ul>${result.matches.map((match) => `
+        <li>
+          <button type="button" data-generated-entity="${escapeHtml(match.entityId)}"
+            data-generated-offset="${match.generatedOffset ?? match.generated.start}">
+            <span class="precision-badge ${escapeHtml(match.precision)}">${
+              escapeHtml(match.precision)
+            }</span>
+            <strong>${escapeHtml(match.name)}</strong>
+            <span>${match.generated.start}–${match.generated.end}</span>
+            <small>${escapeHtml(match.chunk)} · ${escapeHtml(match.kind)}</small>
+          </button>
+        </li>`).join("")}</ul>
+      ${result.truncated ? "<p>Additional generated matches were not transported.</p>" : ""}
+    </section>`;
+};
+
+const renderDetails = (
+  entity,
+  content,
+  revealed,
+  beforeContent,
+  generatedOffset,
+  generatedMatches
+) => {
   selected = entity;
   const source = entity?.source ?? entity?.authoredAt;
   const changeStates = (entity.state ?? [])
@@ -287,6 +351,7 @@ const renderDetails = (entity, content, revealed, beforeContent, generatedOffset
     ${kind === "deliverable"
       ? `<section data-provenance-output><p>Loading generated provenance…</p></section>`
       : ""}
+    ${generatedMatchesHtml(generatedMatches)}
     <h2>Identity</h2>
     <pre><code>${escapeHtml(entity.id)}</code></pre>
     ${revealed === false ? "<p>Source is outside the current project.</p>" : ""}`;
@@ -294,21 +359,27 @@ const renderDetails = (entity, content, revealed, beforeContent, generatedOffset
   else latestOutputRequest = undefined;
 };
 
-const requestSelection = (entity) => {
-  selected = entity;
+const requestSelection = (entity, generatedOffset) => {
   status.textContent = `Loading ${entity.label ?? entity.kind}…`;
   vscode.postMessage({
     version: 1,
     type: "entity/select",
     requestId: nextRequest(),
     revision: snapshot.revision,
-    entityId: entity.id
+    entityId: entity.id,
+    ...(Number.isInteger(generatedOffset) ? { generatedOffset } : {})
   });
 };
 
 const containsEntity = (projected, id) =>
   projected.nodes.some((entity) => entity.id === id) ||
   projected.edges.some((entity) => entity.id === id);
+
+const entityById = (id) =>
+  (changeSnapshot ?? snapshot).nodes.find((entity) => entity.id === id) ??
+  snapshot.nodes.find((entity) => entity.id === id) ??
+  (changeSnapshot ?? snapshot).edges.find((entity) => entity.id === id) ??
+  snapshot.edges.find((entity) => entity.id === id);
 
 const render = async () => {
   const projected = filterSnapshot(snapshot, lens.value);
@@ -352,6 +423,17 @@ window.addEventListener("message", async ({ data: message }) => {
     return;
   }
   if (message.type === "selection/changed") {
+    const entityChanged = selected?.id !== message.entity.id;
+    const nextNavigation = {
+      entityId: message.entity.id,
+      generatedOffset: message.generatedOffset,
+      lens: lens.value
+    };
+    if (!restoringNavigation && !sameNavigation(navigationEntry(), nextNavigation)) {
+      rememberNavigation();
+    }
+    restoringNavigation = false;
+    currentGeneratedOffset = message.generatedOffset;
     const visible = containsEntity(
       filterSnapshot(snapshot, lens.value),
       message.entity.id
@@ -360,13 +442,14 @@ window.addEventListener("message", async ({ data: message }) => {
       lens.value = "derivation";
       await render();
     }
-    view.select(message.entity.id);
+    if (entityChanged) view.select(message.entity.id);
     renderDetails(
       message.entity,
       message.details,
       message.revealed,
       message.beforeDetails,
-      message.generatedOffset
+      message.generatedOffset,
+      message.generatedMatches
     );
     const label = message.entity.label ?? message.entity.kind;
     status.textContent = message.origin === "editor"
@@ -380,6 +463,7 @@ window.addEventListener("message", async ({ data: message }) => {
   }
   if (message.type === "output/result") {
     if (message.requestId !== latestOutputRequest) return;
+    currentGeneratedOffset = message.output.explanation?.generatedOffset;
     renderProvenanceOutput(message.output);
     status.textContent = `Mapped ${message.output.availableSegments} provenance segments for ${
       message.output.name
@@ -448,7 +532,36 @@ search.addEventListener("keydown", (event) => {
 });
 
 byId("fit").addEventListener("click", () => view?.fit());
+backButton.addEventListener("click", async () => {
+  const target = navigationHistory.pop();
+  updateBackButton();
+  if (!target) return;
+  if (target.lens !== lens.value &&
+      [...lens.options].some((option) => option.value === target.lens && !option.disabled)) {
+    lens.value = target.lens;
+    await render();
+  }
+  if (selected?.id === target.entityId && Number.isInteger(target.generatedOffset)) {
+    requestOutput(target.entityId, target.generatedOffset);
+    return;
+  }
+  const entity = entityById(target.entityId);
+  if (!entity) {
+    status.textContent = "The previous entity is not present in this revision.";
+    return;
+  }
+  restoringNavigation = true;
+  requestSelection(entity, target.generatedOffset);
+});
 detailsPanel.addEventListener("click", (event) => {
+  const generatedMatch = event.target.closest("[data-generated-entity]");
+  if (generatedMatch) {
+    const entity = entityById(generatedMatch.dataset.generatedEntity);
+    if (entity) {
+      requestSelection(entity, Number(generatedMatch.dataset.generatedOffset));
+    }
+    return;
+  }
   const generated = event.target.closest("[data-generated-start]");
   if (generated && selected) {
     const start = Number(generated.dataset.generatedStart);
@@ -460,14 +573,15 @@ detailsPanel.addEventListener("click", (event) => {
     const localOffset = offsetNode && generated.contains(offsetNode) && Number.isInteger(offset)
       ? offset
       : 0;
-    requestOutput(selected.id, Math.min(end - 1, start + localOffset));
+    const generatedOffset = Math.min(end - 1, start + localOffset);
+    if (generatedOffset !== currentGeneratedOffset) rememberNavigation();
+    requestOutput(selected.id, generatedOffset);
     return;
   }
   const focus = event.target.closest("[data-focus-entity]");
   if (focus) {
     const id = focus.dataset.focusEntity;
-    const entity = (changeSnapshot ?? snapshot).nodes.find((node) => node.id === id) ??
-      snapshot.nodes.find((node) => node.id === id);
+    const entity = entityById(id);
     if (entity) requestSelection(entity);
     return;
   }
@@ -499,7 +613,9 @@ detailsPanel.addEventListener("keydown", (event) => {
   const generated = event.target.closest("[data-generated-start]");
   if (!generated || !selected) return;
   event.preventDefault();
-  requestOutput(selected.id, Number(generated.dataset.generatedStart));
+  const generatedOffset = Number(generated.dataset.generatedStart);
+  if (generatedOffset !== currentGeneratedOffset) rememberNavigation();
+  requestOutput(selected.id, generatedOffset);
 });
 
 vscode.postMessage({

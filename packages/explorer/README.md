@@ -100,6 +100,17 @@ The explanation identifies exact character correspondence or honest coarse
 attribution, the defining chunk, retained origins, derivation steps, and the
 dependency path.
 
+Reverse queries are bounded separately from visible graph state:
+
+```js
+const occurrences = createExplorerGeneratedMatches(context, sourceSelection, {
+  maxMatches: 500
+});
+```
+
+A cursor queries one source offset; a nonempty source selection queries and
+clips the corresponding generated ranges across every deliverable.
+
 Folding remains a projection operation so collapsed boundary edges retain Ravel
 edge kinds and counts. The renderer does not depend on the unmaintained
 Cytoscape expand/collapse extension.

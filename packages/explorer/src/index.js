@@ -1,6 +1,8 @@
 import {
   createDeliverableProvenanceMap,
-  explainGeneratedOffset
+  explainGeneratedOffset,
+  generatedRangesForSource,
+  generatedRangesForSourceRange
 } from "@pieceful/ravel-core";
 
 export const EXPLORER_SNAPSHOT_VERSION = 1;
@@ -899,6 +901,60 @@ export const createExplorerOutputDetails = (programOrContext, deliverableId, opt
     availableSegments: available.length,
     truncatedSegments: available.length > segments.length,
     explanation
+  };
+};
+
+export const createExplorerGeneratedMatches = (programOrContext, source, options = {}) => {
+  const context = normalizeContext(programOrContext);
+  const program = context.program;
+  if (!program?.deliverables) {
+    throw new TypeError("createExplorerGeneratedMatches requires a RavelProgram or { program } context.");
+  }
+  const start = source?.range?.start?.offset;
+  const end = source?.range?.end?.offset;
+  if (typeof source?.uri !== "string" || !Number.isInteger(start) ||
+      !Number.isInteger(end) || start < 0 || end < start) {
+    throw new TypeError("createExplorerGeneratedMatches requires a source URI and valid offset range.");
+  }
+  const maximum = Math.max(
+    1,
+    Number.isInteger(options.maxMatches) ? options.maxMatches : 500
+  );
+  const matches = [];
+  for (const deliverable of Object.values(program.deliverables)
+    .slice().sort((left, right) => compareText(left.name, right.name))) {
+    const map = createDeliverableProvenanceMap(deliverable);
+    const generated = end > start
+      ? generatedRangesForSourceRange(map, source.uri, { start, end })
+      : generatedRangesForSource(map, source.uri, start);
+    for (const match of generated) {
+      matches.push({
+        entityId: deliverableNodeId(deliverable.name),
+        name: deliverable.name,
+        from: deliverable.from,
+        generated: match.generated,
+        generatedOffset: match.generatedOffset,
+        precision: match.precision,
+        chunk: match.chunk,
+        kind: match.kind,
+        through: match.through,
+        steps: match.via?.length ?? 0
+      });
+    }
+  }
+  matches.sort((left, right) =>
+    compareText(left.name, right.name) ||
+    left.generated.start - right.generated.start ||
+    left.generated.end - right.generated.end ||
+    compareText(left.chunk, right.chunk)
+  );
+  return {
+    version: 1,
+    revision: context.revision ?? defaultRevision(context),
+    source,
+    matches: matches.slice(0, maximum),
+    availableMatches: matches.length,
+    truncated: matches.length > maximum
   };
 };
 

@@ -194,6 +194,26 @@ export interface ExplorerOutputDetails {
   };
 }
 
+export interface ExplorerGeneratedMatches {
+  version: 1;
+  revision: string;
+  source: SourceLocation;
+  matches: Array<{
+    entityId: string;
+    name: string;
+    from: string;
+    generated: { start: number; end: number };
+    generatedOffset?: number;
+    precision: "exact" | "coarse";
+    chunk: string;
+    kind: string;
+    through?: "transform-origin";
+    steps: number;
+  }>;
+  availableMatches: number;
+  truncated: boolean;
+}
+
 export type ExplorerRequestType =
   | "project/open"
   | "view/request"
@@ -256,6 +276,11 @@ export function createExplorerOutputDetails(
     maxSegments?: number;
   }
 ): ExplorerOutputDetails | null;
+export function createExplorerGeneratedMatches(
+  programOrContext: RavelProgram | ExplorerContext,
+  source: SourceLocation,
+  options?: { maxMatches?: number }
+): ExplorerGeneratedMatches;
 export function upstreamChunkIds(
   programOrContext: RavelProgram | ExplorerContext,
   focus: string | string[],

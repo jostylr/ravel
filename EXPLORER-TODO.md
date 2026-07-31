@@ -121,6 +121,7 @@ Goal: link graph navigation with the ordinary Markdown editor.
       entity.
 - [x] Add graph/editor origin handling that suppresses the exact programmatic
       source selection.
+- [x] Add bounded Back history across graph entities and generated offsets.
 - [ ] Add VS Code-hosted regression tests for editor/webview selection loops.
 - [ ] Publish Ravel diagnostics through a VS Code diagnostic collection.
 - [x] Add project-load progress.
@@ -148,9 +149,10 @@ Goal: make "where did this generated text come from?" a direct visual workflow.
 - [x] Add provenance highlighting for exact and coarse segments.
 - [x] Show the contributing definition, references, dependency path, transforms,
       compose steps, and retained coarse origins.
-- [ ] Add reverse lookup from the active source selection to all generated
+- [x] Add reverse lookup from the active source selection to all generated
       matches.
-- [ ] Add deliverable switching and "show impact on outputs".
+- [x] Add deliverable switching from reverse provenance matches.
+- [ ] Add "show impact on outputs".
 - [ ] Add a derivation lens with typed reference, transform, compose, alias,
       emit, and produces edges.
 - [ ] Add a trace lens for one selected chunk, with phase values loaded on

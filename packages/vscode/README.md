@@ -22,7 +22,11 @@ supported Ravel source document or `ravel.toml` is active. The extension:
   definition, dependency path, derivation steps, and retained transform origins
   for the clicked generated character;
 - distinguishes exact character mappings from coarse transform attribution and
-  reveals the corresponding source range in the normal editor.
+  reveals the corresponding source range in the normal editor;
+- shows generated occurrences for the active editor selection and opens an
+  occurrence directly in its deliverable provenance;
+- keeps a bounded Back history across graph nodes, deliverables, and generated
+  character offsets.
 
 Command-click a source-linked Ravel reference, or put the cursor on it and
 press F12, to jump to the defining chunk. The provider follows the exact
