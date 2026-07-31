@@ -86,6 +86,22 @@ Folding remains a projection operation so collapsed boundary edges retain Ravel
 edge kinds and counts. The renderer does not depend on the unmaintained
 Cytoscape expand/collapse extension.
 
+Saved and candidate revisions can also be projected as one change graph:
+
+```js
+import {
+  createExplorerChangeSnapshot,
+  diffExplorerSnapshots
+} from "@pieceful/ravel-explorer";
+
+const diff = diffExplorerSnapshots(saved, candidate);
+const changes = createExplorerChangeSnapshot(saved, candidate, diff);
+```
+
+Candidate entities are marked `added` or `changed`; saved-only entities remain
+selectable and are marked `removed`. The browser renderer gives those states
+distinct green, amber, and dashed-red treatments.
+
 ## FizzBuzz browser harness
 
 From the repository root:

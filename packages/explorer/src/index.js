@@ -812,6 +812,74 @@ export const diffExplorerSnapshots = (before, after) => {
   };
 };
 
+const withChangeState = (entity, state) => ({
+  ...entity,
+  state: uniqueSorted([...(entity.state ?? []), state])
+});
+
+export const createExplorerChangeSnapshot = (before, after, suppliedDiff) => {
+  if (before?.version !== EXPLORER_SNAPSHOT_VERSION || after?.version !== EXPLORER_SNAPSHOT_VERSION) {
+    throw new TypeError("createExplorerChangeSnapshot requires two version-1 Explorer snapshots.");
+  }
+  const diff = suppliedDiff ?? diffExplorerSnapshots(before, after);
+  if (diff?.version !== 1 ||
+      diff.beforeRevision !== before.revision ||
+      diff.afterRevision !== after.revision) {
+    throw new TypeError("Explorer snapshot diff does not match the supplied revisions.");
+  }
+
+  const mergeEntities = (previous, current, changes) => {
+    const added = new Set(changes.added);
+    const changed = new Set(changes.changed);
+    const currentIds = new Set(current.map(({ id }) => id));
+    return [
+      ...current.map((entity) => added.has(entity.id)
+        ? withChangeState(entity, "added")
+        : changed.has(entity.id)
+          ? withChangeState(entity, "changed")
+          : { ...entity, ...(entity.state ? { state: [...entity.state] } : {}) }),
+      ...previous
+        .filter(({ id }) => !currentIds.has(id))
+        .map((entity) => withChangeState(entity, "removed"))
+    ].sort((left, right) => compareText(left.id, right.id));
+  };
+
+  const nodes = mergeEntities(before.nodes, after.nodes, diff.nodes);
+  const edges = mergeEntities(before.edges, after.edges, diff.edges);
+  const included = new Set(nodes.map(({ id }) => id));
+  const beforeGroups = new Map(before.groups.map((group) => [group.id, group]));
+  const afterGroups = new Map(after.groups.map((group) => [group.id, group]));
+  const groups = uniqueSorted([...beforeGroups.keys(), ...afterGroups.keys()]).map((id) => {
+    const previous = beforeGroups.get(id);
+    const current = afterGroups.get(id);
+    const group = current ?? previous;
+    return {
+      ...group,
+      nodeIds: uniqueSorted([
+        ...(previous?.nodeIds ?? []),
+        ...(current?.nodeIds ?? [])
+      ]).filter((nodeId) => included.has(nodeId)),
+      collapsed: false
+    };
+  });
+
+  return {
+    ...after,
+    lens: "changes",
+    focus: uniqueSorted([...before.focus, ...after.focus]),
+    truncated: before.truncated || after.truncated,
+    nodes,
+    edges,
+    groups,
+    counts: {
+      availableNodes: nodes.length,
+      visibleNodes: nodes.length,
+      visibleEdges: edges.length,
+      chunks: nodes.filter(({ kind }) => kind === "chunk").length
+    }
+  };
+};
+
 export const collapseExplorerGroups = (snapshot, groupIds) => {
   if (snapshot?.version !== EXPLORER_SNAPSHOT_VERSION) {
     throw new TypeError("collapseExplorerGroups requires a version-1 Explorer snapshot.");

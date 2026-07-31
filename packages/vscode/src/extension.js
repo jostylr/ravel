@@ -4,6 +4,7 @@ import * as vscode from "vscode";
 import { transformGraph } from "@pieceful/ravel-core";
 import {
   assertExplorerMessage,
+  createExplorerChangeSnapshot,
   createExplorerEntityDetails,
   createExplorerSnapshot,
   diffExplorerSnapshots
@@ -96,8 +97,12 @@ const postError = (panel, requestId, error) => panel.webview.postMessage({
 });
 
 const entityFor = (project, id) =>
+  project.changeSnapshot?.nodes.find((node) => node.id === id) ??
+  project.changeSnapshot?.edges.find((edge) => edge.id === id) ??
   project.snapshot.nodes.find((node) => node.id === id) ??
-  project.snapshot.edges.find((edge) => edge.id === id);
+  project.snapshot.edges.find((edge) => edge.id === id) ??
+  project.baselineSnapshot?.nodes.find((node) => node.id === id) ??
+  project.baselineSnapshot?.edges.find((edge) => edge.id === id);
 
 const postSnapshot = (panel, requestId, project) => panel.webview.postMessage({
   version: 1,
@@ -105,6 +110,7 @@ const postSnapshot = (panel, requestId, project) => panel.webview.postMessage({
   requestId,
   revision: project.snapshot.revision,
   snapshot: project.snapshot,
+  changeSnapshot: project.changeSnapshot,
   preview: project.preview,
   diff: project.diff
 });
@@ -142,6 +148,13 @@ const handleMessage = async (panel, message) => {
         message.entityId,
         { maxTextLength: 20_000 }
       );
+      const beforeDetails = activeProject.preview
+        ? createExplorerEntityDetails(
+          activeProject.baselineContext,
+          message.entityId,
+          { maxTextLength: 20_000 }
+        )
+        : undefined;
       await panel.webview.postMessage({
         version: 1,
         type: "selection/changed",
@@ -149,6 +162,7 @@ const handleMessage = async (panel, message) => {
         revision: activeProject.snapshot.revision,
         entity,
         details,
+        beforeDetails,
         revealed,
         origin: message.type === "source/reveal" ? "reveal-button" : "graph"
       });
@@ -185,6 +199,7 @@ const getHtml = (webview, extensionUri) => {
           <option value="overview">Overview</option>
           <option value="dependencies" selected>Dependencies</option>
           <option value="derivation">Derivation</option>
+          <option id="changes-lens" value="changes" disabled>Changes</option>
         </select>
         <select id="orientation" aria-label="Layout orientation">
           <option value="DOWN" selected>Vertical</option>
@@ -194,6 +209,11 @@ const getHtml = (webview, extensionUri) => {
           placeholder="Find chunk, transform, output…">
         <button id="fit" type="button">Fit</button>
         <span id="preview" class="preview" hidden>Preview</span>
+        <span id="change-legend" class="change-legend" hidden>
+          <span><i class="added"></i>Added</span>
+          <span><i class="changed"></i>Changed</span>
+          <span><i class="removed"></i>Removed</span>
+        </span>
         <output id="status" aria-live="polite">Loading…</output>
       </nav>
       <section class="workspace">
@@ -250,12 +270,17 @@ const evaluateProjectState = async (inputPath, sourceColumn) => {
     ? await evaluateProject(inputPath, sourceColumn, overlays)
     : baseline;
   const preview = candidate.snapshot.revision !== baseline.snapshot.revision;
+  const diff = preview
+    ? diffExplorerSnapshots(baseline.snapshot, candidate.snapshot)
+    : undefined;
   return {
     ...candidate,
+    baselineContext: baseline.context,
     baselineSnapshot: baseline.snapshot,
     preview,
-    diff: preview
-      ? diffExplorerSnapshots(baseline.snapshot, candidate.snapshot)
+    diff,
+    changeSnapshot: preview
+      ? createExplorerChangeSnapshot(baseline.snapshot, candidate.snapshot, diff)
       : undefined
   };
 };
@@ -403,18 +428,27 @@ const editorSelectionChanged = async (event) => {
   });
   if (!entity || entity.id === activeProject.lastEditorEntityId) return;
   activeProject.lastEditorEntityId = entity.id;
+  const selectedEntity = entityFor(activeProject, entity.id) ?? entity;
   const details = createExplorerEntityDetails(
     activeProject.context,
     entity.id,
     { maxTextLength: 20_000 }
   );
+  const beforeDetails = activeProject.preview
+    ? createExplorerEntityDetails(
+      activeProject.baselineContext,
+      selectedEntity.id,
+      { maxTextLength: 20_000 }
+    )
+    : undefined;
   await activePanel.webview.postMessage({
     version: 1,
     type: "selection/changed",
     requestId: "editor-selection-" + Date.now(),
     revision: activeProject.snapshot.revision,
-    entity,
+    entity: selectedEntity,
     details,
+    beforeDetails,
     revealed: true,
     origin: "editor"
   });

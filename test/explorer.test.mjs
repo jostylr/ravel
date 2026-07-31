@@ -4,6 +4,7 @@ import { combineMaps, transformGraph } from "@pieceful/ravel-core";
 import {
   assertExplorerMessage,
   collapseExplorerGroups,
+  createExplorerChangeSnapshot,
   createExplorerEntityDetails,
   createExplorerSnapshot,
   dependencyPath,
@@ -217,6 +218,45 @@ test("snapshot diffs detect same-length source-result changes through fingerprin
   assert.deepEqual(diff.nodes.changed, ["chunk:guide::main.text"]);
 });
 
+test("change snapshots retain removed entities and annotate graph changes", () => {
+  const before = createExplorerSnapshot({ ...fixture(), revision: "before" });
+  const after = structuredClone(before);
+  after.revision = "after";
+  after.nodes = after.nodes
+    .filter(({ id }) => id !== "chunk:guide::live.js")
+    .map((node) => node.id === "chunk:guide::main.text"
+      ? { ...node, fingerprint: "changed-result" }
+      : node);
+  after.nodes.push({
+    id: "chunk:guide::new.text",
+    kind: "chunk",
+    label: "new.text",
+    parent: "document:guide"
+  });
+  const nodeIds = new Set(after.nodes.map(({ id }) => id));
+  after.edges = after.edges.filter(({ source: from, target }) =>
+    nodeIds.has(from) && nodeIds.has(target)
+  );
+  after.counts = {
+    ...after.counts,
+    availableNodes: after.nodes.length,
+    visibleNodes: after.nodes.length,
+    visibleEdges: after.edges.length
+  };
+
+  const diff = diffExplorerSnapshots(before, after);
+  const changes = createExplorerChangeSnapshot(before, after, diff);
+  const states = Object.fromEntries(changes.nodes.map(({ id, state }) => [id, state]));
+
+  assert.equal(changes.lens, "changes");
+  assert.deepEqual(states["chunk:guide::main.text"], ["changed"]);
+  assert.deepEqual(states["chunk:guide::new.text"], ["added"]);
+  assert.deepEqual(states["chunk:guide::live.js"], ["live", "removed"]);
+  assert.ok(changes.edges.some(({ state }) => state?.includes("removed")));
+  assert.deepEqual(changes, createExplorerChangeSnapshot(before, after, diff));
+  assert.equal(before.nodes.some(({ state }) => state?.includes("removed")), false);
+});
+
 test("entity details return bounded authored and evaluated chunk text on demand", () => {
   const context = fixture();
   const details = createExplorerEntityDetails(context, "chunk:guide::source.text", {
@@ -266,6 +306,17 @@ test("browser adapter creates Cytoscape elements and updates a headless view", a
   const elements = createExplorerElements(first);
   assert.equal(elements.filter(({ group }) => group === "nodes").length, first.nodes.length);
   assert.equal(elements.filter(({ group }) => group === "edges").length, first.edges.length);
+
+  const changedElements = createExplorerElements(createExplorerChangeSnapshot(
+    first,
+    { ...first, revision: "next", nodes: first.nodes.map((node) =>
+      node.id === "chunk:guide::main.text" ? { ...node, label: "Changed" } : node
+    ) }
+  ));
+  assert.match(
+    changedElements.find(({ data }) => data.id === "chunk:guide::main.text").classes,
+    /state-changed/
+  );
 
   const selected = [];
   const view = createExplorerView(null, first, {

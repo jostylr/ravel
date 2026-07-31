@@ -73,6 +73,7 @@ export interface ExplorerEdge {
   occurrence?: number;
   count?: number;
   members?: string[];
+  state?: string[];
 }
 
 export interface ExplorerGroup {
@@ -220,6 +221,11 @@ export function diffExplorerSnapshots(
   before: ExplorerSnapshot,
   after: ExplorerSnapshot
 ): ExplorerSnapshotDiff;
+export function createExplorerChangeSnapshot(
+  before: ExplorerSnapshot,
+  after: ExplorerSnapshot,
+  diff?: ExplorerSnapshotDiff
+): ExplorerSnapshot;
 export function collapseExplorerGroups(
   snapshot: ExplorerSnapshot,
   groupIds: string | string[]

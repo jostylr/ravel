@@ -196,9 +196,11 @@ Goal: show the consequences of normal source edits without writing artifacts.
 - [x] Compare added/removed/changed nodes and edges, including changed chunk
       and deliverable fingerprints and diagnostic summaries.
 - [ ] Compare provenance precision/origins and generated ranges.
-- [ ] Add the change lens and source/output/graph/diagnostic change filters.
+- [x] Add a graph Changes lens with selectable added, changed, and removed
+      nodes and edges.
+- [ ] Add source/output/provenance/diagnostic change filters.
 - [ ] Decorate changed source and generated ranges.
-- [ ] Add before/after output diffs for changed deliverables.
+- [x] Add saved/candidate text comparisons for changed chunks and deliverables.
 - [x] Show a visible "preview unavailable" reason when the candidate cannot be
       evaluated or has error diagnostics.
 - [ ] Add performance instrumentation for parse, evaluation, projection, diff,

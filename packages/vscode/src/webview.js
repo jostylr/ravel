@@ -12,8 +12,11 @@ const orientation = byId("orientation");
 const search = byId("search");
 const status = byId("status");
 const previewBadge = byId("preview");
+const changesLens = byId("changes-lens");
+const changeLegend = byId("change-legend");
 
 let snapshot;
+let changeSnapshot;
 let view;
 let selected;
 let preview = false;
@@ -36,6 +39,7 @@ const sourceText = (source) => {
 };
 
 const filterSnapshot = (base, currentLens) => {
+  if (currentLens === "changes" && changeSnapshot) return changeSnapshot;
   if (currentLens === "derivation") return { ...base, lens: currentLens };
   const allowed = currentLens === "overview"
     ? new Set(["document", "deliverable"])
@@ -68,21 +72,55 @@ const layoutOptions = () => ({
 
 const textPreview = (heading, preview) => preview ? `
   <h2>${escapeHtml(heading)}</h2>
-  <pre><code>${escapeHtml(preview.text)}${preview.truncated
-    ? `\n\n… ${preview.length - preview.text.length} more characters`
-    : ""}</code></pre>` : "";
+  ${previewCode(preview)}` : "";
 
-const renderDetails = (entity, content, revealed) => {
+const previewCode = (value) => `<pre><code>${escapeHtml(value.text)}${value.truncated
+    ? `\n\n… ${value.length - value.text.length} more characters`
+    : ""}</code></pre>`;
+
+const samePreview = (before, current) =>
+  before?.text === current?.text &&
+  before?.length === current?.length &&
+  before?.truncated === current?.truncated;
+
+const comparisonPreview = (heading, before, current) => {
+  if (!before) return textPreview(heading, current);
+  if (!current) return `
+    <h2>${escapeHtml(heading)}</h2>
+    <div class="comparison single removed-copy">
+      <section><h3>Saved · removed</h3>${previewCode(before)}</section>
+    </div>`;
+  if (samePreview(before, current)) return textPreview(heading, current);
+  return `
+    <h2>${escapeHtml(heading)}</h2>
+    <div class="comparison">
+      <section><h3>Saved</h3>${previewCode(before)}</section>
+      <section><h3>Candidate</h3>${previewCode(current)}</section>
+    </div>`;
+};
+
+const renderDetails = (entity, content, revealed, beforeContent) => {
   selected = entity;
   const source = entity?.source ?? entity?.authoredAt;
+  const changeStates = (entity.state ?? [])
+    .filter((state) => ["added", "changed", "removed"].includes(state));
+  const kind = content?.kind ?? beforeContent?.kind;
   detailsPanel.innerHTML = `
     <p class="eyebrow">${escapeHtml(entity.kind)}</p>
     <h1>${escapeHtml(entity.label ?? entity.kind)}</h1>
+    ${changeStates.map((state) =>
+      `<span class="change-state ${escapeHtml(state)}">${escapeHtml(state)}</span>`
+    ).join("")}
     <p class="source">${escapeHtml(sourceText(source))}</p>
     ${source ? `<button type="button" data-reveal>Reveal source</button>` : ""}
-    ${textPreview("Authored chunk · before Ravel", content?.authored)}
-    ${textPreview(
-      content?.kind === "deliverable" ? "Generated output" : "Evaluated value",
+    ${comparisonPreview(
+      "Authored chunk · before Ravel",
+      beforeContent?.authored,
+      content?.authored
+    )}
+    ${comparisonPreview(
+      kind === "deliverable" ? "Generated output" : "Evaluated value",
+      beforeContent?.evaluated,
       content?.evaluated
     )}
     <h2>Identity</h2>
@@ -102,8 +140,13 @@ const requestSelection = (entity) => {
   });
 };
 
+const containsEntity = (projected, id) =>
+  projected.nodes.some((entity) => entity.id === id) ||
+  projected.edges.some((entity) => entity.id === id);
+
 const render = async () => {
   const projected = filterSnapshot(snapshot, lens.value);
+  changeLegend.hidden = lens.value !== "changes";
   if (!view) {
     view = createExplorerView(graph, projected, {
       onSelect: requestSelection,
@@ -132,22 +175,32 @@ window.addEventListener("message", async ({ data: message }) => {
   if (message?.version !== 1 || typeof message.type !== "string") return;
   if (message.type === "view/result") {
     snapshot = message.snapshot;
+    changeSnapshot = message.changeSnapshot;
     preview = message.preview === true;
     snapshotDiff = message.diff;
+    changesLens.disabled = !preview;
+    if (!preview && lens.value === "changes") lens.value = "dependencies";
     previewBadge.hidden = !preview;
-    previewBadge.textContent = "Preview";
+    previewBadge.textContent = "Preview · Changes available";
     await render();
     return;
   }
   if (message.type === "selection/changed") {
-    const visible = filterSnapshot(snapshot, lens.value).nodes
-      .some(({ id }) => id === message.entity.id);
+    const visible = containsEntity(
+      filterSnapshot(snapshot, lens.value),
+      message.entity.id
+    );
     if (!visible) {
       lens.value = "derivation";
       await render();
     }
     view.select(message.entity.id);
-    renderDetails(message.entity, message.details, message.revealed);
+    renderDetails(
+      message.entity,
+      message.details,
+      message.revealed,
+      message.beforeDetails
+    );
     const label = message.entity.label ?? message.entity.kind;
     status.textContent = message.origin === "editor"
       ? `Focused ${label} from editor`
@@ -182,7 +235,7 @@ search.addEventListener("input", () => {
   const query = search.value.trim().toLowerCase();
   view.cy.nodes().removeClass("search-match");
   if (!query) return;
-  for (const node of snapshot.nodes) {
+  for (const node of filterSnapshot(snapshot, lens.value).nodes) {
     const text = [
       node.id,
       node.label,
@@ -198,12 +251,15 @@ search.addEventListener("input", () => {
 search.addEventListener("keydown", (event) => {
   if (event.key !== "Enter" || !snapshot) return;
   const query = search.value.trim().toLowerCase();
-  const match = snapshot.nodes.find((node) =>
+  const candidates = lens.value === "changes" && changeSnapshot
+    ? changeSnapshot
+    : snapshot;
+  const match = candidates.nodes.find((node) =>
     [node.id, node.label, node.kind, node.language, node.source?.uri]
       .filter(Boolean).join(" ").toLowerCase().includes(query)
   );
   if (match) {
-    if (!filterSnapshot(snapshot, lens.value).nodes.some(({ id }) => id === match.id)) {
+    if (!containsEntity(filterSnapshot(snapshot, lens.value), match.id)) {
       lens.value = "derivation";
       void render().then(() => {
         view.select(match.id);

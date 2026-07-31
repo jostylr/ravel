@@ -85,6 +85,64 @@ input {
   text-transform: uppercase;
 }
 
+.change-state {
+  display: inline-block;
+  margin: 0 0.35rem 0.35rem 0;
+  padding: 0.12rem 0.38rem;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.change-state.added {
+  color: var(--vscode-testing-iconPassed, #45d483);
+}
+
+.change-state.changed {
+  color: var(--vscode-editorWarning-foreground, #f6c453);
+}
+
+.change-state.removed {
+  color: var(--vscode-editorError-foreground, #ff6b6b);
+}
+
+.change-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: var(--vscode-descriptionForeground);
+  font-size: 0.78rem;
+}
+
+.change-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.22rem;
+}
+
+.change-legend i {
+  width: 0.6rem;
+  height: 0.6rem;
+  border: 2px solid currentColor;
+  border-radius: 2px;
+}
+
+.change-legend .added {
+  color: var(--vscode-testing-iconPassed, #45d483);
+}
+
+.change-legend .changed {
+  color: var(--vscode-editorWarning-foreground, #f6c453);
+}
+
+.change-legend .removed {
+  border-style: dashed;
+  color: var(--vscode-editorError-foreground, #ff6b6b);
+}
+
 .workspace {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(17rem, 30%);
@@ -143,6 +201,32 @@ pre {
   white-space: pre-wrap;
 }
 
+.comparison {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.comparison.single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.comparison section {
+  min-width: 0;
+}
+
+.comparison h3 {
+  margin: 0 0 0.3rem;
+  color: var(--vscode-descriptionForeground);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.removed-copy pre {
+  border-color: var(--vscode-editorError-foreground, #ff6b6b);
+  opacity: 0.76;
+}
+
 @media (max-width: 720px) {
   .workspace {
     grid-template-columns: minmax(0, 1fr);
@@ -152,5 +236,9 @@ pre {
   #details {
     border-top: 1px solid var(--vscode-panel-border);
     border-left: 0;
+  }
+
+  .comparison {
+    grid-template-columns: minmax(0, 1fr);
   }
 }

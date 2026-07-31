@@ -12,7 +12,11 @@ supported Ravel source document or `ravel.toml` is active. The extension:
 - focuses the narrowest graph entity when the editor selection changes;
 - requests authored and evaluated chunk text only after selection;
 - reevaluates dirty project documents as one debounced in-memory preview;
-- shows deterministic node and edge change counts without writing artifacts.
+- shows deterministic node and edge change counts without writing artifacts;
+- enables a Changes lens that keeps removed entities visible and distinguishes
+  added, changed, and removed graph structure;
+- compares saved and candidate authored/evaluated text after selecting a
+  changed chunk, transform, directive, or deliverable.
 
 Command-click a source-linked Ravel reference, or put the cursor on it and
 press F12, to jump to the defining chunk. The provider follows the exact
@@ -20,7 +24,9 @@ authored reference ranges in the current Explorer revision.
 
 The webview defaults to a vertical ELK layout for typical editor-column
 dimensions. A toolbar control switches to horizontal layout when that better
-matches the project.
+matches the project. The Changes lens becomes available whenever the project
+has a valid dirty-buffer preview; saving or reverting the buffer returns to the
+normal dependency lens.
 
 ## Development
 

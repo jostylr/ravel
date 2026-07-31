@@ -15,7 +15,10 @@ const nodeClasses = (node) => [
   ...(node.state ?? []).map((state) => "state-" + state)
 ].join(" ");
 
-const edgeClasses = (edge) => "kind-" + edge.kind;
+const edgeClasses = (edge) => [
+  "kind-" + edge.kind,
+  ...(edge.state ?? []).map((state) => "state-" + state)
+].join(" ");
 
 export const createExplorerElements = (snapshot) => {
   if (snapshot?.version !== EXPLORER_SNAPSHOT_VERSION) {
@@ -171,6 +174,30 @@ export const explorerStyles = Object.freeze([
     }
   },
   {
+    selector: "node.state-added",
+    style: {
+      "border-color": "#45d483",
+      "border-width": 4
+    }
+  },
+  {
+    selector: "node.state-changed",
+    style: {
+      "border-color": "#f6c453",
+      "border-width": 4
+    }
+  },
+  {
+    selector: "node.state-removed",
+    style: {
+      "background-opacity": 0.28,
+      "border-color": "#ff6b6b",
+      "border-style": "dashed",
+      "border-width": 4,
+      opacity: 0.72
+    }
+  },
+  {
     selector: ".search-match",
     style: {
       "border-color": "#ffffff",
@@ -254,6 +281,32 @@ export const explorerStyles = Object.freeze([
     selector: "edge.kind-imports, edge.kind-aliases",
     style: {
       "line-style": "dotted"
+    }
+  },
+  {
+    selector: "edge.state-added",
+    style: {
+      "line-color": "#45d483",
+      "target-arrow-color": "#45d483",
+      width: 3
+    }
+  },
+  {
+    selector: "edge.state-changed",
+    style: {
+      "line-color": "#f6c453",
+      "target-arrow-color": "#f6c453",
+      width: 3
+    }
+  },
+  {
+    selector: "edge.state-removed",
+    style: {
+      "line-color": "#ff6b6b",
+      "target-arrow-color": "#ff6b6b",
+      "line-style": "dashed",
+      opacity: 0.62,
+      width: 2.5
     }
   },
   {
