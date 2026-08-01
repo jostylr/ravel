@@ -91,6 +91,8 @@ for (const entry of await readdir(join(root, "packages"), {
 publicWorkspacePaths.sort();
 
 const archiveContents = async (path) => (await run("tar", ["-tzf", path])).stdout.split(/\r?\n/).filter(Boolean);
+const archiveFile = async (path, file) => (await run("tar", ["-xOzf", path, file])).stdout;
+const expectedLicense = await readFile(join(root, "LICENSE"), "utf8");
 
 const sandbox = await mkdtemp(join(tmpdir(), "ravel-packed-smoke-"));
 try {
@@ -141,10 +143,16 @@ try {
   );
 
   for (const entry of packed) {
-    const contents = await archiveContents(join(archives, entry.filename));
+    const archive = join(archives, entry.filename);
+    const contents = await archiveContents(archive);
     assert.ok(contents.includes("package/package.json"), entry.name + " must contain package.json");
     assert.ok(contents.includes("package/README.md"), entry.name + " must contain its package README");
     assert.ok(contents.includes("package/LICENSE"), entry.name + " must contain its MIT license");
+    assert.equal(
+      await archiveFile(archive, "package/LICENSE"),
+      expectedLicense,
+      entry.name + " must contain the repository MIT license verbatim"
+    );
     assert.ok(contents.some((path) => path.startsWith("package/src/")), entry.name + " must contain its entry points");
     assert.equal(contents.some((path) => path.startsWith("package/test/")), false, entry.name + " must not contain tests");
     if (entry.name === "@pieceful/ravel-map") assert.ok(contents.includes("package/schema/ravel-map.schema.json"));

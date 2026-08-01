@@ -8,7 +8,7 @@ path so that one can see where the rendered code comes from.
 It can run live JavaScript, whose execution is sequestered using QuickJS, on the
 document pieces as well as load documents to process such as csv files.
 
-Ravel 0.2 is a the command line static-weaving and bounded live-execution tool.
+Ravel 0.2 is a command-line static-weaving and bounded live-execution tool.
 It loads many of the `@pieceful/ravel-*` npm packages though there are some that
 need to be separately loaded.
 
@@ -58,7 +58,7 @@ Under examples/adapter-conformance is an example of some data analysis being don
 | [@pieceful/ravel-org](https://www.npmjs.com/package/@pieceful/ravel-org)                                 | Lossless Org/Babel names, groups, references, metadata, and ownership adapter.                                      |
 | [@pieceful/ravel-quarto](https://www.npmjs.com/package/@pieceful/ravel-quarto)                           | Portable Quarto graph preparation plus an isolated Node project renderer, cache inputs, and temporary-source maps.  |
 | [@pieceful/ravel-host-node](https://www.npmjs.com/package/@pieceful/ravel-host-node)                     | Node filesystem host for project loading, safe artifact writes, manifests, and backups.                             |
-| `@pieceful/ravel-js-live`                                                                                | Worker-backed QuickJS/Wasm provider plus Node-only preparation of allowlisted npm modules.                          |
+| [@pieceful/ravel-js-live](https://www.npmjs.com/package/@pieceful/ravel-js-live)                         | Worker-backed QuickJS/Wasm provider plus Node-only preparation of allowlisted npm modules.                          |
 
 The implemented vertical slice is intentionally safe and deterministic in
 spirit: parsing and graph evaluation do not evaluate document JavaScript in the host environment or

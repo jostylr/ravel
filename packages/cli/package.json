@@ -27,7 +27,7 @@
     "access": "public"
   },
   "bin": {
-    "ravel": "./src/index.js"
+    "ravel": "src/index.js"
   },
   "exports": {
     ".": "./src/index.js"

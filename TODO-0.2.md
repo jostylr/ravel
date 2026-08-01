@@ -1,5 +1,11 @@
 # Ravel 0.2 implementation plan
 
+> This is the historical implementation plan, not the release gate. Some
+> unchecked proposals below were superseded or explicitly deferred. The
+> authoritative 0.2 scope and publication criteria are in the
+> [release checklist](documentation/release-checklist.md); deferred work is in
+> [the 0.3 plan](TODO-0.3.md).
+
 ## Release definition
 
 Ravel 0.2 adds portable, capability-limited execution without making JavaScript

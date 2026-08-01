@@ -39,7 +39,7 @@ versioning for its published packages and versioned public contracts.
 - Structured Explorer edits, full VS Code round-trip editing, 50k-entity
   scale guarantees, and broad native-tool compatibility fixtures.
 
-## 0.1.1 — unreleased
+## 0.1.1 — 2026-07-26
 
 ### Documentation
 
