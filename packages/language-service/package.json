@@ -1,6 +1,6 @@
 {
   "name": "@pieceful/ravel-language-service",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "type": "module",
   "description": "Source-mapped language request routing and safe edit classification for Ravel.",
   "license": "MIT",
@@ -41,8 +41,8 @@
     "LICENSE"
   ],
   "dependencies": {
-    "@pieceful/ravel-core": "0.1.1",
-    "@pieceful/ravel-language-bridge": "0.1.1",
-    "@pieceful/ravel-projection": "0.1.1"
+    "@pieceful/ravel-core": "0.2.0",
+    "@pieceful/ravel-language-bridge": "0.2.0",
+    "@pieceful/ravel-projection": "0.2.0"
   }
 }

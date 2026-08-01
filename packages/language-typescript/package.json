@@ -1,6 +1,6 @@
 {
   "name": "@pieceful/ravel-language-typescript",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "type": "module",
   "description": "Native TypeScript and JavaScript language-service bridge for Ravel projections.",
   "license": "MIT",
@@ -36,7 +36,7 @@
     "LICENSE"
   ],
   "dependencies": {
-    "@pieceful/ravel-language-bridge": "0.1.1"
+    "@pieceful/ravel-language-bridge": "0.2.0"
   },
   "peerDependencies": {
     "typescript": ">=5.0"

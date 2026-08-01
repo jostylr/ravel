@@ -216,7 +216,7 @@ try {
   const binary = join(sandbox, "node_modules", ".bin", process.platform === "win32" ? "ravel.cmd" : "ravel");
   const cliOptions = { cwd: sandbox, ...(process.platform === "win32" ? { shell: true } : {}) };
   assert.match((await run(binary, ["--help"], cliOptions)).stderr, /Usage: ravel check/);
-  assert.equal((await run(binary, ["--version"], cliOptions)).stdout.trim(), "0.1.1");
+  assert.equal((await run(binary, ["--version"], cliOptions)).stdout.trim(), "0.2.0");
   await run(binary, ["build", "smoke.ravel-map.json", "--out-dir", "build"], cliOptions);
   assert.equal(await readFile(join(sandbox, "build", "dist", "smoke.js"), "utf8"), "export const smoke = true;\n");
   const manifest = JSON.parse(await readFile(join(sandbox, "build", ".ravel-manifest.json"), "utf8"));

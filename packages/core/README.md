@@ -18,7 +18,7 @@ directive bodies. Markdown `ravel` fences and MyST `{ravel}` directives use
 this same grammar.
 
 The documented public functions include `combineMaps`, `transformGraph`, the
-generated/source provenance query helpers, and the 0.2-development
+generated/source provenance query helpers, and the 0.2
 `planLiveExecutions` / `executeLiveProgram` provider boundary. Core selects and
 schedules providers but does not import a language runtime. Requires Node.js 22
 or newer when used in Node.

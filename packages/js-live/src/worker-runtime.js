@@ -36,6 +36,8 @@ export const startWorkerRuntime = async ({ post, listen }) => {
     } catch (error) {
       outcome = {
         ok: false,
+        version: 1,
+        status: "failed",
         hasExport: false,
         diagnostics: [diagnostic(
           "RJL130",

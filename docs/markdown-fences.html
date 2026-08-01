@@ -343,7 +343,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./live-execution.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Live execution (0.2 development)</span></a>
+ <span class="menu-text">Live execution (0.2)</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -449,7 +449,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./release-checklist.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">0.1 release checklist</span></a>
+ <span class="menu-text">0.2 release checklist</span></a>
   </div>
 </li>
       </ul>
@@ -509,7 +509,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>This produces <code>document::compiler:what.ts</code>. The first bare word is the display language (<code>typescript</code>); it becomes the default Ravel type when <code>type</code> is not present. <code>#name</code> supplies the chunk component. <code>#name--minor</code> is a shorthand for a chunk/minor pair; use <code>chunk=name--with-double-hyphens</code> when the base chunk literally contains <code>--</code>. Explicit <code>minor=</code> and <code>type=</code> override defaults.</p>
 <p><code>.ravel</code>, <code>.run</code>, <code>.no-ravel</code>, <code>.greedy</code>, and <code>.end</code> are reserved control classes. Other classes become chunk tags. A named <code>#chunk</code> fence is Ravel even without <code>.ravel</code>; use <code>.ravel</code> to make this visible, and it is required for <code>.greedy</code>.</p>
-<p>In 0.2 development, <code>.run</code> marks an explicitly named chunk for the separate live-execution stage and implies <code>.ravel</code>. The language token remains available for syntax highlighting and provider selection. <code>.run</code> does not execute during Markdown parsing, and a language token alone never opts a block into execution. The CLI’s <code>run</code> and <code>build</code> commands execute marked blocks; <code>check</code> and <code>inspect</code> do not. During a build, live strings can enter ordinary Ravel processing directly. <code>jsontext()</code> serializes complete non-string live values, while <code>jsontext("key")</code> selects one top-level object value. See <a href="./live-execution.html">Live execution</a>.</p>
+<p>In 0.2, <code>.run</code> marks an explicitly named chunk for the separate live-execution stage and implies <code>.ravel</code>. The language token remains available for syntax highlighting and provider selection. <code>.run</code> does not execute during Markdown parsing, and a language token alone never opts a block into execution. The CLI’s <code>run</code> and <code>build</code> commands execute marked blocks; <code>check</code> and <code>inspect</code> do not. During a build, live strings can enter ordinary Ravel processing directly. <code>jsontext()</code> serializes complete non-string live values, while <code>jsontext("key")</code> selects one top-level object value. See <a href="./live-execution.html">Live execution</a>.</p>
 </section>
 <section id="greedy-continuation" class="level2">
 <h2 class="anchored" data-anchor-id="greedy-continuation">Greedy continuation</h2>

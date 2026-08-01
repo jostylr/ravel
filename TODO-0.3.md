@@ -32,3 +32,46 @@ Exit criteria:
   by a diagnostic or migration test.
 - Broader compatibility does not weaken Ravel’s capability, source-mapping, or
   deterministic-build contracts.
+
+## Portable execution expansion
+
+The 0.2 execution boundary is intentionally small: deterministic sequential
+planning, copied JSON values, declared resources, bounded QuickJS execution,
+and version-1 provider contracts. Expand it only with explicit contracts and
+fixtures.
+
+- [ ] Add persistent cache keys and cache inspection without retaining live
+      closures, realms, or mutable provider state.
+- [ ] Define scheduler state for cancellation, stale results, retries, trace,
+      and bounded parallel execution.
+- [ ] Add richer resource snapshots, quotas, hashes, and a read-only virtual
+      filesystem for approved transform modules.
+- [ ] Add sandboxed transform modules, including virtual includes and native
+      tool compatibility where the host explicitly authorizes it.
+- [ ] Add large-value fixtures and measured Node/Chromium performance and
+      memory budgets before claiming scale guarantees.
+- [ ] Improve runtime diagnostics with precise source mapping through provider
+      compilation and execution boundaries.
+
+## Explorer and VS Code expansion
+
+The 0.2 Explorer slice remains read-only and bounded. These editing and scale
+features require a separate review of source authority, undo semantics, and
+host protocol stability.
+
+- [ ] Add structured source-shaped edits, preview/apply round trips, stale
+      edit rejection, and one-undo `WorkspaceEdit` behavior.
+- [ ] Complete bidirectional editor selection, output/provenance/trace lenses,
+      active cancellation, perspectives, and workspace-state restoration.
+- [ ] Add 1k/10k/50k fixtures, complete-project indexes, paged projections,
+      layout/search budgets, memory profiling, and supported-platform audits.
+- [ ] Harden webview message validation, URI normalization, accessibility,
+      workspace trust, and source rendering with integration fixtures.
+
+## Native-tool compatibility
+
+- [ ] Add fixtures showing which sources remain consumable by Org Babel,
+      classic noweb, MyST, Jupyter, Knitr, Asciidoctor, and Quarto without a
+      Ravel extension.
+- [ ] Document adapter-specific ownership and execution limitations instead
+      of promising transparent native-tool equivalence.

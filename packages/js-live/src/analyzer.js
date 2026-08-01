@@ -1,6 +1,7 @@
 import { parse } from "acorn";
 
 const reservedBindings = new Set(["ch", "load"]);
+const dynamicCodeBindings = new Set(["eval", "Function"]);
 
 export const diagnostic = (code, message, source) => ({
   code,
@@ -76,7 +77,7 @@ export const analyzeJavaScript = ({ source, sourceLocation, availableModules }) 
       "JavaScript syntax error: " + (error?.message ?? String(error)),
       sourceAt(sourceLocation, source, start, start + 1)
     ));
-    return { dependencies: [], resources: [], modules: [], diagnostics };
+    return { version: 1, dependencies: [], resources: [], modules: [], diagnostics };
   }
 
   const defaults = program.body.filter((node) => node.type === "ExportDefaultDeclaration");
@@ -98,6 +99,7 @@ export const analyzeJavaScript = ({ source, sourceLocation, availableModules }) 
   const resources = new Map();
   const modules = new Map();
   const reportedBindings = new Set();
+  const reportedDynamicCode = new Set();
   const reportBinding = (name, node) => {
     if (reservedBindings.has(name) || name.startsWith("__ravel")) {
       const key = name + ":" + node.start + ":" + node.end;
@@ -110,10 +112,27 @@ export const analyzeJavaScript = ({ source, sourceLocation, availableModules }) 
       ));
     }
   };
+  const reportDynamicCode = (node) => {
+    const key = node.start + ":" + node.end;
+    if (reportedDynamicCode.has(key)) return;
+    reportedDynamicCode.add(key);
+    diagnostics.push(diagnostic(
+      "RJL106",
+      "Dynamic code generation is unavailable in live JavaScript.",
+      sourceAt(sourceLocation, source, node.start, node.end)
+    ));
+  };
 
   walk(program, (node) => {
     if (node.type === "Identifier" && node.name.startsWith("__ravel")) {
       reportBinding(node.name, node);
+    }
+    if (node.type === "Identifier" && dynamicCodeBindings.has(node.name)) {
+      reportDynamicCode(node);
+    }
+    if (node.type === "MemberExpression" && node.computed &&
+        node.property.type === "Literal" && dynamicCodeBindings.has(node.property.value)) {
+      reportDynamicCode(node);
     }
     if (node.type === "ImportDeclaration") {
       const specifier = node.source.value;
@@ -172,15 +191,6 @@ export const analyzeJavaScript = ({ source, sourceLocation, availableModules }) 
     const callName = node.type === "CallExpression" && node.callee.type === "Identifier"
       ? node.callee.name
       : null;
-    if (callName === "eval" || callName === "Function" ||
-        (node.type === "NewExpression" && node.callee.type === "Identifier" &&
-          node.callee.name === "Function")) {
-      diagnostics.push(diagnostic(
-        "RJL106",
-        "Dynamic code generation is unavailable in live JavaScript.",
-        sourceAt(sourceLocation, source, node.start, node.end)
-      ));
-    }
     if (callName !== "ch" && callName !== "load") return;
     const argument = node.arguments[0];
     if (node.arguments.length !== 1 || argument?.type !== "Literal" ||
@@ -200,6 +210,7 @@ export const analyzeJavaScript = ({ source, sourceLocation, availableModules }) 
   });
 
   return {
+    version: 1,
     dependencies: [...dependencies.values()],
     resources: [...resources.values()],
     modules: [...modules.values()],

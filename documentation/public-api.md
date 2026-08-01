@@ -1,9 +1,11 @@
 # Public JavaScript API
 
-Ravel 0.1 favors small, function-oriented packages. The exports described here
+Ravel 0.2 favors small, function-oriented packages. The exports described here
 are public contracts; internal object properties not described here may change
-within the 0.1 line. Each library package ships a handwritten `index.d.ts` file
+within the 0.2 line. Each library package ships a handwritten `index.d.ts` file
 alongside its JavaScript entry point.
+Live execution uses contract version `1` for provider analysis and outcomes;
+incompatible contract changes belong in a future major release.
 
 ## `@pieceful/ravel-map`
 
@@ -178,7 +180,7 @@ The `@pieceful/ravel-core/directives` entry point exposes constructors for the
 portable directive IR. Custom transforms are functions that receive a string
 value and return a string; a failed or non-string result becomes a diagnostic.
 
-## `@pieceful/ravel-js-live` (0.2 development)
+## `@pieceful/ravel-js-live` (0.2)
 
 - `javascriptLiveProvider` is the shared QuickJS/WebAssembly provider for `js`
   and `javascript`.
@@ -217,4 +219,4 @@ diagnostics. Filesystem failures remain ordinary host errors.
 
 This package is the installed `ravel` executable. Its programmatic import is
 side-effect free for package tooling, but it intentionally exposes no parallel
-JavaScript command API in 0.1; use the CLI contract instead.
+JavaScript command API; use the CLI contract instead.

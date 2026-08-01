@@ -2,9 +2,9 @@
 
 Ravel is a graph-based document composition engine whose first application is
 literate programming: it assembles named code pieces into artifacts while
-retaining a source-linked dependency graph. Ravel 0.1 is a small static-weaving
-tool and library, designed to be published as the `@pieceful/ravel-*` npm
-packages.
+retaining a source-linked dependency graph. Ravel 0.2 is a small static-weaving
+and bounded live-execution tool and library, published as the
+`@pieceful/ravel-*` npm packages.
 
 Ravel separates source-format policy from program composition:
 
@@ -42,7 +42,7 @@ examples live at [ravel.jostylr.com](https://ravel.jostylr.com/).
 | [@pieceful/ravel-org](https://www.npmjs.com/package/@pieceful/ravel-org) | Lossless Org/Babel names, groups, references, metadata, and ownership adapter. |
 | [@pieceful/ravel-quarto](https://www.npmjs.com/package/@pieceful/ravel-quarto) | Portable Quarto graph preparation plus an isolated Node project renderer, cache inputs, and temporary-source maps. |
 | [@pieceful/ravel-host-node](https://www.npmjs.com/package/@pieceful/ravel-host-node) | Node filesystem host for project loading, safe artifact writes, manifests, and backups. |
-| `@pieceful/ravel-js-live` (0.2 development) | Worker-backed QuickJS/Wasm provider plus Node-only preparation of allowlisted npm modules. |
+| `@pieceful/ravel-js-live` | Worker-backed QuickJS/Wasm provider plus Node-only preparation of allowlisted npm modules. |
 
 The implemented vertical slice is intentionally safe and deterministic in
 spirit: parsing and graph evaluation do not evaluate document JavaScript or
@@ -77,15 +77,15 @@ extraction, multiple documents, imports, greedy fragments, transforms,
 composition directives, aliases, derived chunks, output planning, filesystem
 writing, and execution of the generated JavaScript.
 
-The remaining 0.1 work is release verification and publication, rather than a
-new language feature. See [the Ravel 0.1 plan](TODO.md) and the
-[release checklist](documentation/release-checklist.md) for the release gate.
-The language-neutral live-execution contract, QuickJS/Wasm provider, sandboxed
-transform-module work, and the source-linked Explorer with VS Code integration
-are planned in the
-[Ravel 0.2 implementation plan](TODO-0.2.md).
+The 0.2 release gate is documented in the
+[release checklist](documentation/release-checklist.md). The language-neutral
+live-execution contract, QuickJS/Wasm provider, static live-code checking, and
+the read-only Explorer slice are included in 0.2. Transform modules, virtual
+filesystems, persistent caching, structured Explorer editing, and large-project
+hardening are explicitly deferred to
+[the Ravel 0.3 plan](TODO-0.3.md).
 
-The first 0.2 live-code vertical slice is now under development. Named
+The 0.2 live-code vertical slice is included in this release. Named
 Markdown fences can opt in with `.run`; portable core planning resolves
 `ch("chunk")` value dependencies and `load("resource")` snapshots; and the new
 `@pieceful/ravel-js-live` workspace package evaluates one final JSON-compatible
@@ -343,10 +343,10 @@ that binary explicitly before running the same command.
 
 ## Current scope and intentional limits
 
-Ravel 0.1 is scoped to dependable static composition. It does not need plugins,
-additional source formats, notebook execution, an LSP, parameterized chunks,
-conditional build profiles, shell/network effects, or incremental compilation
-to meet that milestone.
+Ravel 0.2 remains intentionally scoped. It does not include arbitrary plugins,
+notebook kernels, shell/network effects, persistent execution caching, or
+structured Explorer editing; those deferred capabilities are tracked in
+TODO-0.3.md.
 
 Those are possible later extensions of the same Ravel Map and graph model. The
 immediate work is to make the existing static path validated, installable,
@@ -357,4 +357,4 @@ explainable, reproducible, and pleasant to use.
 Issues with a small reproduction are welcome at
 [jostylr/ravel](https://github.com/jostylr/ravel/issues). Ravel is not currently
 soliciting external contributions or operating a formal contributor program;
-that policy may change after the 0.1 release.
+that policy may change after the 0.2 release.

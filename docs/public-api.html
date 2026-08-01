@@ -308,7 +308,7 @@ ul.task-list li input[type="checkbox"] {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./live-execution.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Live execution (0.2 development)</span></a>
+ <span class="menu-text">Live execution (0.2)</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -414,7 +414,7 @@ ul.task-list li input[type="checkbox"] {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./release-checklist.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">0.1 release checklist</span></a>
+ <span class="menu-text">0.2 release checklist</span></a>
   </div>
 </li>
       </ul>
@@ -442,7 +442,7 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#piecefulravel-myst" id="toc-piecefulravel-myst" class="nav-link" data-scroll-target="#piecefulravel-myst"><code>@pieceful/ravel-myst</code></a></li>
   <li><a href="#piecefulravel-myst-plugin" id="toc-piecefulravel-myst-plugin" class="nav-link" data-scroll-target="#piecefulravel-myst-plugin"><code>@pieceful/ravel-myst-plugin</code></a></li>
   <li><a href="#piecefulravel-core" id="toc-piecefulravel-core" class="nav-link" data-scroll-target="#piecefulravel-core"><code>@pieceful/ravel-core</code></a></li>
-  <li><a href="#piecefulravel-js-live-0.2-development" id="toc-piecefulravel-js-live-0.2-development" class="nav-link" data-scroll-target="#piecefulravel-js-live-0.2-development"><code>@pieceful/ravel-js-live</code> (0.2 development)</a></li>
+  <li><a href="#piecefulravel-js-live-0.2" id="toc-piecefulravel-js-live-0.2" class="nav-link" data-scroll-target="#piecefulravel-js-live-0.2"><code>@pieceful/ravel-js-live</code> (0.2)</a></li>
   <li><a href="#piecefulravel-host-node" id="toc-piecefulravel-host-node" class="nav-link" data-scroll-target="#piecefulravel-host-node"><code>@pieceful/ravel-host-node</code></a></li>
   <li><a href="#piecefulravel" id="toc-piecefulravel" class="nav-link" data-scroll-target="#piecefulravel"><code>@pieceful/ravel</code></a></li>
   </ul></li>
@@ -457,7 +457,7 @@ ul.task-list li input[type="checkbox"] {
 
 <section id="public-javascript-api" class="level1">
 <h1>Public JavaScript API</h1>
-<p>Ravel 0.1 favors small, function-oriented packages. The exports described here are public contracts; internal object properties not described here may change within the 0.1 line. Each library package ships a handwritten <code>index.d.ts</code> file alongside its JavaScript entry point.</p>
+<p>Ravel 0.2 favors small, function-oriented packages. The exports described here are public contracts; internal object properties not described here may change within the 0.2 line. Each library package ships a handwritten <code>index.d.ts</code> file alongside its JavaScript entry point. Live execution uses contract version <code>1</code> for provider analysis and outcomes; incompatible contract changes belong in a future major release.</p>
 <section id="piecefulravel-map" class="level2">
 <h2 class="anchored" data-anchor-id="piecefulravel-map"><code>@pieceful/ravel-map</code></h2>
 <p>Use this package at adapter, editor, and host boundaries.</p>
@@ -574,8 +574,8 @@ ul.task-list li input[type="checkbox"] {
 </ul>
 <p>The <code>@pieceful/ravel-core/directives</code> entry point exposes constructors for the portable directive IR. Custom transforms are functions that receive a string value and return a string; a failed or non-string result becomes a diagnostic.</p>
 </section>
-<section id="piecefulravel-js-live-0.2-development" class="level2">
-<h2 class="anchored" data-anchor-id="piecefulravel-js-live-0.2-development"><code>@pieceful/ravel-js-live</code> (0.2 development)</h2>
+<section id="piecefulravel-js-live-0.2" class="level2">
+<h2 class="anchored" data-anchor-id="piecefulravel-js-live-0.2"><code>@pieceful/ravel-js-live</code> (0.2)</h2>
 <ul>
 <li><code>javascriptLiveProvider</code> is the shared QuickJS/WebAssembly provider for <code>js</code> and <code>javascript</code>.</li>
 <li><code>createJavaScriptLiveProvider(options?)</code> creates a provider with configured memory, stack, execution-time, output, worker, and approved-module limits. <code>options.modules</code> maps exact import specifiers to immutable ESM source; <code>options.workerFactory</code> integrates a host’s emitted browser worker.</li>
@@ -596,7 +596,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="piecefulravel" class="level2">
 <h2 class="anchored" data-anchor-id="piecefulravel"><code>@pieceful/ravel</code></h2>
-<p>This package is the installed <code>ravel</code> executable. Its programmatic import is side-effect free for package tooling, but it intentionally exposes no parallel JavaScript command API in 0.1; use the CLI contract instead.</p>
+<p>This package is the installed <code>ravel</code> executable. Its programmatic import is side-effect free for package tooling, but it intentionally exposes no parallel JavaScript command API; use the CLI contract instead.</p>
 
 
 </section>

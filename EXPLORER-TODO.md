@@ -1,17 +1,17 @@
 # Ravel Explorer implementation plan
 
-This is the detailed working backlog for Workstream E of the
-[Ravel 0.2 implementation plan](TODO-0.2.md) and the design in
+This is the detailed working backlog for the Explorer workstream originating
+in the [Ravel 0.2 implementation plan](TODO-0.2.md) and the design in
 [`documentation/explorer-design.md`](documentation/explorer-design.md).
-Milestones 0 through 6 are release-binding for 0.2. Milestone 7 is exploratory
-work beyond 0.2.
+The 0.2 release includes the current read-only, bounded browser/host slice.
+Structured editing, full VS Code round trips, and large-project hardening are
+deferred to [TODO-0.3.md](TODO-0.3.md).
 
 ## Outcome
 
-A user can open a Ravel project in VS Code, keep its Markdown source in the
-normal editor, explore a bounded source-linked graph beside it, select generated
-text to understand its derivation, preview a small source or transform edit, and
-apply that edit through normal VS Code undo/redo.
+A user can open a Ravel project in the browser/host harness, keep source and
+generated data read-only, and explore a bounded source-linked graph beside it.
+Editing and full VS Code round trips are later work.
 
 ## Existing foundations
 

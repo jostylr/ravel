@@ -1,6 +1,6 @@
 {
   "name": "@pieceful/ravel-js-live",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "type": "module",
   "description": "QuickJS/Wasm live JavaScript provider for Ravel.",
   "license": "MIT",
@@ -51,6 +51,6 @@
     "quickjs-emscripten": "0.32.0"
   },
   "peerDependencies": {
-    "@pieceful/ravel-core": "0.1.1"
+    "@pieceful/ravel-core": "0.2.0"
   }
 }

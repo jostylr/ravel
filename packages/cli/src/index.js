@@ -5,6 +5,7 @@ import {
   executeLiveProgram,
   explainGeneratedOffset,
   generatedRangesForSource,
+  planLiveExecutions,
   transformGraph
 } from "@pieceful/ravel-core";
 import { existsSync, realpathSync } from "node:fs";
@@ -14,7 +15,7 @@ import { fileURLToPath } from "node:url";
 const EXIT_SOURCE = 1;
 const EXIT_USAGE = 2;
 const EXIT_INTERNAL = 3;
-const RAVEL_VERSION = "0.1.1";
+const RAVEL_VERSION = "0.2.0";
 const valueOptions = new Set([
   "--config",
   "--out-dir",
@@ -309,7 +310,7 @@ const printRunResult = (result, json) => {
   }
 };
 
-const runLiveProgram = async (program, loaded) => {
+const withJavaScriptProvider = async (loaded, callback) => {
   const { prepareJavaScriptModules } = await import("@pieceful/ravel-js-live/node");
   const modules = await prepareJavaScriptModules(loaded.live?.modules ?? [], {
     rootDirectory: loaded.rootDirectory
@@ -317,14 +318,22 @@ const runLiveProgram = async (program, loaded) => {
   const { createJavaScriptLiveProvider } = await import("@pieceful/ravel-js-live");
   const provider = createJavaScriptLiveProvider({ modules });
   try {
-    return await executeLiveProgram(program, {
-      providers: [provider],
-      resources: loaded.live?.resources ?? {}
-    });
+    return await callback(provider);
   } finally {
     await provider.dispose();
   }
 };
+
+const planLiveProgram = (program, loaded) => withJavaScriptProvider(loaded, (provider) =>
+  planLiveExecutions(program, { providers: [provider] })
+);
+
+const runLiveProgram = (program, loaded) => withJavaScriptProvider(loaded, (provider) =>
+  executeLiveProgram(program, {
+    providers: [provider],
+    resources: loaded.live?.resources ?? {}
+  })
+);
 
 const hasLiveBlocks = (program) => Object.values(program.chunks ?? {})
   .some((chunk) => chunk.metadata?.data?.ravel?.run === true);
@@ -418,6 +427,7 @@ if (command === "--help" || command === "-h" || argumentsValue.includes("--help"
       });
       const initialErrors = program.diagnostics.filter((entry) => entry.severity === "error");
       let liveFailure = null;
+      let liveDiagnostics = [];
       if (!initialErrors.length && parsed.command === "build" && hasLiveBlocks(program)) {
         const liveResult = await runLiveProgram(program, loaded);
         if (liveResult.ok) {
@@ -425,6 +435,11 @@ if (command === "--help" || command === "-h" || argumentsValue.includes("--help"
         } else {
           liveFailure = liveResult;
         }
+      }
+      if (!initialErrors.length && parsed.command === "check" && hasLiveBlocks(program)) {
+        const livePlan = await planLiveProgram(program, loaded);
+        liveDiagnostics = livePlan.diagnostics;
+        if (!livePlan.ok) liveFailure = livePlan;
       }
       const completedErrors = program.diagnostics.filter((entry) => entry.severity === "error");
       if (initialErrors.length) {
@@ -437,7 +452,8 @@ if (command === "--help" || command === "-h" || argumentsValue.includes("--help"
         printDiagnostics(program.diagnostics, json);
         process.exitCode = EXIT_SOURCE;
       } else if (parsed.command === "check") {
-        if (json) console.log(JSON.stringify({ ok: true, command: "check", diagnostics: program.diagnostics }, null, 2));
+        const diagnostics = [...program.diagnostics, ...liveDiagnostics];
+        if (json) console.log(JSON.stringify({ ok: true, command: "check", diagnostics }, null, 2));
         else console.log("Ravel check passed.");
       } else if (parsed.command === "inspect") {
         printInspectResult(inspectProgram(program, parsed.options), json);

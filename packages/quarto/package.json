@@ -1,6 +1,6 @@
 {
   "name": "@pieceful/ravel-quarto",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "type": "module",
   "description": "Portable Quarto preparation and isolated Node project rendering for Ravel.",
   "license": "MIT",
@@ -40,8 +40,8 @@
     "LICENSE"
   ],
   "dependencies": {
-    "@pieceful/ravel-core": "0.1.1",
-    "@pieceful/ravel-markdown": "0.1.1",
+    "@pieceful/ravel-core": "0.2.0",
+    "@pieceful/ravel-markdown": "0.2.0",
     "yaml": "^2.9.0"
   }
 }

@@ -3,7 +3,7 @@
 All notable user-facing changes are recorded here. Ravel follows semantic
 versioning for its published packages and versioned public contracts.
 
-## 0.2.0 — in development
+## 0.2.0 — 2026-08-01
 
 ### Added
 
@@ -21,6 +21,20 @@ versioning for its published packages and versioned public contracts.
 - Added a quota-limited immutable virtual-module registry so live blocks can
   statically import host-approved QuickJS-compatible ESM without npm,
   filesystem, URL, or dynamic module resolution.
+- Added static live-provider analysis to `ravel check`, so checking a project
+  detects malformed or unsafe executable JavaScript without running it.
+- Hardened dynamic-code detection against aliases and computed global access,
+  and disabled the corresponding QuickJS globals as defense in depth.
+- Froze the v0.2 provider analysis/outcome contract at version 1, with stable
+  `succeeded` and `failed` execution statuses.
+
+### Deferred to 0.3
+
+- Persistent execution caching, advanced scheduler state/concurrency, richer
+  resource snapshots and virtual filesystems, transform modules, and large
+  value/performance budgets.
+- Structured Explorer edits, full VS Code round-trip editing, 50k-entity
+  scale guarantees, and broad native-tool compatibility fixtures.
 
 ## 0.1.1 — unreleased
 

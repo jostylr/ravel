@@ -1,4 +1,4 @@
-# Live execution (0.2 development)
+# Live execution (0.2)
 
 Ravel's live-execution stage runs after ordinary source composition. It is
 language-neutral: core plans value dependencies and resources, while a
@@ -44,7 +44,9 @@ values recursively. This includes `""`, `[]`, `{}`, `false`, and `0`.
 Missing exports and non-data values such as `undefined`, functions, symbols,
 bigints, non-finite numbers, cycles, accessors, and class instances are errors.
 Functions may be defined and used during a run, but they cannot cross an
-execution boundary.
+execution boundary. Direct or aliased access to `eval`, `Function`, and their
+computed global properties is rejected during analysis; the same globals are
+disabled in the QuickJS realm as defense in depth.
 
 The provider statically discovers literal `ch("...")` dependencies,
 `load("...")` resources, and static module imports. Computed names, dynamic
@@ -126,7 +128,7 @@ project for a two-block CSV workflow using `load`, `ch`, and an npm module.
 ## Portable API
 
 Core exports two asynchronous-stage helpers without changing the synchronous
-0.1 composition API:
+composition API:
 
 - `planLiveExecutions(program, { providers })` selects providers, analyzes
   executable chunks, resolves dependencies, and diagnoses live cycles.
@@ -134,11 +136,14 @@ Core exports two asynchronous-stage helpers without changing the synchronous
   evaluates the planned graph and returns per-chunk values, canonical serialized
   text, statuses, and diagnostics.
 
-Providers implement a stable ID, version, language aliases, `analyze(request)`,
-and `execute(request)`. A provider receives composed source, copied inputs,
-copied resources, limits, source identity, a run ID, and an optional
-`AbortSignal`. This boundary is intentionally independent of JavaScript so a
-future RiX or other WebAssembly-backed provider can use the same planner.
+Providers implement the frozen v0.2 contract: `id`, `version`, language aliases,
+`analyze(request)`, and `execute(request)`. Requests, analysis, and outcomes
+carry contract version `1`; outcomes use the stable `succeeded`/`failed` status
+vocabulary.
+A provider receives composed source, copied inputs, copied resources, limits,
+source identity, a run ID, and an optional `AbortSignal`. This boundary is
+intentionally independent of JavaScript so a future RiX or other
+WebAssembly-backed provider can use the same planner.
 
 Successful results are data; executors never write files. `ravel run` displays
 them without output effects. `ravel build` performs a second ordinary Ravel
@@ -166,6 +171,7 @@ module loader can return only pre-registered source strings.
 
 Timeout, cancellation, worker errors, and a failed interrupt terminate the
 outer worker, and a subsequent run starts a replacement. Pending-job quotas,
-broader adversarial tests, and the planned read-only virtual filesystem for
-approved transform modules remain before this can claim a complete hostile-code
-security boundary.
+broader adversarial tests, transform modules, virtual filesystems, persistent
+caches, and advanced scheduler state remain 0.3 work; the 0.2 contract is
+capability-limited and defense-in-depth, not an absolute hostile-code security
+boundary.

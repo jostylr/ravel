@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>ravel-map-schema – Ravel</title>
+<title>typescript-language-service-api – Ravel</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -23,61 +23,26 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-/* CSS for syntax highlighting */
-html { -webkit-text-size-adjust: 100%; }
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
-}
 </style>
 
 
-<script src="site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="site_libs/quarto-nav/headroom.min.js"></script>
-<script src="site_libs/clipboard/clipboard.min.js"></script>
-<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="site_libs/quarto-search/fuse.min.js"></script>
-<script src="site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="./">
-<script src="site_libs/quarto-html/quarto.js" type="module"></script>
-<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="site_libs/quarto-html/popper.min.js"></script>
-<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="site_libs/quarto-html/anchor.min.js"></script>
-<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-6b4c05a7c593a9cf1aba7bb012378658.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-6b4c05a7c593a9cf1aba7bb012378658.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -108,16 +73,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 <meta property="og:title" content="Ravel">
-<meta property="og:image" content="https://ravel.jostylr.com/og.png">
+<meta property="og:image" content="https://ravel.jostylr.com/adr/og.png">
 <meta property="og:site_name" content="Ravel">
 <meta property="og:locale" content="en_US">
-<meta property="og:image:height" content="630">
-<meta property="og:image:width" content="1200">
 <meta name="twitter:title" content="Ravel">
-<meta name="twitter:image" content="https://ravel.jostylr.com/og.png">
+<meta name="twitter:image" content="https://ravel.jostylr.com/adr/og.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image-height" content="630">
-<meta name="twitter:image-width" content="1200">
 </head>
 
 <body class="nav-sidebar docked nav-fixed quarto-light">
@@ -127,7 +88,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
-    <a class="navbar-brand" href="./index.html">
+    <a class="navbar-brand" href="../index.html">
     <span class="navbar-title">Ravel</span>
     </a>
   </div>
@@ -138,7 +99,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link active" href="./getting-started.html" aria-current="page"> 
+    <a class="nav-link active" href="../getting-started.html" aria-current="page"> 
 <span class="menu-text">Get started</span></a>
   </li>  
   <li class="nav-item dropdown ">
@@ -147,47 +108,47 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     </a>
     <ul class="dropdown-menu" aria-labelledby="nav-menu-guides">    
         <li>
-    <a class="dropdown-item" href="./cookbook.html">
+    <a class="dropdown-item" href="../cookbook.html">
  <span class="dropdown-text">Cookbook</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="./markdown-fences.html">
+    <a class="dropdown-item" href="../markdown-fences.html">
  <span class="dropdown-text">Markdown fences</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="./markdown-litpro.html">
+    <a class="dropdown-item" href="../markdown-litpro.html">
  <span class="dropdown-text">LitPro Markdown</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="./noweb.html">
+    <a class="dropdown-item" href="../noweb.html">
  <span class="dropdown-text">noweb</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="./org.html">
+    <a class="dropdown-item" href="../org.html">
  <span class="dropdown-text">Org/Babel</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="./myst.html">
+    <a class="dropdown-item" href="../myst.html">
  <span class="dropdown-text">MyST Markdown</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="./asciidoc.html">
+    <a class="dropdown-item" href="../asciidoc.html">
  <span class="dropdown-text">AsciiDoc</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="./html.html">
+    <a class="dropdown-item" href="../html.html">
  <span class="dropdown-text">HTML</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="./quarto.html">
+    <a class="dropdown-item" href="../quarto.html">
  <span class="dropdown-text">Quarto</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="./pipes-and-directives.html">
+    <a class="dropdown-item" href="../pipes-and-directives.html">
  <span class="dropdown-text">Pipes and directives</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="./provenance-maps.html">
+    <a class="dropdown-item" href="../provenance-maps.html">
  <span class="dropdown-text">Provenance maps</span></a>
   </li>  
     </ul>
@@ -198,19 +159,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     </a>
     <ul class="dropdown-menu" aria-labelledby="nav-menu-reference">    
         <li>
-    <a class="dropdown-item" href="./public-api.html">
+    <a class="dropdown-item" href="../public-api.html">
  <span class="dropdown-text">Public API</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="./contracts-and-configuration.html">
+    <a class="dropdown-item" href="../contracts-and-configuration.html">
  <span class="dropdown-text">0.1 contracts</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="./ravel-map-schema.html">
+    <a class="dropdown-item" href="../ravel-map-schema.html">
  <span class="dropdown-text">Ravel Map schema</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="./chunk-syntax.html">
+    <a class="dropdown-item" href="../chunk-syntax.html">
  <span class="dropdown-text">Chunk syntax</span></a>
   </li>  
     </ul>
@@ -218,7 +179,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item">
-    <a class="nav-link" href="./playground/"> 
+    <a class="nav-link" href="../playground/"> 
 <span class="menu-text">Playground</span></a>
   </li>  
 </ul>
@@ -232,7 +193,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./contracts-and-configuration.html">Reference</a></li><li class="breadcrumb-item"><a href="./ravel-map-schema.html">Ravel Map schema guide</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -263,19 +224,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./getting-started.html" class="sidebar-item-text sidebar-link">
+  <a href="../getting-started.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Five-minute getting started</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./cookbook.html" class="sidebar-item-text sidebar-link">
+  <a href="../cookbook.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Ravel cookbook</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./migration-from-legacy.html" class="sidebar-item-text sidebar-link">
+  <a href="../migration-from-legacy.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Migrating FizzBuzz-era Ravel material</span></a>
   </div>
 </li>
@@ -292,67 +253,67 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./markdown-fences.html" class="sidebar-item-text sidebar-link">
+  <a href="../markdown-fences.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Markdown fenced-block profile</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./markdown-litpro.html" class="sidebar-item-text sidebar-link">
+  <a href="../markdown-litpro.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">LitPro Markdown</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./noweb.html" class="sidebar-item-text sidebar-link">
+  <a href="../noweb.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">noweb</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./org.html" class="sidebar-item-text sidebar-link">
+  <a href="../org.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Org and Babel</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./myst.html" class="sidebar-item-text sidebar-link">
+  <a href="../myst.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">MyST Markdown</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./asciidoc.html" class="sidebar-item-text sidebar-link">
+  <a href="../asciidoc.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">AsciiDoc</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./html.html" class="sidebar-item-text sidebar-link">
+  <a href="../html.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">HTML</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./quarto.html" class="sidebar-item-text sidebar-link">
+  <a href="../quarto.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Quarto</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./live-execution.html" class="sidebar-item-text sidebar-link">
+  <a href="../live-execution.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Live execution (0.2)</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./chunk-syntax.html" class="sidebar-item-text sidebar-link">
+  <a href="../chunk-syntax.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Ravel embedded chunk syntax guide</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./pipes-and-directives.html" class="sidebar-item-text sidebar-link">
+  <a href="../pipes-and-directives.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Ravel pipes and directives reference</span></a>
   </div>
 </li>
@@ -369,37 +330,37 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./contracts-and-configuration.html" class="sidebar-item-text sidebar-link">
+  <a href="../contracts-and-configuration.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">0.1 contracts and configuration</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./public-api.html" class="sidebar-item-text sidebar-link">
+  <a href="../public-api.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Public JavaScript API</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./ravel-map-schema.html" class="sidebar-item-text sidebar-link active">
+  <a href="../ravel-map-schema.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Ravel Map schema guide</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./provenance-maps.html" class="sidebar-item-text sidebar-link">
+  <a href="../provenance-maps.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Generated-output provenance maps</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./filesystem-safety.html" class="sidebar-item-text sidebar-link">
+  <a href="../filesystem-safety.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Filesystem safety and trust boundaries</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./runtime-support.html" class="sidebar-item-text sidebar-link">
+  <a href="../runtime-support.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Runtime support and testing policy</span></a>
   </div>
 </li>
@@ -416,37 +377,37 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./design.html" class="sidebar-item-text sidebar-link">
+  <a href="../design.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Ravel design plan</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./markup-adapters-design.html" class="sidebar-item-text sidebar-link">
+  <a href="../markup-adapters-design.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Markup adapter design</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./proof-of-concept.html" class="sidebar-item-text sidebar-link">
+  <a href="../proof-of-concept.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">First graph and chunk-processing proof of concept</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./explorer-design.html" class="sidebar-item-text sidebar-link">
+  <a href="../explorer-design.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Ravel Explorer design</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./history.html" class="sidebar-item-text sidebar-link">
+  <a href="../history.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">History and starting point</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./release-checklist.html" class="sidebar-item-text sidebar-link">
+  <a href="../release-checklist.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">0.2 release checklist</span></a>
   </div>
 </li>
@@ -462,246 +423,87 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#ravel-map-schema-guide" id="toc-ravel-map-schema-guide" class="nav-link active" data-scroll-target="#ravel-map-schema-guide">Ravel Map schema guide</a>
+  <li><a href="#typescript-bridge-uses-the-in-process-language-service-api" id="toc-typescript-bridge-uses-the-in-process-language-service-api" class="nav-link active" data-scroll-target="#typescript-bridge-uses-the-in-process-language-service-api">TypeScript bridge uses the in-process Language Service API</a>
   <ul class="collapse">
-  <li><a href="#purpose" id="toc-purpose" class="nav-link" data-scroll-target="#purpose">Purpose</a></li>
-  <li><a href="#canonical-shape" id="toc-canonical-shape" class="nav-link" data-scroll-target="#canonical-shape">Canonical shape</a></li>
-  <li><a href="#top-level-fields" id="toc-top-level-fields" class="nav-link" data-scroll-target="#top-level-fields">Top-level fields</a></li>
-  <li><a href="#chunk-fields" id="toc-chunk-fields" class="nav-link" data-scroll-target="#chunk-fields">Chunk fields</a></li>
-  <li><a href="#chunks-emitted-from-pipes" id="toc-chunks-emitted-from-pipes" class="nav-link" data-scroll-target="#chunks-emitted-from-pipes">Chunks emitted from pipes</a></li>
-  <li><a href="#directives" id="toc-directives" class="nav-link" data-scroll-target="#directives">Directives</a></li>
-  <li><a href="#positions-and-errors" id="toc-positions-and-errors" class="nav-link" data-scroll-target="#positions-and-errors">Positions and errors</a></li>
-  <li><a href="#profiles-are-adapter-policy" id="toc-profiles-are-adapter-policy" class="nav-link" data-scroll-target="#profiles-are-adapter-policy">Profiles are adapter policy</a></li>
-  <li><a href="#versioning" id="toc-versioning" class="nav-link" data-scroll-target="#versioning">Versioning</a></li>
+  <li><a href="#context" id="toc-context" class="nav-link" data-scroll-target="#context">Context</a></li>
+  <li><a href="#decision" id="toc-decision" class="nav-link" data-scroll-target="#decision">Decision</a></li>
+  <li><a href="#alternatives" id="toc-alternatives" class="nav-link" data-scroll-target="#alternatives">Alternatives</a></li>
+  <li><a href="#consequences" id="toc-consequences" class="nav-link" data-scroll-target="#consequences">Consequences</a></li>
+  <li><a href="#validation-evidence" id="toc-validation-evidence" class="nav-link" data-scroll-target="#validation-evidence">Validation evidence</a></li>
+  <li><a href="#decision-boundary-and-open-work" id="toc-decision-boundary-and-open-work" class="nav-link" data-scroll-target="#decision-boundary-and-open-work">Decision boundary and open work</a></li>
   </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/jostylr/ravel/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
-<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./contracts-and-configuration.html">Reference</a></li><li class="breadcrumb-item"><a href="./ravel-map-schema.html">Ravel Map schema guide</a></li></ol></nav></header>
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"></header>
 
 
 
 
-<section id="ravel-map-schema-guide" class="level1">
-<h1>Ravel Map schema guide</h1>
-<section id="purpose" class="level2">
-<h2 class="anchored" data-anchor-id="purpose">Purpose</h2>
-<p>A Ravel Map is the JSON contract between a format/profile adapter and Ravel core. It says what chunks a source document contains, where they came from, and which structural declarations/effects the adapter found. It does not parse the language inside a chunk body; the chunk parser does that.</p>
-<pre><code>Markdown profile ─┐
-AsciiDoc profile ─┼→ Ravel Map → Ravel core
-Rix block model ──┘</code></pre>
+<section id="typescript-bridge-uses-the-in-process-language-service-api" class="level1">
+<h1>TypeScript bridge uses the in-process Language Service API</h1>
+<ul>
+<li>Status: accepted for the first vertical slice</li>
+<li>Date: 2026-07-31</li>
+<li>Checklist: VD-ADR-01, VD-ADR-04, VD-ADR-10, VD-TS-01</li>
+</ul>
+<section id="context" class="level2">
+<h2 class="anchored" data-anchor-id="context">Context</h2>
+<p>Ravel needs native TypeScript and JavaScript completion, hover, navigation, diagnostics, symbols, calls, and rename against generated documents that may never exist on disk. The bridge must keep configured-project state warm, see unsaved projection versions, and return generated ranges without acquiring an editor dependency.</p>
+<p>The candidates were the TypeScript Language Service API in the Pieceful/Ravel language-service process, the <code>tsserver</code> protocol in a managed child process, and a third-party TypeScript LSP wrapper.</p>
 </section>
-<section id="canonical-shape" class="level2">
-<h2 class="anchored" data-anchor-id="canonical-shape">Canonical shape</h2>
-<pre><code>{
-  "version": 1,
-  "document": {
-    "id": "greeting",
-    "uri": "file:///project/greeting.md",
-    "format": "markdown+ravel-v1"
-  },
-  "chunks": [
-    {
-      "id": "greeting::main",
-      "identity": {
-        "document": "greeting",
-        "chunk": "main",
-        "minor": null,
-        "type": null
-      },
-      "name": "Main program",
-      "body": "console.log(_\"format-greeting\");\n",
-      "definitionPipeline": [],
-      "metadata": { "language": "javascript", "tags": ["entrypoint"] },
-      "source": { "uri": "file:///project/greeting.md", "range": "…" }
-    }
-  ],
-  "directives": []
-}</code></pre>
-<p>The canonical interchange form uses objects rather than positional arrays. The original tuple idea—name, pipeline, body, metadata, position—is the right information, but object keys make schema evolution and diagnostics safer. A compact tuple encoding can later be a cache/transport optimization without becoming the public contract.</p>
+<section id="decision" class="level2">
+<h2 class="anchored" data-anchor-id="decision">Decision</h2>
+<p>Use the native TypeScript Language Service API in process. The adapter accepts an injected compiler API, allowing an editor or host to reuse a TypeScript runtime it already owns. Its asynchronous factory can instead load the optional <code>typescript</code> peer dependency.</p>
+<p>The working spike opens stable virtual <code>.ts</code>, <code>.js</code>, <code>.tsx</code>, and <code>.jsx</code> files through a <code>LanguageServiceHost</code>. Virtual text overlays filesystem reads; virtual directories and files participate in ordinary module resolution. The host parses the selected <code>tsconfig.json</code>, retains compiler options and project references, and adds open projections to the configured root files.</p>
+<p>The adapter receives a reduced generated-file record rather than Ravel’s full projection. It sees stable identity and version, language, generated text, target/artifact/stage, and allowlisted logical path/configuration metadata. Provenance maps, occurrence trees, authored source, line indexes, and writable source authority remain in the transport-neutral router.</p>
+<p>Both explicit configuration selection and automatic <code>tsconfig.json</code> discovery are confined to a host-supplied <code>configSearchRoot</code>. Discovery never walks above that root, and lexical plus canonical-path checks reject symlink escapes. The VS Code host sets the search root to the loaded Ravel project root.</p>
+<p>The headless native test demonstrates:</p>
+<ul>
+<li>cross-document member completion;</li>
+<li>relative imports and <code>paths</code> alias resolution without shadow files;</li>
+<li>hover, signature help, definition, type definition, and references;</li>
+<li>document and workspace symbols;</li>
+<li>incoming and outgoing calls;</li>
+<li>semantic diagnostics after an unsaved versioned change;</li>
+<li>rename across virtual modules;</li>
+<li>auto-import completion details and their additional text edit;</li>
+<li>JSX configuration and all four supported language IDs;</li>
+<li>cooperative cancellation, stale-version rejection, service restart, and in-memory document reopen.</li>
+</ul>
 </section>
-<section id="top-level-fields" class="level2">
-<h2 class="anchored" data-anchor-id="top-level-fields">Top-level fields</h2>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 33%">
-<col style="width: 33%">
-<col style="width: 33%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Field</th>
-<th>Required</th>
-<th>Meaning</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>version</td>
-<td>yes</td>
-<td>Positive integer schema version.</td>
-</tr>
-<tr class="even">
-<td>document</td>
-<td>yes</td>
-<td>Source identity and adapter format/profile.</td>
-</tr>
-<tr class="odd">
-<td>chunks</td>
-<td>yes</td>
-<td>Ordered source chunks; order preserves narrative provenance.</td>
-</tr>
-<tr class="even">
-<td>directives</td>
-<td>no</td>
-<td>Adapter-discovered structural/effect declarations.</td>
-</tr>
-<tr class="odd">
-<td>metadata</td>
-<td>no</td>
-<td>Document-level adapter metadata.</td>
-</tr>
-</tbody>
-</table>
+<section id="alternatives" class="level2">
+<h2 class="anchored" data-anchor-id="alternatives">Alternatives</h2>
+<p><code>tsserver</code> remains a valid future process-isolation option, but adds protocol, process supervision, restart/backoff, and file-identity complexity without improving the first bridge’s project fidelity. At spike time, no repository TypeScript runtime or <code>tsserver</code> executable was available, so a portable child-process spike would also have required a new installation. The selected API is the same project engine behind <code>tsserver</code> and directly supports the required in-memory host.</p>
+<p>A third-party LSP wrapper is not selected because it adds a dependency and a second normalization layer before Ravel’s own transport-neutral router. It can be reconsidered if another editor host requires process isolation and cannot inject TypeScript.</p>
 </section>
-<section id="chunk-fields" class="level2">
-<h2 class="anchored" data-anchor-id="chunk-fields">Chunk fields</h2>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 33%">
-<col style="width: 33%">
-<col style="width: 33%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Field</th>
-<th>Required</th>
-<th>Meaning</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>id</td>
-<td>yes</td>
-<td>Canonical serialized identity, unique within the joined graph.</td>
-</tr>
-<tr class="even">
-<td>identity</td>
-<td>yes</td>
-<td>Explicit <code>document</code>, <code>chunk</code>, <code>minor</code>, and <code>type</code> fields (each identifier or <code>null</code>).</td>
-</tr>
-<tr class="odd">
-<td>name</td>
-<td>no</td>
-<td>Human-facing display label.</td>
-</tr>
-<tr class="even">
-<td>body</td>
-<td>yes</td>
-<td>Raw chunk text for the Ravel chunk parser.</td>
-</tr>
-<tr class="odd">
-<td>definitionPipeline</td>
-<td>no</td>
-<td>Transform calls declared by the adapter/profile.</td>
-</tr>
-<tr class="even">
-<td>metadata.language</td>
-<td>no</td>
-<td>Language/display hint; never executable by itself.</td>
-</tr>
-<tr class="odd">
-<td>metadata.tags</td>
-<td>no</td>
-<td>Labels for hosts, searches, and profiles.</td>
-</tr>
-<tr class="even">
-<td>metadata.data</td>
-<td>no</td>
-<td>JSON data owned by a profile/plugin namespace.</td>
-</tr>
-<tr class="odd">
-<td>source</td>
-<td>yes</td>
-<td>URI and inclusive/exclusive source range.</td>
-</tr>
-<tr class="even">
-<td>fragments</td>
-<td>no</td>
-<td>Fine-grained source ranges if a chunk joins multiple regions.</td>
-</tr>
-</tbody>
-</table>
-<p>Body is intentionally raw. The map can be inspected, saved, diffed, or created by an editor without implementing composition syntax.</p>
-<p>Each fragment contains <code>body</code> and <code>source</code>, plus optional <code>precision = "exact" | "coarse"</code>. Exact fragments retain a one-to-one UTF-16 mapping. Coarse fragments honestly cover transformations performed while adapting source, such as decoding one HTML character reference from several authored characters.</p>
-<p><code>id</code> must exactly equal the canonical serialization of <code>identity</code>, such as <code>guide::parser:preamble.javascript</code>. <code>guide::</code> denotes a document-root chunk; <code>guide::.javascript</code> and <code>guide:::preamble.javascript</code> are valid root variants. For an intentionally global chunk, set <code>identity.document</code> to <code>null</code> and use a non-null <code>chunk</code>; for example, the canonical ID <code>shared</code> has identity <code>{ "document": null, "chunk": "shared", "minor": null, "type": null }</code>. Adapters must provide all four keys rather than infer them from an ambiguous string later.</p>
+<section id="consequences" class="level2">
+<h2 class="anchored" data-anchor-id="consequences">Consequences</h2>
+<ul>
+<li>The adapter is Node-hosted but the generic bridge and projection packages remain editor- and language-neutral.</li>
+<li>TypeScript is optional at package installation time. A host must inject it or install the optional peer before creating the adapter. The first VS Code host deliberately bundles TypeScript 5.9 so editor behavior does not depend on an undocumented path into VS Code’s built-in TypeScript extension.</li>
+<li>The compiler API is synchronous. Abort signals are checked before and after every operation and exposed through TypeScript’s cancellation token, but a native operation can stop only at TypeScript cancellation points.</li>
+<li>The VS Code host creates the in-process adapter only for a trusted workspace. Ravel-native language features and generated views remain available before trust; granting trust reconstructs and resynchronizes the router.</li>
+<li>Configuration discovery is deliberately narrower than TypeScript’s ambient upward search. A configuration outside <code>configSearchRoot</code>, including one reached through a symlink, is ignored even if ordinary TypeScript tooling would discover it.</li>
+<li>Correct relative-import semantics require the projection’s declared output path (or a host file-name resolver). The logical virtual URI remains the public identity.</li>
+<li>No shadow workspace is needed for the first adapter, so VD-SHD-01 through VD-SHD-08 are not applicable to this decision.</li>
+<li><code>restart()</code> reconstructs project services and reopens current in-memory documents. A future out-of-process adapter must additionally implement the generic deterministic retry/backoff contract.</li>
+</ul>
 </section>
-<section id="chunks-emitted-from-pipes" class="level2">
-<h2 class="anchored" data-anchor-id="chunks-emitted-from-pipes">Chunks emitted from pipes</h2>
-<p>The map is the input to chunk parsing, not the result of it. A body expression may use the core <code>emit</code> pipe step to declare a derived chunk. The parser records that declaration, then the graph-expansion phase adds a generated chunk to the Ravel Program. Emission preserves the owner’s document and base chunk, and its suffix controls only minor and type (for example <code>emit(".js")</code>). The generated chunk has the normal chunk fields plus provenance pointing to the emitting expression.</p>
-<p>This is deliberately not an adapter concern and is not written back into the source map. A Markdown, AsciiDoc, or Rix adapter only needs to preserve the raw body and its range; it does not need to recognize <code>emit</code>.</p>
+<section id="validation-evidence" class="level2">
+<h2 class="anchored" data-anchor-id="validation-evidence">Validation evidence</h2>
+<ul>
+<li><a href="../../test/language-typescript.test.mjs"><code>test/language-typescript.test.mjs</code></a> injects a deterministic compiler surface to verify normalized results, versions, completion edits, restart, and all four supported language IDs.</li>
+<li>The native case in that file uses a real TypeScript runtime to verify configured module resolution, <code>paths</code>, JSX, distinct target environments, cross-file completion/navigation/symbols/calls/rename, auto-import edits, unsaved diagnostics, cancellation, document reopen, and confined explicit and discovered configuration paths. It skips when the host neither installs nor injects TypeScript; G3 therefore requires a clean-checkout/CI run that supplies the optional runtime.</li>
+<li><a href="../../fixtures/virtual-documents/typescript"><code>fixtures/virtual-documents/typescript</code></a> provides the configured project used by the native harness.</li>
+<li><a href="../../test/language-bridge.test.mjs"><code>test/language-bridge.test.mjs</code></a> verifies the editor-neutral capability, structured failure, capped-backoff, stale version, cancellation, restart, and reopen contracts independently of TypeScript.</li>
+</ul>
 </section>
-<section id="directives" class="level2">
-<h2 class="anchored" data-anchor-id="directives">Directives</h2>
-<p>Directives are separate because they often declare a graph edge or effect rather than contribute text. The initial directive set is:</p>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 33%">
-<col style="width: 33%">
-<col style="width: 33%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Kind</th>
-<th>Required fields</th>
-<th>Meaning</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>in</td>
-<td>target</td>
-<td>Load the named Markdown or JSON Ravel Map relative to this map and merge its chunks before transformation.</td>
-</tr>
-<tr class="even">
-<td>out</td>
-<td>name and from</td>
-<td>Make the completed fully qualified source chunk a deliverable under file-like name.</td>
-</tr>
-<tr class="odd">
-<td>create</td>
-<td>document, name, compose</td>
-<td>Create a document-local generated definition from staged composition IR.</td>
-</tr>
-<tr class="even">
-<td>alias</td>
-<td>document, name, reference</td>
-<td>Create an alternate document-local graph name whose provenance retains its target.</td>
-</tr>
-</tbody>
-</table>
-<p><code>compose</code> is an ordered array of <code>append</code>, <code>newline</code>, <code>pipe</code>, and <code>pass</code> nodes. Adapters preserve their source ranges and produce this portable IR; core owns resolution, staged accumulator evaluation, local <code>emit</code> expansion, and cycle diagnostics. A Markdown <code>ravel</code> fence is the first source-language spelling of these declarations. It is an adapter feature, not a special Markdown rule in core.</p>
-<p>An out directive is a plan, not an automatic write. A Node host writes its deliverables under an explicit output directory and rejects absolute or directory-escaping names. A directive records its kind, source range, optional name/from/target, arguments, and metadata.</p>
-<p>Unsupported directive forms are adapter diagnostics; hosts execute only the explicitly supported <code>in</code> and <code>out</code> effects.</p>
-</section>
-<section id="positions-and-errors" class="level2">
-<h2 class="anchored" data-anchor-id="positions-and-errors">Positions and errors</h2>
-<p>Positions are zero-based line, column, and UTF-16 offset values. Ranges start inclusively and end exclusively. UTF-16 offsets align with JavaScript, TypeScript, Monaco, and LSP conventions. The chunk parser later adds ranges for references and transforms inside body.</p>
-</section>
-<section id="profiles-are-adapter-policy" class="level2">
-<h2 class="anchored" data-anchor-id="profiles-are-adapter-policy">Profiles are adapter policy</h2>
-<p>The document format identifies the profile that produced the map. For example, markdown+ravel-v1 may require explicit chunk attributes, while markdown+litpro-compat-v1 may interpret heading depth and old link conventions. Both produce this schema. H5/H6-as-child-block is profile policy, not a Ravel core rule.</p>
-</section>
-<section id="versioning" class="level2">
-<h2 class="anchored" data-anchor-id="versioning">Versioning</h2>
-<p>Version changes only for incompatible map-shape changes. Optional namespaced metadata is the preferred extension mechanism. Adapters reject map versions they cannot understand rather than guessing semantics.</p>
-<p>The schema is published with <code>@pieceful/ravel-map</code>, both as the portable <code>RAVEL_MAP_SCHEMA</code> JavaScript export and as the JSON module <code>@pieceful/ravel-map/schema</code>. The repository copy at <code>schemas/ravel-map.schema.json</code> is checked against that packaged artifact in the public map-contract test.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { RAVEL_MAP_SCHEMA<span class="op">,</span> validateRavelMap } <span class="im">from</span> <span class="st">"@pieceful/ravel-map"</span><span class="op">;</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> diagnostics <span class="op">=</span> <span class="fu">validateRavelMap</span>(map<span class="op">,</span> { <span class="dt">uri</span><span class="op">:</span> <span class="st">"editor-buffer.ravel-map.json"</span> })<span class="op">;</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(RAVEL_MAP_SCHEMA<span class="op">.</span><span class="at">$id</span><span class="op">,</span> diagnostics)<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>See the example in examples/greeting.ravel-map.json.</p>
+<section id="decision-boundary-and-open-work" class="level2">
+<h2 class="anchored" data-anchor-id="decision-boundary-and-open-work">Decision boundary and open work</h2>
+<p>This ADR selects only the backing mechanism for the first TypeScript adapter. It does not accept every M3–M7 gate and does not decide the long-term virtual URI name, occurrence identity across source moves, active-target persistence, imports-piece syntax, editor/LSP transport, or a second language.</p>
+<p>The current adapter is in-process, so its <code>restart()</code> behavior is implemented and tested without a child-process supervisor. Capped exponential backoff and crash/reopen behavior are generic bridge contracts plus fake-bridge tests, not a production process-recovery implementation. Likewise, the adapter returns generated edits as proposals; Ravel’s separate classifier and editor host must reverse-map, preview, revalidate, and atomically apply them before M6 can be considered complete.</p>
 
 
 </section>
@@ -1127,7 +929,7 @@ Rix block model ──┘</code></pre>
 </a>
   </li>  
     <li class="nav-item">
-    <a class="nav-link" href="./playground/">
+    <a class="nav-link" href="../playground/">
 <p>Playground</p>
 </a>
   </li>  

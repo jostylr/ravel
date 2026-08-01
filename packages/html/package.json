@@ -1,6 +1,6 @@
 {
   "name": "@pieceful/ravel-html",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "type": "module",
   "description": "Lossless, script-free semantic HTML source adapter for Ravel.",
   "license": "MIT",
@@ -35,7 +35,7 @@
     "LICENSE"
   ],
   "dependencies": {
-    "@pieceful/ravel-core": "0.1.1",
+    "@pieceful/ravel-core": "0.2.0",
     "character-entities": "^2.0.2",
     "parse5": "^8.0.0"
   }

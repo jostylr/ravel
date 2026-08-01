@@ -45,7 +45,7 @@ test("Quarto bridge adds graph navigation and a piece index to temporary source"
   assert.ok(prepared.sourceMap.segments.some((segment) =>
     segment.precision === "generated" && segment.source === null
   ));
-  assert.match(prepared.cacheKeyMaterial, /"bridgeVersion":"0\.1\.1"/);
+  assert.match(prepared.cacheKeyMaterial, /"bridgeVersion":"0\.2\.0"/);
 });
 
 test("Quarto bridge refuses to decorate an invalid Ravel graph", () => {

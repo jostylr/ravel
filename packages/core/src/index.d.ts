@@ -15,13 +15,27 @@ export interface ProgramChunk { id: string; identity: ChunkIdentity; value: stri
 export interface Deliverable { name: string; from: string; value: string; segments: ProvenanceSegment[]; source: SourceLocation; dependencies: string[]; }
 export interface RavelProgram { version: 1; documents: PretransformGraph["documents"]; chunks: Record<string, ProgramChunk>; deliverables: Record<string, Deliverable>; diagnostics: Diagnostic[]; trace: { chunks: Record<string, unknown[]> }; }
 export interface TransformCall { type?: "transform"; name: string; arguments?: unknown[]; source?: SourceLocation; }
+/** Stable v0.2 execution-boundary contract. Providers must preserve this shape. */
+export type LiveContractVersion = 1;
+export type LiveExecutionStatus = "succeeded" | "failed";
+export interface LiveDependency { reference: string; source?: SourceLocation; }
+export interface LiveResourceRequest { name?: string; path?: string; source?: SourceLocation; }
+export interface LiveModuleRequest { specifier: string; source?: SourceLocation; }
 export interface LiveAnalysis {
-  dependencies?: Array<string | { reference: string; source?: SourceLocation }>;
-  resources?: Array<string | { name?: string; path?: string; source?: SourceLocation }>;
-  modules?: Array<string | { specifier: string; source?: SourceLocation }>;
-  diagnostics?: Diagnostic[];
+  version: LiveContractVersion;
+  dependencies: Array<string | LiveDependency>;
+  resources: Array<string | LiveResourceRequest>;
+  modules: Array<string | LiveModuleRequest>;
+  diagnostics: Diagnostic[];
+}
+export interface LiveAnalysisRequest {
+  id: string;
+  language: string;
+  source: string;
+  sourceLocation: SourceLocation;
 }
 export interface LiveExecutionRequest {
+  version: LiveContractVersion;
   id: string;
   runId: string;
   language: string;
@@ -34,18 +48,20 @@ export interface LiveExecutionRequest {
   signal?: AbortSignal;
 }
 export interface LiveExecutionOutcome {
+  version: LiveContractVersion;
   ok: boolean;
-  hasExport?: boolean;
+  status: LiveExecutionStatus;
+  hasExport: boolean;
   value?: RavelValue;
   serialized?: string;
-  diagnostics?: Diagnostic[];
+  diagnostics: Diagnostic[];
   durationMs?: number;
 }
 export interface ExecutionProvider {
   id: string;
-  version?: string;
-  languages: string[] | Set<string>;
-  analyze?(request: Pick<LiveExecutionRequest, "id" | "language" | "source" | "sourceLocation">): LiveAnalysis;
+  version: string;
+  languages: readonly string[] | ReadonlySet<string>;
+  analyze(request: LiveAnalysisRequest): LiveAnalysis;
   execute(request: LiveExecutionRequest): Promise<LiveExecutionOutcome> | LiveExecutionOutcome;
   dispose?(): Promise<void> | void;
 }
@@ -57,8 +73,8 @@ export interface LiveExecutionPlan {
     provider: { id: string; version: string };
     source: SourceLocation;
     dependencies: Array<{ reference: string; id: string; source: SourceLocation }>;
-    resources: LiveAnalysis["resources"];
-    modules: LiveAnalysis["modules"];
+    resources: Array<string | LiveResourceRequest>;
+    modules: Array<string | LiveModuleRequest>;
     analysis: LiveAnalysis;
   }>;
   diagnostics: Diagnostic[];
@@ -70,7 +86,7 @@ export interface LiveProgramResult {
   plan: LiveExecutionPlan;
   executions: Record<string, {
     id: string;
-    status: "succeeded" | "failed";
+    status: LiveExecutionStatus;
     value?: RavelValue;
     serialized?: string;
     provider?: { id: string; version: string };
@@ -99,13 +115,14 @@ export function ravelValueIssue(value: unknown, path?: string): string | null;
 export function serializeRavelValue(value: unknown): string;
 export function cloneRavelValue(value: RavelValue): RavelValue;
 export function planLiveExecutions(program: RavelProgram, options?: { providers?: ExecutionProvider[] | Map<string, ExecutionProvider> | Record<string, ExecutionProvider> }): LiveExecutionPlan;
-export function executeLiveProgram(program: RavelProgram, options?: {
+export interface LiveExecutionOptions {
   providers?: ExecutionProvider[] | Map<string, ExecutionProvider> | Record<string, ExecutionProvider>;
   resources?: Map<string, RavelValue> | Record<string, RavelValue>;
   limits?: Record<string, unknown>;
   runId?: string;
   signal?: AbortSignal;
-}): Promise<LiveProgramResult>;
+}
+export function executeLiveProgram(program: RavelProgram, options?: LiveExecutionOptions): Promise<LiveProgramResult>;
 export const provenanceMapVersion: 1;
 export function createDeliverableProvenanceMap(deliverable: Deliverable): DeliverableProvenanceMap;
 export function createBuildProvenanceMap(program: RavelProgram): BuildProvenanceMap;

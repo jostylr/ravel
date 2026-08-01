@@ -15,7 +15,7 @@ process dependency, so it is suitable for browser, Bun, and Node embedding.
 
 Ravel's default Markdown mode leaves ordinary fences alone; primary mode
 requires explicit Ravel classification for every relevant fence.
-In 0.2 development, an explicitly named fence can add `.run`; the adapter
+In 0.2, an explicitly named fence can add `.run`; the adapter
 retains its real language and emits portable execution metadata without
 executing the block.
 

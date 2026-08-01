@@ -1,22 +1,41 @@
 {
   "name": "@pieceful/ravel-asciidoc",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "type": "module",
   "description": "Lossless AsciiDoc section, block, cross-reference, and directive adapter for Ravel.",
   "license": "MIT",
   "author": "James Taylor",
-  "repository": { "type": "git", "url": "git+https://github.com/jostylr/ravel.git", "directory": "packages/asciidoc" },
-  "bugs": { "url": "https://github.com/jostylr/ravel/issues" },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jostylr/ravel.git",
+    "directory": "packages/asciidoc"
+  },
+  "bugs": {
+    "url": "https://github.com/jostylr/ravel/issues"
+  },
   "homepage": "https://ravel.jostylr.com/",
-  "engines": { "node": ">=22" },
-  "keywords": ["ravel", "asciidoc", "asciidoctor", "literate-programming"],
-  "publishConfig": { "access": "public" },
+  "engines": {
+    "node": ">=22"
+  },
+  "keywords": [
+    "ravel",
+    "asciidoc",
+    "asciidoctor",
+    "literate-programming"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "exports": {
     ".": "./src/index.js"
   },
   "types": "./src/index.d.ts",
-  "files": ["src", "README.md", "LICENSE"],
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
   "dependencies": {
-    "@pieceful/ravel-core": "0.1.1"
+    "@pieceful/ravel-core": "0.2.0"
   }
 }

@@ -1,7 +1,7 @@
 {
   "name": "@pieceful/ravel-vscode",
   "displayName": "Ravel Explorer",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "description": "Experimental VS Code host for the source-linked Ravel Explorer.",
@@ -94,12 +94,12 @@
     "build": "esbuild src/extension.js --bundle --platform=node --format=cjs --external:vscode --outfile=dist/extension.cjs && esbuild src/webview.js --bundle --platform=browser --format=esm --outfile=dist/webview.mjs && node ../../scripts/copy-typescript-libs.mjs"
   },
   "dependencies": {
-    "@pieceful/ravel-core": "0.1.1",
-    "@pieceful/ravel-explorer": "0.1.1",
-    "@pieceful/ravel-host-node": "0.1.1",
-    "@pieceful/ravel-language-service": "0.1.1",
-    "@pieceful/ravel-language-typescript": "0.1.1",
-    "@pieceful/ravel-projection": "0.1.1",
+    "@pieceful/ravel-core": "0.2.0",
+    "@pieceful/ravel-explorer": "0.2.0",
+    "@pieceful/ravel-host-node": "0.2.0",
+    "@pieceful/ravel-language-service": "0.2.0",
+    "@pieceful/ravel-language-typescript": "0.2.0",
+    "@pieceful/ravel-projection": "0.2.0",
     "typescript": "^5.9.3"
   },
   "files": [

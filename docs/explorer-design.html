@@ -341,7 +341,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./live-execution.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Live execution (0.2 development)</span></a>
+ <span class="menu-text">Live execution (0.2)</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -447,7 +447,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./release-checklist.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">0.1 release checklist</span></a>
+ <span class="menu-text">0.2 release checklist</span></a>
   </div>
 </li>
       </ul>
@@ -528,7 +528,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h1>Ravel Explorer design</h1>
 <section id="status" class="level2">
 <h2 class="anchored" data-anchor-id="status">Status</h2>
-<p>This document specifies Workstream E of the <a href="../TODO-0.2.md">Ravel 0.2 implementation plan</a>. Milestones 0 through 6 in the <a href="../EXPLORER-TODO.md"><code>Explorer backlog</code></a> are release-binding for 0.2; the experimental Composer milestone is deferred beyond 0.2.</p>
+<p>This document specifies the Explorer direction from the <a href="../TODO-0.2.md">Ravel 0.2 implementation plan</a>. The 0.2 release is limited to the current bounded, read-only browser/host slice; structured editing, full VS Code round trips, and scale hardening are deferred to <a href="../TODO-0.3.md">TODO-0.3.md</a>.</p>
 </section>
 <section id="product-statement" class="level2">
 <h2 class="anchored" data-anchor-id="product-statement">Product statement</h2>
@@ -575,7 +575,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="packages">Packages</h2>
 <section id="piecefulravel-explorer" class="level3">
 <h3 class="anchored" data-anchor-id="piecefulravel-explorer"><code>@pieceful/ravel-explorer</code></h3>
-<p>Proposed directory: <code>packages/explorer/</code></p>
+<p>Directory: <code>packages/explorer/</code></p>
 <p>This is a portable ESM package. It owns:</p>
 <ul>
 <li>versioned Explorer snapshot and host-message types;</li>
@@ -592,14 +592,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <ul>
 <li><code>@pieceful/ravel-core</code> for public program and provenance contracts;</li>
 <li>Cytoscape.js for graph interaction;</li>
-<li><code>elkjs</code> and the Cytoscape ELK adapter for hierarchical layout;</li>
-<li>an expand/collapse integration for compound nodes.</li>
+<li>the Cytoscape ELK adapter and its <code>elkjs</code> dependency for hierarchical layout.</li>
 </ul>
+<p>Folding and aggregate boundary edges remain projection operations. The prototype deliberately does not depend on the unmaintained Cytoscape expand/collapse extension.</p>
 <p>It must not import <code>vscode</code>, <code>node:*</code>, access the filesystem, execute transforms on its own, or write source files.</p>
 </section>
 <section id="piecefulravel-vscode" class="level3">
 <h3 class="anchored" data-anchor-id="piecefulravel-vscode"><code>@pieceful/ravel-vscode</code></h3>
-<p>Proposed directory: <code>packages/vscode/</code></p>
+<p>Directory: <code>packages/vscode/</code></p>
 <p>This is the VS Code extension and host adapter. It owns:</p>
 <ul>
 <li><code>Ravel: Open Explorer</code> and related commands;</li>
@@ -679,52 +679,57 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>    <span class="op">|</span> <span class="st">"outline"</span></span>
 <span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>    <span class="op">|</span> <span class="st">"chunk"</span></span>
 <span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>    <span class="op">|</span> <span class="st">"transform"</span></span>
-<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>    <span class="op">|</span> <span class="st">"deliverable"</span></span>
-<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>    <span class="op">|</span> <span class="st">"source-fragment"</span></span>
-<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>    <span class="op">|</span> <span class="st">"generated-fragment"</span></span>
-<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>    <span class="op">|</span> <span class="st">"diagnostic"</span><span class="op">;</span></span>
-<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>  label<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
-<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>  parent<span class="op">?:</span> <span class="dt">string</span><span class="op">;</span></span>
-<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>  source<span class="op">?:</span> SourceLocation<span class="op">;</span></span>
-<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>  language<span class="op">?:</span> <span class="dt">string</span><span class="op">;</span></span>
-<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>  tags<span class="op">?:</span> <span class="dt">string</span>[]<span class="op">;</span></span>
-<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a>  state<span class="op">?:</span> (<span class="st">"generated"</span> <span class="op">|</span> <span class="st">"changed"</span> <span class="op">|</span> <span class="st">"stale"</span> <span class="op">|</span> <span class="st">"warning"</span> <span class="op">|</span> <span class="st">"error"</span>)[]<span class="op">;</span></span>
-<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a>  counts<span class="op">?:</span> { children<span class="op">?:</span> <span class="dt">number</span><span class="op">;</span> incoming<span class="op">?:</span> <span class="dt">number</span><span class="op">;</span> outgoing<span class="op">?:</span> <span class="dt">number</span> }<span class="op">;</span></span>
-<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a><span class="kw">interface</span> ExplorerEdge {</span>
-<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a>  id<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
-<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a>  kind<span class="op">:</span></span>
-<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a>    <span class="op">|</span> <span class="st">"contains"</span></span>
-<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a>    <span class="op">|</span> <span class="st">"references"</span></span>
-<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a>    <span class="op">|</span> <span class="st">"transforms"</span></span>
-<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a>    <span class="op">|</span> <span class="st">"composes"</span></span>
-<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a>    <span class="op">|</span> <span class="st">"aliases"</span></span>
-<span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a>    <span class="op">|</span> <span class="st">"imports"</span></span>
-<span id="cb2-51"><a href="#cb2-51" aria-hidden="true" tabindex="-1"></a>    <span class="op">|</span> <span class="st">"emits"</span></span>
-<span id="cb2-52"><a href="#cb2-52" aria-hidden="true" tabindex="-1"></a>    <span class="op">|</span> <span class="st">"produces"</span></span>
-<span id="cb2-53"><a href="#cb2-53" aria-hidden="true" tabindex="-1"></a>    <span class="op">|</span> <span class="st">"corresponds-to"</span><span class="op">;</span></span>
-<span id="cb2-54"><a href="#cb2-54" aria-hidden="true" tabindex="-1"></a>  source<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
-<span id="cb2-55"><a href="#cb2-55" aria-hidden="true" tabindex="-1"></a>  target<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
-<span id="cb2-56"><a href="#cb2-56" aria-hidden="true" tabindex="-1"></a>  authoredAt<span class="op">?:</span> SourceLocation<span class="op">;</span></span>
-<span id="cb2-57"><a href="#cb2-57" aria-hidden="true" tabindex="-1"></a>  count<span class="op">?:</span> <span class="dt">number</span><span class="op">;</span></span>
-<span id="cb2-58"><a href="#cb2-58" aria-hidden="true" tabindex="-1"></a>  members<span class="op">?:</span> <span class="dt">string</span>[]<span class="op">;</span></span>
-<span id="cb2-59"><a href="#cb2-59" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb2-60"><a href="#cb2-60" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-61"><a href="#cb2-61" aria-hidden="true" tabindex="-1"></a><span class="kw">interface</span> ExplorerGroup {</span>
-<span id="cb2-62"><a href="#cb2-62" aria-hidden="true" tabindex="-1"></a>  id<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
-<span id="cb2-63"><a href="#cb2-63" aria-hidden="true" tabindex="-1"></a>  kind<span class="op">:</span> <span class="st">"document"</span> <span class="op">|</span> <span class="st">"outline"</span> <span class="op">|</span> <span class="st">"identity"</span> <span class="op">|</span> <span class="st">"language"</span> <span class="op">|</span> <span class="st">"tag"</span> <span class="op">|</span> <span class="st">"deliverable"</span><span class="op">;</span></span>
-<span id="cb2-64"><a href="#cb2-64" aria-hidden="true" tabindex="-1"></a>  label<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
-<span id="cb2-65"><a href="#cb2-65" aria-hidden="true" tabindex="-1"></a>  parent<span class="op">?:</span> <span class="dt">string</span><span class="op">;</span></span>
-<span id="cb2-66"><a href="#cb2-66" aria-hidden="true" tabindex="-1"></a>  nodeIds<span class="op">:</span> <span class="dt">string</span>[]<span class="op">;</span></span>
-<span id="cb2-67"><a href="#cb2-67" aria-hidden="true" tabindex="-1"></a>  collapsed<span class="op">:</span> <span class="dt">boolean</span><span class="op">;</span></span>
-<span id="cb2-68"><a href="#cb2-68" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb2-69"><a href="#cb2-69" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-70"><a href="#cb2-70" aria-hidden="true" tabindex="-1"></a><span class="kw">interface</span> ExplorerDiagnosticSummary {</span>
-<span id="cb2-71"><a href="#cb2-71" aria-hidden="true" tabindex="-1"></a>  errors<span class="op">:</span> <span class="dt">number</span><span class="op">;</span></span>
-<span id="cb2-72"><a href="#cb2-72" aria-hidden="true" tabindex="-1"></a>  warnings<span class="op">:</span> <span class="dt">number</span><span class="op">;</span></span>
-<span id="cb2-73"><a href="#cb2-73" aria-hidden="true" tabindex="-1"></a>  information<span class="op">:</span> <span class="dt">number</span><span class="op">;</span></span>
-<span id="cb2-74"><a href="#cb2-74" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>    <span class="op">|</span> <span class="st">"compose-step"</span></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>    <span class="op">|</span> <span class="st">"emit"</span></span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>    <span class="op">|</span> <span class="st">"directive"</span></span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>    <span class="op">|</span> <span class="st">"deliverable"</span></span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>    <span class="op">|</span> <span class="st">"source-fragment"</span></span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>    <span class="op">|</span> <span class="st">"generated-fragment"</span></span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>    <span class="op">|</span> <span class="st">"diagnostic"</span><span class="op">;</span></span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>  label<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>  parent<span class="op">?:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a>  source<span class="op">?:</span> SourceLocation<span class="op">;</span></span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a>  language<span class="op">?:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a>  tags<span class="op">?:</span> <span class="dt">string</span>[]<span class="op">;</span></span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a>  state<span class="op">?:</span> (<span class="st">"generated"</span> <span class="op">|</span> <span class="st">"live"</span> <span class="op">|</span> <span class="st">"succeeded"</span> <span class="op">|</span> <span class="st">"failed"</span> <span class="op">|</span> <span class="st">"changed"</span> <span class="op">|</span> <span class="st">"stale"</span> <span class="op">|</span> <span class="st">"warning"</span> <span class="op">|</span> <span class="st">"error"</span>)[]<span class="op">;</span></span>
+<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a>  counts<span class="op">?:</span> { children<span class="op">?:</span> <span class="dt">number</span><span class="op">;</span> incoming<span class="op">?:</span> <span class="dt">number</span><span class="op">;</span> outgoing<span class="op">?:</span> <span class="dt">number</span> }<span class="op">;</span></span>
+<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a><span class="kw">interface</span> ExplorerEdge {</span>
+<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a>  id<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a>  kind<span class="op">:</span></span>
+<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a>    <span class="op">|</span> <span class="st">"contains"</span></span>
+<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a>    <span class="op">|</span> <span class="st">"references"</span></span>
+<span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a>    <span class="op">|</span> <span class="st">"consumes"</span></span>
+<span id="cb2-51"><a href="#cb2-51" aria-hidden="true" tabindex="-1"></a>    <span class="op">|</span> <span class="st">"transforms"</span></span>
+<span id="cb2-52"><a href="#cb2-52" aria-hidden="true" tabindex="-1"></a>    <span class="op">|</span> <span class="st">"declares"</span></span>
+<span id="cb2-53"><a href="#cb2-53" aria-hidden="true" tabindex="-1"></a>    <span class="op">|</span> <span class="st">"composes"</span></span>
+<span id="cb2-54"><a href="#cb2-54" aria-hidden="true" tabindex="-1"></a>    <span class="op">|</span> <span class="st">"aliases"</span></span>
+<span id="cb2-55"><a href="#cb2-55" aria-hidden="true" tabindex="-1"></a>    <span class="op">|</span> <span class="st">"imports"</span></span>
+<span id="cb2-56"><a href="#cb2-56" aria-hidden="true" tabindex="-1"></a>    <span class="op">|</span> <span class="st">"emits"</span></span>
+<span id="cb2-57"><a href="#cb2-57" aria-hidden="true" tabindex="-1"></a>    <span class="op">|</span> <span class="st">"produces"</span></span>
+<span id="cb2-58"><a href="#cb2-58" aria-hidden="true" tabindex="-1"></a>    <span class="op">|</span> <span class="st">"corresponds-to"</span><span class="op">;</span></span>
+<span id="cb2-59"><a href="#cb2-59" aria-hidden="true" tabindex="-1"></a>  source<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb2-60"><a href="#cb2-60" aria-hidden="true" tabindex="-1"></a>  target<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb2-61"><a href="#cb2-61" aria-hidden="true" tabindex="-1"></a>  authoredAt<span class="op">?:</span> SourceLocation<span class="op">;</span></span>
+<span id="cb2-62"><a href="#cb2-62" aria-hidden="true" tabindex="-1"></a>  count<span class="op">?:</span> <span class="dt">number</span><span class="op">;</span></span>
+<span id="cb2-63"><a href="#cb2-63" aria-hidden="true" tabindex="-1"></a>  members<span class="op">?:</span> <span class="dt">string</span>[]<span class="op">;</span></span>
+<span id="cb2-64"><a href="#cb2-64" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb2-65"><a href="#cb2-65" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-66"><a href="#cb2-66" aria-hidden="true" tabindex="-1"></a><span class="kw">interface</span> ExplorerGroup {</span>
+<span id="cb2-67"><a href="#cb2-67" aria-hidden="true" tabindex="-1"></a>  id<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb2-68"><a href="#cb2-68" aria-hidden="true" tabindex="-1"></a>  kind<span class="op">:</span> <span class="st">"document"</span> <span class="op">|</span> <span class="st">"outline"</span> <span class="op">|</span> <span class="st">"identity"</span> <span class="op">|</span> <span class="st">"language"</span> <span class="op">|</span> <span class="st">"tag"</span> <span class="op">|</span> <span class="st">"deliverable"</span><span class="op">;</span></span>
+<span id="cb2-69"><a href="#cb2-69" aria-hidden="true" tabindex="-1"></a>  label<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb2-70"><a href="#cb2-70" aria-hidden="true" tabindex="-1"></a>  parent<span class="op">?:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb2-71"><a href="#cb2-71" aria-hidden="true" tabindex="-1"></a>  nodeIds<span class="op">:</span> <span class="dt">string</span>[]<span class="op">;</span></span>
+<span id="cb2-72"><a href="#cb2-72" aria-hidden="true" tabindex="-1"></a>  collapsed<span class="op">:</span> <span class="dt">boolean</span><span class="op">;</span></span>
+<span id="cb2-73"><a href="#cb2-73" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb2-74"><a href="#cb2-74" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-75"><a href="#cb2-75" aria-hidden="true" tabindex="-1"></a><span class="kw">interface</span> ExplorerDiagnosticSummary {</span>
+<span id="cb2-76"><a href="#cb2-76" aria-hidden="true" tabindex="-1"></a>  errors<span class="op">:</span> <span class="dt">number</span><span class="op">;</span></span>
+<span id="cb2-77"><a href="#cb2-77" aria-hidden="true" tabindex="-1"></a>  warnings<span class="op">:</span> <span class="dt">number</span><span class="op">;</span></span>
+<span id="cb2-78"><a href="#cb2-78" aria-hidden="true" tabindex="-1"></a>  information<span class="op">:</span> <span class="dt">number</span><span class="op">;</span></span>
+<span id="cb2-79"><a href="#cb2-79" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p><code>members</code> is optional and should be omitted for very large aggregates. A host query can return the members on demand.</p>
 <p>Node and edge IDs must be deterministic across unchanged evaluations so the UI can preserve selection, expansion, and manually adjusted layout. A revision identifies the exact evaluated source overlay. Every response that depends on source contents includes that revision.</p>
 </section>
@@ -1028,12 +1033,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>Exact/coarse provenance controls editing capabilities.</li>
 <li>Preview evaluates in-memory overlays and performs no artifact writes.</li>
 <li>Visual operations are enabled only when they map to an explicit source edit.</li>
+<li>Folding is computed by the Explorer projection so hidden boundary edges retain Ravel kinds, counts, and stable identities.</li>
 </ol>
 </section>
 <section id="open-questions-to-resolve-through-prototypes" class="level2">
 <h2 class="anchored" data-anchor-id="open-questions-to-resolve-through-prototypes">Open questions to resolve through prototypes</h2>
 <ul>
-<li>Whether Cytoscape compound-node expansion remains responsive at the target visible-node limit.</li>
+<li>Whether relayout after projection-owned folding remains responsive at the target visible-node limit.</li>
 <li>Whether ELK layout should run in the webview worker or extension host.</li>
 <li>Whether the initial UI should use a small framework or DOM modules around Cytoscape.</li>
 <li>How much parsed pipeline IR must become a stable public core contract.</li>

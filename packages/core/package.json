@@ -1,20 +1,39 @@
 {
   "name": "@pieceful/ravel-core",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "type": "module",
   "description": "Ravel chunk syntax, resolution, graph evaluation, and diagnostics.",
   "license": "MIT",
   "author": "James Taylor",
-  "repository": { "type": "git", "url": "git+https://github.com/jostylr/ravel.git", "directory": "packages/core" },
-  "bugs": { "url": "https://github.com/jostylr/ravel/issues" },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jostylr/ravel.git",
+    "directory": "packages/core"
+  },
+  "bugs": {
+    "url": "https://github.com/jostylr/ravel/issues"
+  },
   "homepage": "https://ravel.jostylr.com/",
-  "engines": { "node": ">=22" },
-  "keywords": ["ravel", "literate-programming", "graph", "composition"],
-  "publishConfig": { "access": "public" },
+  "engines": {
+    "node": ">=22"
+  },
+  "keywords": [
+    "ravel",
+    "literate-programming",
+    "graph",
+    "composition"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "exports": {
     ".": "./src/index.js",
     "./directives": "./src/directives.js"
   },
   "types": "./src/index.d.ts",
-  "files": ["src", "README.md", "LICENSE"]
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE"
+  ]
 }

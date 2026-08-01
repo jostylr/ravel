@@ -99,6 +99,16 @@ const validate = (value, path = "$", seen = new S()) => {
   seen.delete(value);
 };
 const bridge = O.freeze({ ch, load, validate, stringify });
+for (const name of ["eval", "Function"]) {
+  try {
+    O.defineProperty(globalThis, name, {
+      value: undefined,
+      configurable: false,
+      enumerable: false,
+      writable: false
+    });
+  } catch {}
+}
 O.defineProperty(globalThis, "__ravelBridge", {
   value: bridge,
   configurable: false,
@@ -163,6 +173,8 @@ export const executeQuickJS = async ({ request, options = {}, modules = {} }) =>
   if (analysis.diagnostics.length) {
     return {
       ok: false,
+      version: 1,
+      status: "failed",
       hasExport: false,
       diagnostics: analysis.diagnostics,
       durationMs: performance.now() - started
@@ -172,6 +184,8 @@ export const executeQuickJS = async ({ request, options = {}, modules = {} }) =>
   if (!entrySource) {
     return {
       ok: false,
+      version: 1,
+      status: "failed",
       hasExport: false,
       diagnostics: [diagnostic(
         "RJL101",
@@ -225,6 +239,8 @@ export const executeQuickJS = async ({ request, options = {}, modules = {} }) =>
     if (utf8Bytes(serialized) > maxOutputBytes) {
       return {
         ok: false,
+        version: 1,
+        status: "failed",
         hasExport: true,
         diagnostics: [diagnostic(
           "RJL122",
@@ -236,6 +252,8 @@ export const executeQuickJS = async ({ request, options = {}, modules = {} }) =>
     }
     return {
       ok: true,
+      version: 1,
+      status: "succeeded",
       hasExport: true,
       serialized,
       diagnostics: [],
@@ -245,6 +263,8 @@ export const executeQuickJS = async ({ request, options = {}, modules = {} }) =>
     const timedOut = Date.now() >= deadline;
     return {
       ok: false,
+      version: 1,
+      status: "failed",
       hasExport: true,
       diagnostics: [diagnostic(
         timedOut ? "RJL120" : "RJL110",

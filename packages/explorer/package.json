@@ -1,6 +1,6 @@
 {
   "name": "@pieceful/ravel-explorer",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "sideEffects": false,
@@ -37,7 +37,7 @@
     "LICENSE"
   ],
   "dependencies": {
-    "@pieceful/ravel-core": "0.1.1",
+    "@pieceful/ravel-core": "0.2.0",
     "cytoscape": "^3.34.0",
     "cytoscape-elk": "^2.3.0"
   }

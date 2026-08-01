@@ -35,6 +35,25 @@ test("CLI check accepts direct markup and TOML project inputs", async () => {
   assert.match(toml.stdout, /Ravel check passed\./);
 });
 
+test("CLI check analyzes live JavaScript without executing it", async () => {
+  const sandbox = await mkdtemp(join(tmpdir(), "ravel-cli-check-live-"));
+  const input = join(sandbox, "live.md");
+  try {
+    await writeFile(input, [
+      "```js {.run #broken}",
+      "export default ;",
+      "```",
+      ""
+    ].join("\n"));
+    await assert.rejects(
+      run(process.execPath, [cli, "check", input]),
+      (error) => error.code === 1 && /RJL100/.test(error.stderr)
+    );
+  } finally {
+    await rm(sandbox, { recursive: true, force: true });
+  }
+});
+
 test("CLI run bundles an allowlisted installed module and reads only declared resources", async () => {
   const sandbox = await mkdtemp(join(tmpdir(), "ravel-cli-live-"));
   const packageDirectory = join(sandbox, "node_modules", "tiny-csv");

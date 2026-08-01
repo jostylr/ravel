@@ -234,7 +234,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./markdown-fences.html">Language</a></li><li class="breadcrumb-item"><a href="./live-execution.html">Live execution (0.2 development)</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./markdown-fences.html">Language</a></li><li class="breadcrumb-item"><a href="./live-execution.html">Live execution (0.2)</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -343,7 +343,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./live-execution.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">Live execution (0.2 development)</span></a>
+ <span class="menu-text">Live execution (0.2)</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -449,7 +449,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./release-checklist.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">0.1 release checklist</span></a>
+ <span class="menu-text">0.2 release checklist</span></a>
   </div>
 </li>
       </ul>
@@ -464,7 +464,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#live-execution-0.2-development" id="toc-live-execution-0.2-development" class="nav-link active" data-scroll-target="#live-execution-0.2-development">Live execution (0.2 development)</a>
+  <li><a href="#live-execution-0.2" id="toc-live-execution-0.2" class="nav-link active" data-scroll-target="#live-execution-0.2">Live execution (0.2)</a>
   <ul class="collapse">
   <li><a href="#executable-fences" id="toc-executable-fences" class="nav-link" data-scroll-target="#executable-fences">Executable fences</a></li>
   <li><a href="#javascript-live-profile" id="toc-javascript-live-profile" class="nav-link" data-scroll-target="#javascript-live-profile">JavaScript live profile</a></li>
@@ -476,13 +476,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="toc-actions"><ul><li><a href="https://github.com/jostylr/ravel/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
-<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./markdown-fences.html">Language</a></li><li class="breadcrumb-item"><a href="./live-execution.html">Live execution (0.2 development)</a></li></ol></nav></header>
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./markdown-fences.html">Language</a></li><li class="breadcrumb-item"><a href="./live-execution.html">Live execution (0.2)</a></li></ol></nav></header>
 
 
 
 
-<section id="live-execution-0.2-development" class="level1">
-<h1>Live execution (0.2 development)</h1>
+<section id="live-execution-0.2" class="level1">
+<h1>Live execution (0.2)</h1>
 <p>Ravel’s live-execution stage runs after ordinary source composition. It is language-neutral: core plans value dependencies and resources, while a registered provider owns parsing and evaluation for a particular language. Parsing Markdown or constructing a Ravel Map never executes code.</p>
 <p>The initial provider is <code>@pieceful/ravel-js-live</code>, which evaluates <code>js</code> and <code>javascript</code> with QuickJS compiled to WebAssembly.</p>
 <section id="executable-fences" class="level2">
@@ -502,7 +502,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="javascript-live-profile" class="level2">
 <h2 class="anchored" data-anchor-id="javascript-live-profile">JavaScript live profile</h2>
 <p>A live JavaScript module must contain exactly one top-level <code>export default</code>, and it must be the final statement. Its value can be <code>null</code>, a boolean, a finite number, a string, an array, or a string-keyed plain object containing those values recursively. This includes <code>""</code>, <code>[]</code>, <code>{}</code>, <code>false</code>, and <code>0</code>.</p>
-<p>Missing exports and non-data values such as <code>undefined</code>, functions, symbols, bigints, non-finite numbers, cycles, accessors, and class instances are errors. Functions may be defined and used during a run, but they cannot cross an execution boundary.</p>
+<p>Missing exports and non-data values such as <code>undefined</code>, functions, symbols, bigints, non-finite numbers, cycles, accessors, and class instances are errors. Functions may be defined and used during a run, but they cannot cross an execution boundary. Direct or aliased access to <code>eval</code>, <code>Function</code>, and their computed global properties is rejected during analysis; the same globals are disabled in the QuickJS realm as defense in depth.</p>
 <p>The provider statically discovers literal <code>ch("...")</code> dependencies, <code>load("...")</code> resources, and static module imports. Computed names, dynamic imports, unapproved modules, and dynamic code generation are rejected. Values supplied by <code>ch</code> and <code>load</code> are serialized copies and are deeply frozen inside the QuickJS realm.</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> csv <span class="op">=</span> <span class="fu">load</span>(<span class="st">"cool.csv"</span>)<span class="op">;</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> rows <span class="op">=</span> csv<span class="op">.</span><span class="fu">trim</span>()<span class="op">.</span><span class="fu">split</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)<span class="op">.</span><span class="fu">map</span>((line) <span class="kw">=&gt;</span> line<span class="op">.</span><span class="fu">split</span>(<span class="st">","</span>))<span class="op">;</span></span>
@@ -541,12 +541,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="portable-api" class="level2">
 <h2 class="anchored" data-anchor-id="portable-api">Portable API</h2>
-<p>Core exports two asynchronous-stage helpers without changing the synchronous 0.1 composition API:</p>
+<p>Core exports two asynchronous-stage helpers without changing the synchronous composition API:</p>
 <ul>
 <li><code>planLiveExecutions(program, { providers })</code> selects providers, analyzes executable chunks, resolves dependencies, and diagnoses live cycles.</li>
 <li><code>executeLiveProgram(program, { providers, resources?, limits?, signal? })</code> evaluates the planned graph and returns per-chunk values, canonical serialized text, statuses, and diagnostics.</li>
 </ul>
-<p>Providers implement a stable ID, version, language aliases, <code>analyze(request)</code>, and <code>execute(request)</code>. A provider receives composed source, copied inputs, copied resources, limits, source identity, a run ID, and an optional <code>AbortSignal</code>. This boundary is intentionally independent of JavaScript so a future RiX or other WebAssembly-backed provider can use the same planner.</p>
+<p>Providers implement the frozen v0.2 contract: <code>id</code>, <code>version</code>, language aliases, <code>analyze(request)</code>, and <code>execute(request)</code>. Analysis and outcomes carry contract version <code>1</code>; outcomes use the stable <code>succeeded</code>/<code>failed</code> status vocabulary. A provider receives composed source, copied inputs, copied resources, limits, source identity, a run ID, and an optional <code>AbortSignal</code>. This boundary is intentionally independent of JavaScript so a future RiX or other WebAssembly-backed provider can use the same planner.</p>
 <p>Successful results are data; executors never write files. <code>ravel run</code> displays them without output effects. <code>ravel build</code> performs a second ordinary Ravel evaluation after live execution:</p>
 <ul>
 <li>a live string enters references, pipes, and <code>out</code> as raw text;</li>
@@ -559,7 +559,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="current-safety-boundary" class="level2">
 <h2 class="anchored" data-anchor-id="current-safety-boundary">Current safety boundary</h2>
 <p>The provider keeps a QuickJS Wasm module warm inside a dedicated Node or browser worker, while creating a fresh QuickJS runtime for every execution. It sets memory, stack, interrupt, and serialized-output limits. It installs no Node globals, filesystem, network, timers, console, or QuickJS <code>std</code>/<code>os</code>. Its module loader can return only pre-registered source strings.</p>
-<p>Timeout, cancellation, worker errors, and a failed interrupt terminate the outer worker, and a subsequent run starts a replacement. Pending-job quotas, broader adversarial tests, and the planned read-only virtual filesystem for approved transform modules remain before this can claim a complete hostile-code security boundary.</p>
+<p>Timeout, cancellation, worker errors, and a failed interrupt terminate the outer worker, and a subsequent run starts a replacement. Pending-job quotas, broader adversarial tests, transform modules, virtual filesystems, persistent caches, and advanced scheduler state remain 0.3 work; the 0.2 contract is capability-limited and defense-in-depth, not an absolute hostile-code security boundary.</p>
 
 
 </section>

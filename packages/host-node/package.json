@@ -1,31 +1,50 @@
 {
   "name": "@pieceful/ravel-host-node",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "type": "module",
   "description": "Node host capabilities for Ravel.",
   "license": "MIT",
   "author": "James Taylor",
-  "repository": { "type": "git", "url": "git+https://github.com/jostylr/ravel.git", "directory": "packages/host-node" },
-  "bugs": { "url": "https://github.com/jostylr/ravel/issues" },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jostylr/ravel.git",
+    "directory": "packages/host-node"
+  },
+  "bugs": {
+    "url": "https://github.com/jostylr/ravel/issues"
+  },
   "homepage": "https://ravel.jostylr.com/",
-  "engines": { "node": ">=22" },
-  "keywords": ["ravel", "literate-programming", "node", "build"],
-  "publishConfig": { "access": "public" },
+  "engines": {
+    "node": ">=22"
+  },
+  "keywords": [
+    "ravel",
+    "literate-programming",
+    "node",
+    "build"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "exports": {
     ".": "./src/index.js"
   },
   "types": "./src/index.d.ts",
-  "files": ["src", "README.md", "LICENSE"],
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
   "dependencies": {
-    "@pieceful/ravel-asciidoc": "0.1.1",
-    "@pieceful/ravel-core": "0.1.1",
-    "@pieceful/ravel-html": "0.1.1",
-    "@pieceful/ravel-markdown": "0.1.1",
-    "@pieceful/ravel-markdown-litpro": "0.1.1",
-    "@pieceful/ravel-map": "0.1.1",
-    "@pieceful/ravel-myst": "0.1.1",
-    "@pieceful/ravel-noweb": "0.1.1",
-    "@pieceful/ravel-org": "0.1.1",
+    "@pieceful/ravel-asciidoc": "0.2.0",
+    "@pieceful/ravel-core": "0.2.0",
+    "@pieceful/ravel-html": "0.2.0",
+    "@pieceful/ravel-markdown": "0.2.0",
+    "@pieceful/ravel-markdown-litpro": "0.2.0",
+    "@pieceful/ravel-map": "0.2.0",
+    "@pieceful/ravel-myst": "0.2.0",
+    "@pieceful/ravel-noweb": "0.2.0",
+    "@pieceful/ravel-org": "0.2.0",
     "smol-toml": "^1.7.0"
   }
 }

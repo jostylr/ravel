@@ -138,6 +138,7 @@ const resolveReference = (reference, owner, chunks) => {
 };
 
 const normalizeAnalysis = (analysis) => ({
+  version: 1,
   dependencies: Array.isArray(analysis?.dependencies) ? analysis.dependencies : [],
   resources: Array.isArray(analysis?.resources) ? analysis.resources : [],
   modules: Array.isArray(analysis?.modules) ? analysis.modules : [],
@@ -327,6 +328,7 @@ export const executeLiveProgram = async (program, options = {}) => {
     let outcome;
     try {
       outcome = await provider.execute({
+        version: 1,
         id,
         runId: options.runId ?? "live",
         language: node.language,
@@ -349,10 +351,16 @@ export const executeLiveProgram = async (program, options = {}) => {
         )]
       };
     }
-    diagnostics.push(...(outcome?.diagnostics ?? []));
+    const normalizedOutcome = {
+      version: outcome?.version ?? 1,
+      status: outcome?.status ?? (outcome?.ok && outcome?.hasExport !== false ? "succeeded" : "failed"),
+      ...outcome,
+      diagnostics: Array.isArray(outcome?.diagnostics) ? outcome.diagnostics : []
+    };
+    diagnostics.push(...normalizedOutcome.diagnostics);
     active.pop();
 
-    if (!outcome?.ok || outcome.hasExport === false) {
+    if (normalizedOutcome.status !== "succeeded" || !normalizedOutcome.ok || normalizedOutcome.hasExport === false) {
       const failed = { id, status: "failed", value: undefined, serialized: undefined };
       executions[id] = failed;
       return failed;
@@ -360,9 +368,9 @@ export const executeLiveProgram = async (program, options = {}) => {
 
     let value;
     try {
-      value = typeof outcome.serialized === "string"
-        ? JSON.parse(outcome.serialized)
-        : cloneRavelValue(outcome.value);
+      value = typeof normalizedOutcome.serialized === "string"
+        ? JSON.parse(normalizedOutcome.serialized)
+        : cloneRavelValue(normalizedOutcome.value);
       const serialized = serializeRavelValue(value);
       const succeeded = {
         id,
@@ -370,7 +378,7 @@ export const executeLiveProgram = async (program, options = {}) => {
         value,
         serialized,
         provider: node.provider,
-        durationMs: outcome.durationMs
+        durationMs: normalizedOutcome.durationMs
       };
       executions[id] = succeeded;
       return succeeded;

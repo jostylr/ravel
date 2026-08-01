@@ -2,10 +2,11 @@
 
 ## Status
 
-This document specifies Workstream E of the
-[Ravel 0.2 implementation plan](../TODO-0.2.md). Milestones 0 through 6 in the
-[`Explorer backlog`](../EXPLORER-TODO.md) are release-binding for 0.2; the
-experimental Composer milestone is deferred beyond 0.2.
+This document specifies the Explorer direction from the
+[Ravel 0.2 implementation plan](../TODO-0.2.md). The 0.2 release is limited to
+the current bounded, read-only browser/host slice; structured editing, full VS
+Code round trips, and scale hardening are deferred to
+[TODO-0.3.md](../TODO-0.3.md).
 
 ## Product statement
 

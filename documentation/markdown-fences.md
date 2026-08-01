@@ -54,7 +54,7 @@ chunk literally contains `--`. Explicit `minor=` and `type=` override defaults.
 Other classes become chunk tags. A named `#chunk` fence is Ravel even without
 `.ravel`; use `.ravel` to make this visible, and it is required for `.greedy`.
 
-In 0.2 development, `.run` marks an explicitly named chunk for the separate
+In 0.2, `.run` marks an explicitly named chunk for the separate
 live-execution stage and implies `.ravel`. The language token remains available
 for syntax highlighting and provider selection. `.run` does not execute during
 Markdown parsing, and a language token alone never opts a block into execution.

@@ -8,6 +8,13 @@ executable, the core builds a language-neutral execution plan, a registered
 language provider evaluates it, and the host decides what to do with the
 returned value.
 
+The release slice is intentionally bounded: `check` performs static provider
+analysis without execution, the live scheduler is deterministic and
+sequential, provider contracts are frozen at version 1, and Explorer remains
+read-only. Persistent caching, advanced scheduler state, transform modules,
+virtual filesystems, structured Explorer editing, 50k-scale guarantees, and
+broader native-tool compatibility are tracked in [TODO-0.3.md](TODO-0.3.md).
+
 Ravel 0.2 also broadens the source-format boundary. It must ship the modern
 Markdown, full LitPro Markdown, Quarto, AsciiDoc, HTML, Org, noweb, and MyST
 adapters specified in the
@@ -760,7 +767,12 @@ Exit criteria:
 - Outline folding remains visibly and semantically distinct from the dependency
   graph.
 
-## 0.2 release checklist
+## Historical workstream exit criteria (not the 0.2 release gate)
+
+The concise, current release gate is
+[`documentation/release-checklist.md`](documentation/release-checklist.md).
+The workstream checkboxes below preserve design history; unchecked advanced
+items are not release blockers when they are listed in the 0.3 plan.
 
 - [ ] The 0.1 static composition and build suites remain passing. `check` and
       `inspect` do not execute `.run`; `run` and `build` do so explicitly as
@@ -808,7 +820,7 @@ Exit criteria:
 - [ ] Clean installation, Node tests, browser tests, schema checks, and packed
       installation tests pass for the exact release artifacts.
 
-## Explicitly deferred beyond 0.2
+## Explicitly deferred to 0.3
 
 - A public RiX provider or additional production language providers.
 - Arbitrary npm installation or execution requested by a document.
@@ -822,3 +834,11 @@ Exit criteria:
 - Streaming, Arrow, shared-memory, or other non-JSON live values.
 - Distributed or remote execution.
 - Direct-manipulation Composer mode and arbitrary visual graph rewiring.
+- Persistent execution caching and cache inspection.
+- Advanced scheduler concurrency, stale-state, trace, retry, and active
+  cancellation semantics.
+- Rich resource snapshots, quota/hash expansion, transform modules, and
+  virtual filesystems.
+- Large-value/performance budgets and 50k-entity Explorer guarantees.
+- Structured Explorer editing, full VS Code round trips, and native-tool
+  compatibility fixtures.

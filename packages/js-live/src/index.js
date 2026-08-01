@@ -1,7 +1,7 @@
 import { analyzeJavaScript, diagnostic } from "./analyzer.js";
 
 const providerId = "quickjs-wasm-worker";
-const providerVersion = "0.2.0-dev";
+const providerVersion = "0.2.0";
 
 const moduleEntries = (modules) => {
   if (modules instanceof Map) return [...modules.entries()];
@@ -144,6 +144,8 @@ const waitForWorkerConfiguration = (worker, modules, options) => new Promise((re
 
 const failureOutcome = (code, message, source) => ({
   ok: false,
+  version: 1,
+  status: "failed",
   hasExport: false,
   diagnostics: [diagnostic(code, message, source)]
 });

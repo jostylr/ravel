@@ -1,6 +1,6 @@
 # @pieceful/ravel-js-live
 
-The initial QuickJS/WebAssembly execution provider for Ravel 0.2 development.
+The QuickJS/WebAssembly execution provider for Ravel 0.2.
 It analyzes ordinary `js` and `javascript` chunks marked `.run`, resolves their
 declared `ch("...")` and `load("...")` inputs through Ravel core, and evaluates
 them without Node, filesystem, network, console, or output capabilities.
@@ -83,7 +83,8 @@ default `new URL(..., import.meta.url)` worker location.
 
 The worker boundary, memory/stack/time/output limits, immutable data boundary,
 and closed module registry provide layered isolation. Pending-job quotas,
-broader adversarial review, and the transform-module virtual filesystem remain
-0.2 work, so this package does not yet claim a complete hostile-code sandbox.
+broader adversarial review, transform modules, and a virtual filesystem are
+deferred to 0.3, so this package does not claim a complete hostile-code
+sandbox.
 
 MIT © James Taylor

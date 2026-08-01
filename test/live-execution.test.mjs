@@ -166,6 +166,16 @@ test("live JavaScript rejects dynamic dependencies and respects execution deadli
   });
   assert.ok(dynamic.diagnostics.some((entry) => entry.code === "RJL107"));
 
+  for (const source of [
+    'const evaluate = eval; export default evaluate("1+1");',
+    'const Factory = globalThis.Function; export default Factory("return 1")();',
+    'export default globalThis["eval"]("1+1");',
+    'export default new Function("return 1")();'
+  ]) {
+    const hardened = javascriptLiveProvider.analyze({ source, sourceLocation });
+    assert.ok(hardened.diagnostics.some((entry) => entry.code === "RJL106"), source);
+  }
+
   const timed = await javascriptLiveProvider.execute({
     id: "bad::loop.js",
     runId: "test",
