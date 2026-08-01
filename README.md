@@ -32,6 +32,8 @@ examples live at [ravel.jostylr.com](https://ravel.jostylr.com/).
 | [@pieceful/ravel](https://www.npmjs.com/package/@pieceful/ravel) | Node.js CLI for checking, inspecting, and building Ravel projects. |
 | [@pieceful/ravel-core](https://www.npmjs.com/package/@pieceful/ravel-core) | Portable chunk parser, graph evaluator, diagnostics, and provenance engine. |
 | [@pieceful/ravel-map](https://www.npmjs.com/package/@pieceful/ravel-map) | Versioned Ravel Map schema, validation, and diagnostic contract. |
+| [@pieceful/ravel-host-browser](https://www.npmjs.com/package/@pieceful/ravel-host-browser) | In-memory browser host for one Markdown document, diagnostics, deliverables, and provenance. |
+| [@pieceful/ravel-explorer](https://www.npmjs.com/package/@pieceful/ravel-explorer) | Bounded graph projections and an optional browser graph renderer for completed Ravel programs. |
 | [@pieceful/ravel-projection](https://www.npmjs.com/package/@pieceful/ravel-projection) | Portable virtual-document and source-projection primitives for editor integrations. |
 | [@pieceful/ravel-language-bridge](https://www.npmjs.com/package/@pieceful/ravel-language-bridge) | Versioned bridge protocol for native language analyzers. |
 | [@pieceful/ravel-language-service](https://www.npmjs.com/package/@pieceful/ravel-language-service) | Ravel symbols, diagnostics, completions, and safe edit classification. |
@@ -59,9 +61,9 @@ Installing `@pieceful/ravel` installs the CLI and its required runtime
 packages automatically: `@pieceful/ravel-core`, `@pieceful/ravel-host-node`,
 `@pieceful/ravel-js-live`, `@pieceful/ravel-map`, and the AsciiDoc, HTML,
 Markdown, LitPro Markdown, MyST, noweb, and Org adapters. Install the Quarto,
-MyST plugin, projection, or language-bridge/service/TypeScript packages
-separately when building those integrations. The Explorer, browser host, and
-VS Code packages are private workspaces and are not npm installs.
+MyST plugin, projection, language-bridge/service/TypeScript, browser host, or
+Explorer packages separately when building those integrations. The VS Code
+workspace remains private and is not an npm install.
 
 ## Project status
 
@@ -311,7 +313,7 @@ packages/
   core/       portable chunk syntax, graph evaluation, diagnostics, provenance
   markdown/   portable Markdown fenced-block adapter
   host-node/  scoped filesystem input, TOML builds, and artifact writing
-  host-browser/private in-memory adapter and live CodeMirror playground
+  host-browser/ in-memory browser adapter and live CodeMirror playground
   cli/        development command-line entry point
   map/        Ravel Map public metadata and structural validation
   explorer/   portable focused graph projections and Explorer host contracts

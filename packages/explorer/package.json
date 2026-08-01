@@ -1,7 +1,6 @@
 {
   "name": "@pieceful/ravel-explorer",
   "version": "0.2.0",
-  "private": true,
   "type": "module",
   "sideEffects": false,
   "description": "Portable focused graph projections and host contracts for Ravel Explorer.",
@@ -26,6 +25,9 @@
     "provenance",
     "explorer"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "exports": {
     ".": "./src/index.js",
     "./browser": "./src/browser.js"

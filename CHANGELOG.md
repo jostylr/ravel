@@ -15,6 +15,9 @@ versioning for its published packages and versioned public contracts.
 - Added the initial `@pieceful/ravel-js-live` QuickJS/WebAssembly provider with
   one final default export, literal `ch`/`load` analysis, immutable copied
   inputs, and memory, stack, and time limits.
+- Made `@pieceful/ravel-host-browser` and `@pieceful/ravel-explorer` public
+  npm packages, with install-first package guides, versioned browser-safe
+  contracts, and packed-installation smoke coverage.
 - Moved QuickJS behind persistent, terminable Node and browser workers while
   retaining a fresh QuickJS runtime per execution; cancellation and outer
   deadlines replace failed workers.

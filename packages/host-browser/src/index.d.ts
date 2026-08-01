@@ -7,8 +7,23 @@ import type {
 } from "@pieceful/ravel-core";
 
 export interface BrowserDeliverable extends Deliverable {
-  provenance: unknown[];
   provenanceMap: DeliverableProvenanceMap;
+}
+
+export type BrowserTransform = (value: string, context: unknown) => string;
+
+export interface BrowserRenderOptions {
+  /** Source URI used in diagnostics and provenance. Defaults to `playground.md`. */
+  uri?: string;
+  /** Optional stable document identity. */
+  document?: string;
+  /** Markdown profile. Defaults to the explicit opt-in Ravel profile. */
+  mode?: "opt-in" | "primary";
+  /**
+   * Trusted application-supplied synchronous transforms. Document source cannot
+   * register transforms, and this host never provides filesystem or network access.
+   */
+  transforms?: Record<string, BrowserTransform> | Map<string, BrowserTransform>;
 }
 
 export interface BrowserRenderResult {
@@ -23,10 +38,5 @@ export interface BrowserRenderResult {
 
 export function renderMarkdownDocument(
   source: string,
-  options?: {
-    uri?: string;
-    document?: string;
-    mode?: "opt-in" | "primary";
-    transforms?: Record<string, (value: string, context: unknown) => string> | Map<string, (value: string, context: unknown) => string>;
-  }
+  options?: BrowserRenderOptions
 ): BrowserRenderResult;

@@ -2,6 +2,14 @@
 
 Portable graph projections and host-message contracts for Ravel Explorer.
 
+```sh
+npm install @pieceful/ravel-explorer
+```
+
+Use the default entry point to create a bounded, serializable projection of a
+completed program. Import `./browser` only in the UI that renders it; that
+entry point adds Cytoscape and ELK for interactive layout.
+
 The package turns a completed `RavelProgram` plus optional pretransform and live
 execution context into a deterministic, bounded `ExplorerSnapshot`. It does not
 read files, execute transforms, write source, or depend on VS Code.
@@ -62,6 +70,22 @@ const view = createExplorerView(document.querySelector("#graph"), snapshot, {
 
 await view.ready;
 ```
+
+For a browser application, defer the renderer until the user opens a graph
+view so the layout engine stays out of the initial bundle:
+
+```js
+const { createExplorerView } = await import("@pieceful/ravel-explorer/browser");
+const view = createExplorerView(container, snapshot, {
+  onSelect: (entity) => revealSource(entity.source)
+});
+await view.ready;
+view.fit();
+```
+
+The Explorer is read-only. It neither loads a project nor evaluates code: the
+embedding host supplies a completed `RavelProgram`, owns source navigation,
+and chooses any later edit workflow.
 
 Chunk bodies and evaluated values are intentionally not embedded in every
 snapshot. Hosts can request bounded details after selection:

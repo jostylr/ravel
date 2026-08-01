@@ -1,7 +1,6 @@
 {
   "name": "@pieceful/ravel-host-browser",
   "version": "0.2.0",
-  "private": true,
   "type": "module",
   "sideEffects": false,
   "description": "Portable in-memory Markdown host for the Ravel graph engine.",
@@ -15,7 +14,7 @@
   "bugs": {
     "url": "https://github.com/jostylr/ravel/issues"
   },
-  "homepage": "https://github.com/jostylr/ravel#readme",
+  "homepage": "https://ravel.jostylr.com/",
   "engines": {
     "node": ">=22"
   },
@@ -26,12 +25,16 @@
     "markdown",
     "provenance"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "exports": {
     ".": "./src/index.js"
   },
   "types": "./src/index.d.ts",
   "files": [
     "src",
+    "README.md",
     "LICENSE"
   ],
   "dependencies": {
