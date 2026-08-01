@@ -170,7 +170,7 @@ ul.task-list li input[type="checkbox"] {
   </li>  
         <li>
     <a class="dropdown-item" href="./contracts-and-configuration.html">
- <span class="dropdown-text">0.1 contracts</span></a>
+ <span class="dropdown-text">0.2 contracts</span></a>
   </li>  
         <li>
     <a class="dropdown-item" href="./ravel-map-schema.html">
@@ -337,7 +337,7 @@ ul.task-list li input[type="checkbox"] {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./contracts-and-configuration.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">0.1 contracts and configuration</span></a>
+ <span class="menu-text">0.2 contracts and configuration</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -448,7 +448,7 @@ ul.task-list li input[type="checkbox"] {
 
 <section id="runtime-support-and-testing-policy" class="level1">
 <h1>Runtime support and testing policy</h1>
-<p>This document records the implemented 0.1 support policy. Explorer, notebook, and editor work mentioned elsewhere is post-0.1 and is not part of this matrix.</p>
+<p>This document records the implemented 0.2 support policy. The release includes the bounded browser Explorer slice and adapter-specific notebook integration; broader editor workflows remain deferred to 0.3.</p>
 <section id="promise" class="level2">
 <h2 class="anchored" data-anchor-id="promise">Promise</h2>
 <p>Ravel will run where modern JavaScript runs: browsers, Bun, and Node. This does not mean every package runs everywhere. The boundary is intentional:</p>
@@ -481,18 +481,24 @@ ul.task-list li input[type="checkbox"] {
 <td>yes</td>
 </tr>
 <tr class="odd">
-<td>Notebook/editor integration</td>
-<td>post-0.1</td>
-<td>post-0.1</td>
-<td>post-0.1</td>
+<td>Read-only Explorer and adapter-specific notebook integration</td>
+<td>yes</td>
+<td>yes</td>
+<td>yes</td>
 </tr>
 <tr class="even">
+<td>Full editor round-trip editing</td>
+<td>deferred to 0.3</td>
+<td>deferred to 0.3</td>
+<td>deferred to 0.3</td>
+</tr>
+<tr class="odd">
 <td>Node filesystem/process host</td>
 <td>no</td>
 <td>only if separately implemented</td>
 <td>yes</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>CLI</td>
 <td>no</td>
 <td>future optional wrapper</td>
@@ -558,7 +564,7 @@ ul.task-list li input[type="checkbox"] {
 <li>current Bun test suite;</li>
 <li>browser conformance suite in Playwright Chromium.</li>
 </ol>
-<p>Chromium is the intentionally narrow 0.1 browser policy. Firefox and WebKit coverage may be added later, but their absence must not be described as tested cross-browser support.</p>
+<p>Chromium is the intentionally narrow 0.2 browser policy. Firefox and WebKit coverage may be added later, but their absence must not be described as tested cross-browser support.</p>
 <p>Before Node, Bun, or browser support is claimed for an API, add at least one shared fixture exercising it. Add a regression fixture for every portability bug.</p>
 </section>
 <section id="current-coverage" class="level2">
@@ -976,7 +982,7 @@ ul.task-list li input[type="checkbox"] {
 <footer class="footer">
   <div class="nav-footer">
     <div class="nav-footer-left">
-<p>Ravel 0.1 · MIT licensed</p>
+<p>Ravel 0.2 · MIT licensed</p>
 </div>   
     <div class="nav-footer-center">
       &nbsp;

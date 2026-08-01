@@ -1,6 +1,6 @@
-# 0.1 contracts and configuration
+# 0.2 contracts and configuration
 
-This reference distinguishes Ravel's implemented 0.1 contracts from planned
+This reference distinguishes Ravel's implemented 0.2 contracts from planned
 work. A value described as a versioned contract may be consumed by tools; other
 object shapes and implementation details are not public API.
 

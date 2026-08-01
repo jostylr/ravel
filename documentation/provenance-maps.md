@@ -131,4 +131,4 @@ Version 1 now supplies level-2 coverage across every evaluator path, level-3
 source detail through ordinary composition and mapping-aware built-ins, and
 exact forward/reverse navigation for unchanged characters. This is the useful
 navigation subset of level 4. Editing generated content back into source and a
-precise-map return protocol for external transforms remain post-0.1 work.
+precise-map return protocol for external transforms are deferred to 0.3.

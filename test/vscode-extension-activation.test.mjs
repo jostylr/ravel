@@ -3,6 +3,7 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import test from "node:test";
 import { build } from "esbuild";
 
@@ -102,7 +103,10 @@ test("VS Code extension activation registers generated and native language surfa
   globalThis.__ravelVscodeCalls = [];
   try {
     await build({
-      entryPoints: [new URL("../packages/vscode/src/extension.js", import.meta.url).pathname],
+      entryPoints: [fileURLToPath(new URL(
+        "../packages/vscode/src/extension.js",
+        import.meta.url
+      ))],
       outfile: output,
       bundle: true,
       platform: "node",

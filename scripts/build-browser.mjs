@@ -11,7 +11,8 @@ const template = fileURLToPath(new URL("../packages/host-browser/app/index.html"
 await mkdir(output, { recursive: true });
 await Promise.all([
   rm(output + "app.js.map", { force: true }),
-  rm(output + "app.css.map", { force: true })
+  rm(output + "app.css.map", { force: true }),
+  rm(output + "chunks", { recursive: true, force: true })
 ]);
 await build({
   entryPoints: [application],
@@ -21,6 +22,8 @@ await build({
   target: ["es2022"],
   outdir: output,
   entryNames: "app",
+  chunkNames: "chunks/[name]-[hash]",
+  splitting: true,
   assetNames: "assets/[name]-[hash]",
   loader: { ".md": "text" },
   sourcemap: false,

@@ -1,6 +1,6 @@
 # Five-minute getting started
 
-This is the installed-package workflow for Ravel 0.1. It uses the `ravel`
+This is the installed-package workflow for Ravel 0.2. It uses the `ravel`
 binary provided by `@pieceful/ravel`; no repository checkout or source-path
 imports are required.
 
@@ -85,4 +85,4 @@ archive must not already exist.
 - Use `ravel inspect <input> --chunks`, `--graph`, `--trace --json`, or
   `--provenance <deliverable> --generated-offset <offset>` to
   understand a project before building it.
-- Read the [Markdown profile](markdown-fences.md), [pipes and directives](pipes-and-directives.md), and [map schema guide](ravel-map-schema.md) for the supported 0.1 syntax and contracts.
+- Read the [Markdown profile](markdown-fences.md), [pipes and directives](pipes-and-directives.md), [live-execution guide](live-execution.md), and [map schema guide](ravel-map-schema.md) for the supported 0.2 syntax and contracts.

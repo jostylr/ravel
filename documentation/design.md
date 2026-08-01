@@ -47,16 +47,18 @@ format adapters or filesystem hosts responsible for the feature.
 | host-node | filesystem, cache, and effect capabilities | Markdown-specific policy |
 | cli | command parsing and presentation | direct compiler internals |
 | explorer | portable focused graph projections, provenance/change UI, and host protocol | Node filesystem, VS Code APIs |
-| vscode (proposed) | VS Code webview host, source synchronization, preview overlays, and WorkspaceEdit | compiler internals bypassing public package contracts |
+| vscode | VS Code webview host, source synchronization, preview overlays, and WorkspaceEdit | compiler internals bypassing public package contracts |
 
-Potential post-0.1 packages include notebook, LSP, trace, and additional format
-adapters. The Explorer and its proposed VS Code integration are specified in
-[the Explorer design](explorer-design.md).
+Ravel 0.2 includes the format adapters, read-only Explorer slice, and private
+VS Code workspace integration described here. Persistent execution caching,
+full editor round trips, and broader native-tool compatibility are deferred to
+0.3. The Explorer and VS Code integration are specified in [the Explorer
+design](explorer-design.md).
 
 ## Runtime support
 
 Ravel is compatible with Node without being Node-shaped. The portable package
-set—map, core, and eventually browser-safe adapters—targets standard ESM and
+set—map, core, and browser-safe adapters—targets standard ESM and
 Web Platform APIs and must run in modern browsers, Bun, and supported Node.
 Node-only capabilities live in host-node; the CLI is consequently Node-only.
 

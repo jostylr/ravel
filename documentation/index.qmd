@@ -17,7 +17,7 @@ Ravel assembles named code pieces into finished artifacts while preserving the
 dependency graph and provenance that explain exactly where every generated
 range came from.
 
-<p class="hero-note">Static by design · Browser-safe core · Source-linked diagnostics</p>
+<p class="hero-note">Explicit execution · Browser-safe core · Source-linked diagnostics</p>
 :::
 
 ::: {.hero-actions}
@@ -62,9 +62,9 @@ coarse source locations and derivation steps.
 
 ## Small surface. Explicit composition.
 
-Ravel 0.1 focuses on dependable static weaving: Markdown fences become a
-portable Ravel Map, the core resolves a graph, and hosts decide where artifacts
-may be written.
+Ravel 0.2 combines dependable static weaving with bounded, explicitly opted-in
+live JavaScript: Markdown fences become a portable Ravel Map, the core resolves
+a graph, and hosts decide where artifacts may be written or executed.
 
 [Read the five-minute guide](getting-started.md) or experiment without installing
 anything in the [browser playground](playground/).

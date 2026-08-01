@@ -8,6 +8,7 @@ import {
 } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import test from "node:test";
 import {
   prepareQuartoProjectDirectory,
@@ -15,10 +16,10 @@ import {
   renderQuartoProject
 } from "../packages/quarto/src/node.js";
 
-const projectFixture = new URL(
+const projectFixture = fileURLToPath(new URL(
   "../fixtures/quarto/project",
   import.meta.url
-).pathname;
+));
 
 test("Quarto Node host prepares an isolated complete project tree", async () => {
   const authored = await readFile(join(projectFixture, "index.qmd"), "utf8");

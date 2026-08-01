@@ -11,8 +11,10 @@ const elements = {
   diagnostics: document.querySelector("#diagnostics"),
   outputTab: document.querySelector("#output-tab"),
   provenanceTab: document.querySelector("#provenance-tab"),
+  explorerTab: document.querySelector("#explorer-tab"),
   outputView: document.querySelector("#output-view"),
   provenanceView: document.querySelector("#provenance-view"),
+  explorerView: document.querySelector("#explorer-view"),
   deliverableSelect: document.querySelector("#deliverable-select"),
   copyButton: document.querySelector("#copy-button"),
   artifactName: document.querySelector("#artifact-name"),
@@ -23,11 +25,19 @@ const elements = {
   provenanceLegend: document.querySelector("#provenance-legend"),
   segmentDetail: document.querySelector("#segment-detail"),
   rawMapJson: document.querySelector("#raw-map-json"),
+  explorerGraph: document.querySelector("#explorer-graph"),
+  explorerSummary: document.querySelector("#explorer-summary"),
+  explorerDetail: document.querySelector("#explorer-detail"),
   renderStatus: document.querySelector("#render-status")
 };
 
 let currentResult = null;
 let currentDeliverable = null;
+let currentExplorerContext = null;
+let currentExplorerSnapshot = null;
+let explorerView = null;
+let explorerApi = null;
+let explorerLoading = null;
 let selectedSegment = 0;
 let autoRenderTimer = null;
 
@@ -101,13 +111,16 @@ const chunkColor = (chunk) => {
   return value % 8;
 };
 
-const jumpToSource = (source) => {
+const jumpToSource = (source, { select = true } = {}) => {
   const start = source?.range?.start?.offset;
   const end = source?.range?.end?.offset;
   if (!Number.isInteger(start) || !Number.isInteger(end)) return;
   const length = editor.state.doc.length;
+  const anchor = Math.min(start, length);
   editor.dispatch({
-    selection: { anchor: Math.min(start, length), head: Math.min(Math.max(start, end), length) },
+    selection: select
+      ? { anchor, head: Math.min(Math.max(start, end), length) }
+      : { anchor },
     scrollIntoView: true
   });
   editor.focus();
@@ -144,11 +157,113 @@ const showDiagnostics = (diagnostics) => {
 };
 
 const setView = (view) => {
+  const explorer = view === "explorer";
   const provenance = view === "provenance";
-  elements.outputTab.setAttribute("aria-selected", String(!provenance));
+  elements.outputTab.setAttribute("aria-selected", String(view === "output"));
   elements.provenanceTab.setAttribute("aria-selected", String(provenance));
-  elements.outputView.hidden = provenance;
+  elements.explorerTab.setAttribute("aria-selected", String(explorer));
+  elements.outputView.hidden = view !== "output";
   elements.provenanceView.hidden = !provenance;
+  elements.explorerView.hidden = !explorer;
+  elements.copyButton.hidden = explorer || !currentDeliverable;
+  if (explorer) mountExplorer();
+};
+
+const explorerSource = (entity, details) => details?.source ?? entity?.source ?? entity?.authoredAt;
+
+const loadExplorer = () => {
+  if (!explorerLoading) {
+    explorerLoading = Promise.all([
+      import("@pieceful/ravel-explorer"),
+      import("@pieceful/ravel-explorer/browser")
+    ]).then(([model, browser]) => {
+      explorerApi = { ...model, ...browser };
+      return explorerApi;
+    });
+  }
+  return explorerLoading;
+};
+
+const showExplorerDetail = (entity) => {
+  const details = currentExplorerContext && explorerApi
+    ? explorerApi.createExplorerEntityDetails(currentExplorerContext, entity.id)
+    : null;
+  const source = explorerSource(entity, details);
+  const heading = document.createElement("div");
+  heading.className = "detail-heading";
+  const title = document.createElement("strong");
+  title.textContent = details?.label ?? entity.label ?? entity.id;
+  heading.append(title);
+
+  const kind = document.createElement("span");
+  kind.className = "explorer-kind";
+  kind.textContent = details?.kind ?? entity.kind ?? "edge";
+
+  const content = document.createElement("div");
+  content.className = "explorer-detail-content";
+  content.append(heading, kind);
+  if (source?.range) {
+    const reveal = document.createElement("button");
+    reveal.type = "button";
+    reveal.className = "source-link";
+    reveal.textContent = sourceLabel(source);
+    reveal.addEventListener("click", () => jumpToSource(source, { select: false }));
+    content.append(reveal);
+  }
+  for (const [label, preview] of [["Authored", details?.authored], ["Evaluated", details?.evaluated]]) {
+    if (!preview) continue;
+    const section = document.createElement("div");
+    section.className = "explorer-preview";
+    const caption = document.createElement("span");
+    caption.className = "panel-kicker";
+    caption.textContent = label;
+    const code = document.createElement("pre");
+    code.textContent = preview.text + (preview.truncated ? "\n…" : "");
+    section.append(caption, code);
+    content.append(section);
+  }
+  elements.explorerDetail.replaceChildren(content);
+};
+
+const mountExplorer = async () => {
+  if (!currentExplorerContext || explorerView) return;
+  const context = currentExplorerContext;
+  elements.explorerSummary.textContent = "Loading the bounded dependency graph…";
+  try {
+    const api = await loadExplorer();
+    if (context !== currentExplorerContext || explorerView) return;
+    currentExplorerSnapshot = api.createExplorerSnapshot(context, { maxNodes: 250 });
+    const counts = currentExplorerSnapshot.counts;
+    const suffix = currentExplorerSnapshot.truncated ? " (bounded view)" : "";
+    elements.explorerSummary.textContent = `${counts.visibleNodes} nodes · ${counts.visibleEdges} edges${suffix}`;
+    elements.explorerGraph.replaceChildren();
+    explorerView = api.createExplorerView(elements.explorerGraph, currentExplorerSnapshot, {
+      onSelect: (entity) => showExplorerDetail(entity)
+    });
+    await explorerView.ready;
+    explorerView?.fit();
+  } catch {
+    elements.explorerSummary.textContent = "The dependency graph could not be loaded for this document.";
+  }
+};
+
+const refreshExplorer = (result) => {
+  if (!result.program) return;
+  currentExplorerContext = {
+    program: result.program,
+    project: {
+      id: result.source.document ?? "playground",
+      label: "Browser playground"
+    }
+  };
+  currentExplorerSnapshot = null;
+  elements.explorerSummary.textContent = "Open this tab to load the bounded dependency graph.";
+  elements.explorerDetail.innerHTML = "<p>Select a graph node or edge to inspect its source and current value.</p>";
+  if (explorerView) {
+    explorerView.destroy();
+    explorerView = null;
+  }
+  if (!elements.explorerView.hidden) void mountExplorer();
 };
 
 const showSegmentDetail = (index) => {
@@ -289,6 +404,7 @@ const showDeliverable = (name) => {
 
 const showResult = (result) => {
   currentResult = result;
+  currentDeliverable = null;
   elements.deliverableSelect.replaceChildren(...result.deliverables.map((deliverable) => {
     const option = document.createElement("option");
     option.value = deliverable.name;
@@ -296,7 +412,18 @@ const showResult = (result) => {
     return option;
   }));
   elements.deliverableSelect.closest(".deliverable-field").hidden = result.deliverables.length < 2;
-  showDeliverable(result.deliverables[0]?.name);
+  if (result.deliverables.length) {
+    showDeliverable(result.deliverables[0].name);
+  } else {
+    elements.artifactName.textContent = "No declared deliverable";
+    elements.artifactSize.textContent = "";
+    elements.outputCode.textContent = "Add an out() directive to create a generated artifact.";
+    elements.mappedOutput.replaceChildren();
+    elements.provenanceLegend.replaceChildren();
+    elements.provenanceSummary.textContent = "No deliverable provenance map";
+    elements.segmentDetail.innerHTML = "<p>Add an out() directive to inspect generated provenance.</p>";
+  }
+  refreshExplorer(result);
 };
 
 const render = () => {
@@ -309,13 +436,13 @@ const render = () => {
   });
   showDiagnostics(result.diagnostics);
 
-  if (result.ok && result.deliverables.length) {
+  if (result.ok) {
     showResult(result);
     elements.dirtyStatus.dataset.state = "clean";
     elements.dirtyStatus.textContent = "Rendered";
-    elements.renderStatus.textContent = `Rendered ${result.deliverables.length} ${result.deliverables.length === 1 ? "artifact" : "artifacts"} successfully.`;
-  } else if (result.ok) {
-    elements.renderStatus.textContent = "The document is valid, but it declares no out() deliverable.";
+    elements.renderStatus.textContent = result.deliverables.length
+      ? `Rendered ${result.deliverables.length} ${result.deliverables.length === 1 ? "artifact" : "artifacts"} successfully.`
+      : "The document is valid, but it declares no out() deliverable.";
   } else {
     elements.dirtyStatus.dataset.state = "error";
     elements.dirtyStatus.textContent = "Render failed";
@@ -335,6 +462,7 @@ elements.autoRender.addEventListener("change", () => {
 });
 elements.outputTab.addEventListener("click", () => setView("output"));
 elements.provenanceTab.addEventListener("click", () => setView("provenance"));
+elements.explorerTab.addEventListener("click", () => setView("explorer"));
 elements.deliverableSelect.addEventListener("change", () => showDeliverable(elements.deliverableSelect.value));
 elements.copyButton.addEventListener("click", async () => {
   if (!currentDeliverable) return;

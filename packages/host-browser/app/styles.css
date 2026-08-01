@@ -568,6 +568,10 @@ kbd {
   background: #0a1512;
 }
 
+.explorer-view {
+  background: #0a1512;
+}
+
 .provenance-intro {
   display: flex;
   gap: 24px;
@@ -599,6 +603,92 @@ kbd {
   font-size: 10px;
   line-height: 1.5;
   text-align: right;
+}
+
+.explorer-intro {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.explorer-intro strong {
+  display: block;
+  font-family: Georgia, serif;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.explorer-summary {
+  display: block;
+  margin-top: 6px;
+  color: var(--green-bright);
+  font-family: "SFMono-Regular", "Cascadia Code", monospace;
+  font-size: 9px;
+}
+
+.explorer-intro p {
+  max-width: 300px;
+  margin: 0;
+  color: var(--subtle);
+  font-size: 10px;
+  line-height: 1.5;
+  text-align: right;
+}
+
+.explorer-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  min-height: 420px;
+  height: calc(100% - 89px);
+}
+
+#explorer-graph {
+  min-width: 0;
+  min-height: 420px;
+  border-right: 1px solid var(--line);
+  background: #0a1512;
+}
+
+.explorer-detail {
+  padding: 20px 17px;
+  overflow: auto;
+  background: #0d1a16;
+}
+
+.explorer-detail > p {
+  margin: 0;
+  color: var(--subtle);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.explorer-kind {
+  display: inline-block;
+  margin-bottom: 12px;
+  padding: 3px 6px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  color: var(--muted);
+  font-family: monospace;
+  font-size: 9px;
+}
+
+.explorer-preview {
+  margin-top: 18px;
+}
+
+.explorer-preview pre {
+  max-height: 190px;
+  margin: 6px 0 0;
+  overflow: auto;
+  color: #dce7e1;
+  font-family: "SFMono-Regular", "Cascadia Code", monospace;
+  font-size: 10px;
+  line-height: 1.55;
+  white-space: pre-wrap;
 }
 
 .provenance-layout {

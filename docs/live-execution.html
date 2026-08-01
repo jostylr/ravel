@@ -205,7 +205,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </li>  
         <li>
     <a class="dropdown-item" href="./contracts-and-configuration.html">
- <span class="dropdown-text">0.1 contracts</span></a>
+ <span class="dropdown-text">0.2 contracts</span></a>
   </li>  
         <li>
     <a class="dropdown-item" href="./ravel-map-schema.html">
@@ -372,7 +372,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./contracts-and-configuration.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">0.1 contracts and configuration</span></a>
+ <span class="menu-text">0.2 contracts and configuration</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -546,7 +546,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><code>planLiveExecutions(program, { providers })</code> selects providers, analyzes executable chunks, resolves dependencies, and diagnoses live cycles.</li>
 <li><code>executeLiveProgram(program, { providers, resources?, limits?, signal? })</code> evaluates the planned graph and returns per-chunk values, canonical serialized text, statuses, and diagnostics.</li>
 </ul>
-<p>Providers implement the frozen v0.2 contract: <code>id</code>, <code>version</code>, language aliases, <code>analyze(request)</code>, and <code>execute(request)</code>. Analysis and outcomes carry contract version <code>1</code>; outcomes use the stable <code>succeeded</code>/<code>failed</code> status vocabulary. A provider receives composed source, copied inputs, copied resources, limits, source identity, a run ID, and an optional <code>AbortSignal</code>. This boundary is intentionally independent of JavaScript so a future RiX or other WebAssembly-backed provider can use the same planner.</p>
+<p>Providers implement the frozen v0.2 contract: <code>id</code>, <code>version</code>, language aliases, <code>analyze(request)</code>, and <code>execute(request)</code>. Requests, analysis, and outcomes carry contract version <code>1</code>; outcomes use the stable <code>succeeded</code>/<code>failed</code> status vocabulary. A provider receives composed source, copied inputs, copied resources, limits, source identity, a run ID, and an optional <code>AbortSignal</code>. This boundary is intentionally independent of JavaScript so a future RiX or other WebAssembly-backed provider can use the same planner.</p>
 <p>Successful results are data; executors never write files. <code>ravel run</code> displays them without output effects. <code>ravel build</code> performs a second ordinary Ravel evaluation after live execution:</p>
 <ul>
 <li>a live string enters references, pipes, and <code>out</code> as raw text;</li>
@@ -972,7 +972,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <footer class="footer">
   <div class="nav-footer">
     <div class="nav-footer-left">
-<p>Ravel 0.1 · MIT licensed</p>
+<p>Ravel 0.2 · MIT licensed</p>
 </div>   
     <div class="nav-footer-center">
       &nbsp;

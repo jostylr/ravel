@@ -1,9 +1,10 @@
 # Migrating FizzBuzz-era Ravel material
 
-Ravel 0.1 preserves the useful static composition ideas from the predecessor:
+Ravel 0.2 preserves the useful static composition ideas from the predecessor:
 named chunks, narrative source order, cross-document references, variants,
-pipes, and declared outputs. It deliberately does not preserve the predecessor
-as a runtime or a compatibility parser.
+pipes, and declared outputs. It adds bounded, explicit live JavaScript
+execution, but deliberately does not preserve the predecessor as a runtime or
+a compatibility parser.
 
 The runnable reference migration is [the FizzBuzz example](../examples/migration/README.md).
 It exercises Markdown extraction, imports, greedy fenced fragments, `create`,
@@ -11,7 +12,7 @@ It exercises Markdown extraction, imports, greedy fenced fragments, `create`,
 
 ## Concept mapping
 
-| Earlier idea | Ravel 0.1 equivalent |
+| Earlier idea | Ravel 0.2 equivalent |
 | --- | --- |
 | named code piece | a named `.ravel` Markdown fence with an explicit identity |
 | cross-document piece | a fully qualified `document::chunk.minor.type` reference |
@@ -32,15 +33,15 @@ It exercises Markdown extraction, imports, greedy fenced fragments, `create`,
 5. Compare generated output and inspect the sidecar `.ravelmap` before retiring
    the old workflow.
 
-## Intentionally absent in 0.1
+## Intentionally absent in 0.2
 
-There is no legacy parser, plugin loading, execution notebook, shell or network
-directive, mutable global scope, implicit cache, watch mode, editor integration,
+There is no legacy parser, shell or network directive, mutable global scope,
+implicit persistent cache, watch mode, structured editor round-trip editing,
 parameter binding, conditional profile, or automatic compatibility treatment of
-old headings and links. Those omissions make the static graph deterministic,
+old headings and links. Those omissions keep the graph deterministic,
 auditable, and safe to run in CI. A legacy source that depends on any of them
 must be rewritten or kept on its predecessor runtime.
 
-Ravel 0.1 also does not promise character-exact provenance through an arbitrary
+Ravel 0.2 also does not promise character-exact provenance through an arbitrary
 transform. Its maps distinguish exact preserved text from coarse transform
 attribution; that is a correctness boundary, not missing metadata.

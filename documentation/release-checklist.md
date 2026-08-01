@@ -57,12 +57,30 @@ Publish packages in dependency order only after the exact release artifacts
 pass the gate above:
 
 ```sh
-npm publish --workspace @pieceful/ravel-map --access public
 npm publish --workspace @pieceful/ravel-core --access public
+npm publish --workspace @pieceful/ravel-js-live --access public
+npm publish --workspace @pieceful/ravel-language-bridge --access public
+npm publish --workspace @pieceful/ravel-map --access public
+npm publish --workspace @pieceful/ravel-myst-plugin --access public
+npm publish --workspace @pieceful/ravel-projection --access public
+npm publish --workspace @pieceful/ravel-asciidoc --access public
+npm publish --workspace @pieceful/ravel-html --access public
+npm publish --workspace @pieceful/ravel-language-service --access public
+npm publish --workspace @pieceful/ravel-language-typescript --access public
 npm publish --workspace @pieceful/ravel-markdown --access public
+npm publish --workspace @pieceful/ravel-markdown-litpro --access public
+npm publish --workspace @pieceful/ravel-myst --access public
+npm publish --workspace @pieceful/ravel-noweb --access public
+npm publish --workspace @pieceful/ravel-org --access public
 npm publish --workspace @pieceful/ravel-host-node --access public
+npm publish --workspace @pieceful/ravel-quarto --access public
 npm publish --workspace @pieceful/ravel --access public
 ```
+
+The Explorer, browser host, and VS Code workspaces are private and are not
+published to npm. The command order is a topological order of the public
+workspace dependencies; publish all 18 packages so the exact `0.2.0`
+dependencies used by the CLI and integrations resolve from npm.
 
 Run `npm whoami` first and verify the `@pieceful` scope permissions. Publishing
 is intentionally not part of the implementation task.

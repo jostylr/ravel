@@ -9,6 +9,7 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
+import { fileURLToPath } from "node:url";
 import { prepareQuartoRender } from "../packages/quarto/src/index.js";
 import { renderQuartoProject } from "../packages/quarto/src/node.js";
 
@@ -57,10 +58,10 @@ try {
     /<span class="bu">print<\/span>\(<span class="dv">40<\/span>/
   );
 
-  const projectDirectory = new URL(
+  const projectDirectory = fileURLToPath(new URL(
     "../fixtures/quarto/project",
     import.meta.url
-  ).pathname;
+  ));
   const projectHtml = await renderQuartoProject(projectDirectory, {
     to: "html"
   });

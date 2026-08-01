@@ -170,7 +170,7 @@ ul.task-list li input[type="checkbox"] {
   </li>  
         <li>
     <a class="dropdown-item" href="./contracts-and-configuration.html">
- <span class="dropdown-text">0.1 contracts</span></a>
+ <span class="dropdown-text">0.2 contracts</span></a>
   </li>  
         <li>
     <a class="dropdown-item" href="./ravel-map-schema.html">
@@ -337,7 +337,7 @@ ul.task-list li input[type="checkbox"] {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./contracts-and-configuration.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">0.1 contracts and configuration</span></a>
+ <span class="menu-text">0.2 contracts and configuration</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -433,7 +433,7 @@ ul.task-list li input[type="checkbox"] {
   <ul class="collapse">
   <li><a href="#concept-mapping" id="toc-concept-mapping" class="nav-link" data-scroll-target="#concept-mapping">Concept mapping</a></li>
   <li><a href="#recommended-conversion-order" id="toc-recommended-conversion-order" class="nav-link" data-scroll-target="#recommended-conversion-order">Recommended conversion order</a></li>
-  <li><a href="#intentionally-absent-in-0.1" id="toc-intentionally-absent-in-0.1" class="nav-link" data-scroll-target="#intentionally-absent-in-0.1">Intentionally absent in 0.1</a></li>
+  <li><a href="#intentionally-absent-in-0.2" id="toc-intentionally-absent-in-0.2" class="nav-link" data-scroll-target="#intentionally-absent-in-0.2">Intentionally absent in 0.2</a></li>
   </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/jostylr/ravel/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></nav>
@@ -446,7 +446,7 @@ ul.task-list li input[type="checkbox"] {
 
 <section id="migrating-fizzbuzz-era-ravel-material" class="level1">
 <h1>Migrating FizzBuzz-era Ravel material</h1>
-<p>Ravel 0.1 preserves the useful static composition ideas from the predecessor: named chunks, narrative source order, cross-document references, variants, pipes, and declared outputs. It deliberately does not preserve the predecessor as a runtime or a compatibility parser.</p>
+<p>Ravel 0.2 preserves the useful static composition ideas from the predecessor: named chunks, narrative source order, cross-document references, variants, pipes, and declared outputs. It adds bounded, explicit live JavaScript execution, but deliberately does not preserve the predecessor as a runtime or a compatibility parser.</p>
 <p>The runnable reference migration is <a href="../examples/migration/README.md">the FizzBuzz example</a>. It exercises Markdown extraction, imports, greedy fenced fragments, <code>create</code>, <code>alias</code>, <code>pipe</code>, <code>pass</code>, <code>emit</code>, multiple outputs, manifests, and provenance.</p>
 <section id="concept-mapping" class="level2">
 <h2 class="anchored" data-anchor-id="concept-mapping">Concept mapping</h2>
@@ -458,7 +458,7 @@ ul.task-list li input[type="checkbox"] {
 <thead>
 <tr class="header">
 <th>Earlier idea</th>
-<th>Ravel 0.1 equivalent</th>
+<th>Ravel 0.2 equivalent</th>
 </tr>
 </thead>
 <tbody>
@@ -507,10 +507,10 @@ ul.task-list li input[type="checkbox"] {
 <li>Compare generated output and inspect the sidecar <code>.ravelmap</code> before retiring the old workflow.</li>
 </ol>
 </section>
-<section id="intentionally-absent-in-0.1" class="level2">
-<h2 class="anchored" data-anchor-id="intentionally-absent-in-0.1">Intentionally absent in 0.1</h2>
-<p>There is no legacy parser, plugin loading, execution notebook, shell or network directive, mutable global scope, implicit cache, watch mode, editor integration, parameter binding, conditional profile, or automatic compatibility treatment of old headings and links. Those omissions make the static graph deterministic, auditable, and safe to run in CI. A legacy source that depends on any of them must be rewritten or kept on its predecessor runtime.</p>
-<p>Ravel 0.1 also does not promise character-exact provenance through an arbitrary transform. Its maps distinguish exact preserved text from coarse transform attribution; that is a correctness boundary, not missing metadata.</p>
+<section id="intentionally-absent-in-0.2" class="level2">
+<h2 class="anchored" data-anchor-id="intentionally-absent-in-0.2">Intentionally absent in 0.2</h2>
+<p>There is no legacy parser, shell or network directive, mutable global scope, implicit persistent cache, watch mode, structured editor round-trip editing, parameter binding, conditional profile, or automatic compatibility treatment of old headings and links. Those omissions keep the graph deterministic, auditable, and safe to run in CI. A legacy source that depends on any of them must be rewritten or kept on its predecessor runtime.</p>
+<p>Ravel 0.2 also does not promise character-exact provenance through an arbitrary transform. Its maps distinguish exact preserved text from coarse transform attribution; that is a correctness boundary, not missing metadata.</p>
 
 
 </section>
@@ -923,7 +923,7 @@ ul.task-list li input[type="checkbox"] {
 <footer class="footer">
   <div class="nav-footer">
     <div class="nav-footer-left">
-<p>Ravel 0.1 · MIT licensed</p>
+<p>Ravel 0.2 · MIT licensed</p>
 </div>   
     <div class="nav-footer-center">
       &nbsp;

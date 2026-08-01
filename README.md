@@ -32,6 +32,10 @@ examples live at [ravel.jostylr.com](https://ravel.jostylr.com/).
 | [@pieceful/ravel](https://www.npmjs.com/package/@pieceful/ravel) | Node.js CLI for checking, inspecting, and building Ravel projects. |
 | [@pieceful/ravel-core](https://www.npmjs.com/package/@pieceful/ravel-core) | Portable chunk parser, graph evaluator, diagnostics, and provenance engine. |
 | [@pieceful/ravel-map](https://www.npmjs.com/package/@pieceful/ravel-map) | Versioned Ravel Map schema, validation, and diagnostic contract. |
+| [@pieceful/ravel-projection](https://www.npmjs.com/package/@pieceful/ravel-projection) | Portable virtual-document and source-projection primitives for editor integrations. |
+| [@pieceful/ravel-language-bridge](https://www.npmjs.com/package/@pieceful/ravel-language-bridge) | Versioned bridge protocol for native language analyzers. |
+| [@pieceful/ravel-language-service](https://www.npmjs.com/package/@pieceful/ravel-language-service) | Ravel symbols, diagnostics, completions, and safe edit classification. |
+| [@pieceful/ravel-language-typescript](https://www.npmjs.com/package/@pieceful/ravel-language-typescript) | TypeScript bridge and virtual-project integration. |
 | [@pieceful/ravel-asciidoc](https://www.npmjs.com/package/@pieceful/ravel-asciidoc) | Lossless AsciiDoc sections, attributed blocks, containers, cross-references, and graph-directive macros. |
 | [@pieceful/ravel-html](https://www.npmjs.com/package/@pieceful/ravel-html) | Script-free semantic HTML sections, figures, entity-aware code fragments, navigation, and directive links. |
 | [@pieceful/ravel-markdown](https://www.npmjs.com/package/@pieceful/ravel-markdown) | Portable adapter that extracts Ravel Maps from Markdown fences and directives. |
@@ -48,6 +52,16 @@ The implemented vertical slice is intentionally safe and deterministic in
 spirit: parsing and graph evaluation do not evaluate document JavaScript or
 shell commands, and the Node host confines declared inputs and outputs to an
 explicit filesystem root.
+
+## CLI install contents
+
+Installing `@pieceful/ravel` installs the CLI and its required runtime
+packages automatically: `@pieceful/ravel-core`, `@pieceful/ravel-host-node`,
+`@pieceful/ravel-js-live`, `@pieceful/ravel-map`, and the AsciiDoc, HTML,
+Markdown, LitPro Markdown, MyST, noweb, and Org adapters. Install the Quarto,
+MyST plugin, projection, or language-bridge/service/TypeScript packages
+separately when building those integrations. The Explorer, browser host, and
+VS Code packages are private workspaces and are not npm installs.
 
 ## Project status
 

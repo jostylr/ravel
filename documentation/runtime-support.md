@@ -1,7 +1,8 @@
 # Runtime support and testing policy
 
-This document records the implemented 0.1 support policy. Explorer, notebook,
-and editor work mentioned elsewhere is post-0.1 and is not part of this matrix.
+This document records the implemented 0.2 support policy. The release includes
+the bounded browser Explorer slice and adapter-specific notebook integration;
+broader editor workflows remain deferred to 0.3.
 
 ## Promise
 
@@ -12,7 +13,8 @@ not mean every package runs everywhere. The boundary is intentional:
 | --- | --- | --- | --- |
 | Ravel Map and core graph/syntax | yes | yes | yes |
 | Browser-safe format adapters | yes | yes | yes |
-| Notebook/editor integration | post-0.1 | post-0.1 | post-0.1 |
+| Read-only Explorer and adapter-specific notebook integration | yes | yes | yes |
+| Full editor round-trip editing | deferred to 0.3 | deferred to 0.3 | deferred to 0.3 |
 | Node filesystem/process host | no | only if separately implemented | yes |
 | CLI | no | future optional wrapper | yes |
 
@@ -71,7 +73,7 @@ Every portable package change must pass:
 2. current Bun test suite;
 3. browser conformance suite in Playwright Chromium.
 
-Chromium is the intentionally narrow 0.1 browser policy. Firefox and WebKit
+Chromium is the intentionally narrow 0.2 browser policy. Firefox and WebKit
 coverage may be added later, but their absence must not be described as tested
 cross-browser support.
 

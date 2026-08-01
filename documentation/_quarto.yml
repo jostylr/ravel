@@ -50,7 +50,7 @@ website:
         menu:
           - text: "Public API"
             href: public-api.md
-          - text: "0.1 contracts"
+          - text: "0.2 contracts"
             href: contracts-and-configuration.md
           - text: "Ravel Map schema"
             href: ravel-map-schema.md
@@ -98,7 +98,7 @@ website:
           - history.md
           - release-checklist.md
   page-footer:
-    left: "Ravel 0.1 · MIT licensed"
+    left: "Ravel 0.2 · MIT licensed"
     right:
       - text: "GitHub"
         href: "https://github.com/jostylr/ravel"

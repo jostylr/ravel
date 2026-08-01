@@ -27,7 +27,7 @@
     <main>
       <section class="intro" aria-labelledby="playground-title">
         <div>
-          <p class="eyebrow">Browser host · Ravel 0.1</p>
+          <p class="eyebrow">Browser host · Ravel 0.2</p>
           <h1 id="playground-title">Trace the thread from prose to program.</h1>
           <p>Edit a literate document, weave it in memory, then follow every generated range back to its source.</p>
         </div>
@@ -64,6 +64,7 @@
             <div class="view-tabs" role="tablist" aria-label="Result view">
               <button id="output-tab" role="tab" aria-selected="true" aria-controls="output-view" type="button">Output</button>
               <button id="provenance-tab" role="tab" aria-selected="false" aria-controls="provenance-view" type="button">Provenance</button>
+              <button id="explorer-tab" role="tab" aria-selected="false" aria-controls="explorer-view" type="button">Explorer</button>
             </div>
             <div class="result-actions">
               <label class="deliverable-field" for="deliverable-select">
@@ -107,6 +108,23 @@
               <summary>Raw provenance map <span>JSON</span></summary>
               <pre><code id="raw-map-json"></code></pre>
             </details>
+          </section>
+
+          <section id="explorer-view" class="result-view explorer-view" role="tabpanel" aria-labelledby="explorer-tab" hidden>
+            <div class="explorer-intro">
+              <div>
+                <span class="panel-kicker">Dependency graph</span>
+                <strong>Explore the current in-memory program.</strong>
+                <small id="explorer-summary" class="explorer-summary">Render a valid document to inspect its graph.</small>
+              </div>
+              <p>Select a node or edge to reveal its source. This view never reads or writes files.</p>
+            </div>
+            <div class="explorer-layout">
+              <div id="explorer-graph" aria-label="Ravel dependency graph"></div>
+              <aside id="explorer-detail" class="explorer-detail" aria-live="polite">
+                <p>Render a valid document, then select a graph node or edge.</p>
+              </aside>
+            </div>
           </section>
         </article>
       </section>

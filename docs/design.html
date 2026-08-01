@@ -168,7 +168,7 @@ ul.task-list li input[type="checkbox"] {
   </li>  
         <li>
     <a class="dropdown-item" href="./contracts-and-configuration.html">
- <span class="dropdown-text">0.1 contracts</span></a>
+ <span class="dropdown-text">0.2 contracts</span></a>
   </li>  
         <li>
     <a class="dropdown-item" href="./ravel-map-schema.html">
@@ -335,7 +335,7 @@ ul.task-list li input[type="checkbox"] {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./contracts-and-configuration.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">0.1 contracts and configuration</span></a>
+ <span class="menu-text">0.2 contracts and configuration</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -515,17 +515,17 @@ ul.task-list li input[type="checkbox"] {
 <td>Node filesystem, VS Code APIs</td>
 </tr>
 <tr class="odd">
-<td>vscode (proposed)</td>
+<td>vscode</td>
 <td>VS Code webview host, source synchronization, preview overlays, and WorkspaceEdit</td>
 <td>compiler internals bypassing public package contracts</td>
 </tr>
 </tbody>
 </table>
-<p>Potential post-0.1 packages include notebook, LSP, trace, and additional format adapters. The Explorer and its proposed VS Code integration are specified in <a href="./explorer-design.html">the Explorer design</a>.</p>
+<p>Ravel 0.2 includes the format adapters, read-only Explorer slice, and private VS Code workspace integration described here. Persistent execution caching, full editor round trips, and broader native-tool compatibility are deferred to 0.3. The Explorer and VS Code integration are specified in <a href="./explorer-design.html">the Explorer design</a>.</p>
 </section>
 <section id="runtime-support" class="level2">
 <h2 class="anchored" data-anchor-id="runtime-support">Runtime support</h2>
-<p>Ravel is compatible with Node without being Node-shaped. The portable package set—map, core, and eventually browser-safe adapters—targets standard ESM and Web Platform APIs and must run in modern browsers, Bun, and supported Node. Node-only capabilities live in host-node; the CLI is consequently Node-only.</p>
+<p>Ravel is compatible with Node without being Node-shaped. The portable package set—map, core, and browser-safe adapters—targets standard ESM and Web Platform APIs and must run in modern browsers, Bun, and supported Node. Node-only capabilities live in host-node; the CLI is consequently Node-only.</p>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 33%">
@@ -1032,7 +1032,7 @@ ul.task-list li input[type="checkbox"] {
 <footer class="footer">
   <div class="nav-footer">
     <div class="nav-footer-left">
-<p>Ravel 0.1 · MIT licensed</p>
+<p>Ravel 0.2 · MIT licensed</p>
 </div>   
     <div class="nav-footer-center">
       &nbsp;

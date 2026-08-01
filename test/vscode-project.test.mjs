@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { join, resolve } from "node:path";
 import test from "node:test";
 import {
   findExplorerDefinitionAtSelection,
@@ -11,26 +12,28 @@ import {
 } from "../packages/vscode/src/project.js";
 
 test("VS Code project discovery prefers the nearest ravel.toml", async () => {
-  const present = new Set(["/workspace/project/ravel.toml"]);
+  const workspaceRoot = resolve("/workspace");
+  const projectRoot = join(workspaceRoot, "project");
+  const present = new Set([join(projectRoot, "ravel.toml")]);
   const exists = async (path) => present.has(path);
 
-  assert.equal(isSupportedRavelInput("/workspace/project/chapter.md"), true);
+  assert.equal(isSupportedRavelInput(join(projectRoot, "chapter.md")), true);
   assert.equal(isSupportedRavelInput("/workspace/project/image.png"), false);
   assert.equal(
     await findNearestProjectConfig(
-      "/workspace/project/chapters/one.md",
-      "/workspace",
+      join(projectRoot, "chapters", "one.md"),
+      workspaceRoot,
       exists
     ),
-    "/workspace/project/ravel.toml"
+    join(projectRoot, "ravel.toml")
   );
   assert.equal(
     await resolveProjectInput(
-      "/workspace/project/chapters/one.md",
-      "/workspace",
+      join(projectRoot, "chapters", "one.md"),
+      workspaceRoot,
       exists
     ),
-    "/workspace/project/ravel.toml"
+    join(projectRoot, "ravel.toml")
   );
 });
 
@@ -89,16 +92,17 @@ test("editor selection chooses the narrowest source-linked graph entity", () => 
 
 test("VS Code project discovery falls back to a supported active source", async () => {
   const exists = async () => false;
+  const workspaceRoot = resolve("/workspace");
   assert.equal(
-    await resolveProjectInput("/workspace/guide.md", "/workspace", exists),
-    "/workspace/guide.md"
+    await resolveProjectInput(join(workspaceRoot, "guide.md"), workspaceRoot, exists),
+    join(workspaceRoot, "guide.md")
   );
   assert.equal(
-    await resolveProjectInput("/workspace/ravel.toml", "/workspace", exists),
-    "/workspace/ravel.toml"
+    await resolveProjectInput(join(workspaceRoot, "ravel.toml"), workspaceRoot, exists),
+    join(workspaceRoot, "ravel.toml")
   );
   assert.equal(
-    await resolveProjectInput("/workspace/notes.txt", "/workspace", exists),
+    await resolveProjectInput(join(workspaceRoot, "notes.txt"), workspaceRoot, exists),
     null
   );
 });
