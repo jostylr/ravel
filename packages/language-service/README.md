@@ -1,6 +1,6 @@
 # `@pieceful/ravel-language-service`
 
-Editor-neutral routing between authored Ravel locations, virtual projections,
+Editor-neutral routing between authored [Ravel](https://github.com/jostylr/ravel) locations, virtual projections,
 and native target-language bridges. It also classifies generated workspace
 edits before an editor host is allowed to modify authored documents.
 
@@ -17,7 +17,7 @@ import { createLanguageRouter } from "@pieceful/ravel-language-service";
 const router = createLanguageRouter({
   projectionService,
   bridges: [typescriptBridge],
-  trace: (event) => telemetry.event(event)
+  trace: (event) => telemetry.event(event),
 });
 
 await router.update(snapshot, abortSignal);
@@ -28,9 +28,9 @@ const response = await router.request(
   {
     targetId: "web",
     artifactId: "dist/app.ts",
-    request: { options: { includeCompletionsForModuleExports: true } }
+    request: { options: { includeCompletionsForModuleExports: true } },
   },
-  abortSignal
+  abortSignal,
 );
 
 if (response.status === "ok") {
@@ -108,7 +108,7 @@ call `classifyWorkspaceEdit()` directly:
 ```js
 import {
   classifyWorkspaceEdit,
-  validateSourceEditVersions
+  validateSourceEditVersions,
 } from "@pieceful/ravel-language-service";
 
 const classified = classifyWorkspaceEdit(generatedWorkspaceEdit, {
@@ -122,8 +122,8 @@ const classified = classifyWorkspaceEdit(generatedWorkspaceEdit, {
   limits: {
     documents: 32,
     edits: 2_000,
-    replacementTextCodeUnits: 250_000
-  }
+    replacementTextCodeUnits: 250_000,
+  },
 });
 
 if (classified.applicable) {
@@ -159,12 +159,12 @@ documents atomically; a missing or changed version makes validation fail.
 
 Classification outcomes are:
 
-| Classification | Meaning | Host behavior |
-| --- | --- | --- |
-| `automatic` | Every entry passed all exactness, writability, version, conflict, and size checks. | May apply only when `applicable === true` and final version validation succeeds. |
-| `preview` | Provenance exists but is ambiguous, anchored, transformed, or otherwise non-exact. | Show context/preview; do not apply the returned partial edit set. |
-| `action` | Synthetic text can be routed only through an explicit `importDestination` policy. | Offer a separate, host-defined action; do not treat it as a text edit. |
-| `rejected` | The proposal is stale, opaque, synthetic without policy, unmapped, outside the allowlist, conflicting, malformed, oversized, or contains a resource operation. | Do not apply. Surface a safe reason when useful. |
+| Classification | Meaning                                                                                                                                                        | Host behavior                                                                    |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `automatic`    | Every entry passed all exactness, writability, version, conflict, and size checks.                                                                             | May apply only when `applicable === true` and final version validation succeeds. |
+| `preview`      | Provenance exists but is ambiguous, anchored, transformed, or otherwise non-exact.                                                                             | Show context/preview; do not apply the returned partial edit set.                |
+| `action`       | Synthetic text can be routed only through an explicit `importDestination` policy.                                                                              | Offer a separate, host-defined action; do not treat it as a text edit.           |
+| `rejected`     | The proposal is stale, opaque, synthetic without policy, unmapped, outside the allowlist, conflicting, malformed, oversized, or contains a resource operation. | Do not apply. Surface a safe reason when useful.                                 |
 
 The overall classification is the strictest entry. Even if `sourceEdit`
 contains individually exact entries, never partially apply it when the overall

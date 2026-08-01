@@ -1,6 +1,6 @@
 # @pieceful/ravel-host-node
 
-The Node.js host for Ravel projects. It loads Markdown, JSON Ravel Maps, and
+The Node.js host for [Ravel](https://github.com/jostylr/ravel) projects. It loads Markdown, JSON Ravel Maps, and
 TOML project configuration; confines project filesystem access; and safely
 writes planned deliverables, manifests, provenance maps, cleanups, and backups.
 
@@ -20,8 +20,8 @@ overlay before disk:
 ```js
 const loaded = await loadBuildInput("ravel.toml", {
   overlays: new Map([
-    [absoluteMarkdownPath, { text: dirtyEditorText, version: 12 }]
-  ])
+    [absoluteMarkdownPath, { text: dirtyEditorText, version: 12 }],
+  ]),
 });
 ```
 

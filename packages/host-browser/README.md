@@ -1,6 +1,6 @@
 # `@pieceful/ravel-host-browser`
 
-An in-memory, browser-safe Ravel host for rendering one Markdown document into
+An in-memory, browser-safe [Ravel](https://github.com/jostylr/ravel) host for rendering one Markdown document into
 a Ravel Map, completed program, generated deliverables, diagnostics, and
 provenance maps.
 
@@ -11,7 +11,8 @@ npm install @pieceful/ravel-host-browser
 ```js
 import { renderMarkdownDocument } from "@pieceful/ravel-host-browser";
 
-const result = renderMarkdownDocument(`
+const result = renderMarkdownDocument(
+  `
 ---
 ravel:
   document: greeting
@@ -24,7 +25,9 @@ console.log("Hello from Ravel");
 \`\`\`ravel
 out("dist/greeting.js", _"main.js")
 \`\`\`
-`, { uri: "greeting.md" });
+`,
+  { uri: "greeting.md" },
+);
 
 if (!result.ok) {
   console.error(result.diagnostics);

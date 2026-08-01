@@ -1,6 +1,6 @@
 # @pieceful/ravel-markdown-litpro
 
-The historical LitPro Markdown adapter for Ravel. It preserves the unusual
+The historical LitPro Markdown adapter for [Ravel](https://github.com/jostylr/ravel). It preserves the unusual
 H1-H4 peer model, H5/H6 slash paths, repeated definitions, link-created minor
 pieces, legacy underscore-quote references, and planned legacy directives.
 
@@ -13,7 +13,7 @@ import { litproMarkdownToMap } from "@pieceful/ravel-markdown-litpro";
 
 const result = litproMarkdownToMap(source, {
   uri: "book.md",
-  dialect: "litpro-plus"
+  dialect: "litpro-plus",
 });
 ```
 

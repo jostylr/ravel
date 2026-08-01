@@ -3,7 +3,7 @@
 Experimental source-linked host for `@pieceful/ravel-explorer`.
 
 The first vertical slice contributes `Ravel: Open Explorer`. Run it while a
-supported Ravel source document or `ravel.toml` is active. The extension:
+supported [Ravel](https://github.com/jostylr/ravel) source document or `ravel.toml` is active. The extension:
 
 - discovers the nearest `ravel.toml`, falling back to the active source;
 - evaluates the project without writing deliverables;

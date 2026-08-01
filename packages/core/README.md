@@ -1,6 +1,6 @@
 # @pieceful/ravel-core
 
-The portable composition engine behind Ravel. It parses chunk references,
+The portable composition engine behind [Ravel](https://github.com/jostylr/ravel). It parses chunk references,
 resolves the dependency graph, evaluates static composition, reports
 source-linked diagnostics, and creates provenance maps for generated output.
 

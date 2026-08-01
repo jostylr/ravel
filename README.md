@@ -1,10 +1,18 @@
 # Ravel
 
-Ravel is a graph-based document composition engine whose first application is
-literate programming: it assembles named code pieces into artifacts while
-retaining a source-linked dependency graph. Ravel 0.2 is a small static-weaving
-and bounded live-execution tool and library, published as the
-`@pieceful/ravel-*` npm packages.
+Ravel is a literate programming inspired graph-based document composition
+engine. The core assembles named code pieces, potentially transformed, into
+larger and larger pieces until it is complete. The process retains the build
+path so that one can see where the rendered code comes from.
+
+It can run live JavaScript, whose execution is sequestered using QuickJS, on the
+document pieces as well as load documents to process such as csv files.
+
+Ravel 0.2 is a the command line static-weaving and bounded live-execution tool.
+It loads many of the `@pieceful/ravel-*` npm packages though there are some that
+need to be separately loaded.
+
+It currently supports various possible document types as inputs.
 
 Ravel separates source-format policy from program composition:
 
@@ -25,34 +33,36 @@ Markdown, MyST, Org, noweb, JSON Ravel Maps, or editor-produced maps
 The guides, language reference, API reference, configuration reference, and
 examples live at [ravel.jostylr.com](https://ravel.jostylr.com/).
 
+Under examples/adapter-conformance is an example of some data analysis being done and it exemplifies how each document looks in the different document languages supported by the adapters. They all compile to the same output.
+
 ## Published packages
 
-| Package | Purpose |
-| --- | --- |
-| [@pieceful/ravel](https://www.npmjs.com/package/@pieceful/ravel) | Node.js CLI for checking, inspecting, and building Ravel projects. |
-| [@pieceful/ravel-core](https://www.npmjs.com/package/@pieceful/ravel-core) | Portable chunk parser, graph evaluator, diagnostics, and provenance engine. |
-| [@pieceful/ravel-map](https://www.npmjs.com/package/@pieceful/ravel-map) | Versioned Ravel Map schema, validation, and diagnostic contract. |
-| [@pieceful/ravel-host-browser](https://www.npmjs.com/package/@pieceful/ravel-host-browser) | In-memory browser host for one Markdown document, diagnostics, deliverables, and provenance. |
-| [@pieceful/ravel-explorer](https://www.npmjs.com/package/@pieceful/ravel-explorer) | Bounded graph projections and an optional browser graph renderer for completed Ravel programs. |
-| [@pieceful/ravel-projection](https://www.npmjs.com/package/@pieceful/ravel-projection) | Portable virtual-document and source-projection primitives for editor integrations. |
-| [@pieceful/ravel-language-bridge](https://www.npmjs.com/package/@pieceful/ravel-language-bridge) | Versioned bridge protocol for native language analyzers. |
-| [@pieceful/ravel-language-service](https://www.npmjs.com/package/@pieceful/ravel-language-service) | Ravel symbols, diagnostics, completions, and safe edit classification. |
-| [@pieceful/ravel-language-typescript](https://www.npmjs.com/package/@pieceful/ravel-language-typescript) | TypeScript bridge and virtual-project integration. |
-| [@pieceful/ravel-asciidoc](https://www.npmjs.com/package/@pieceful/ravel-asciidoc) | Lossless AsciiDoc sections, attributed blocks, containers, cross-references, and graph-directive macros. |
-| [@pieceful/ravel-html](https://www.npmjs.com/package/@pieceful/ravel-html) | Script-free semantic HTML sections, figures, entity-aware code fragments, navigation, and directive links. |
-| [@pieceful/ravel-markdown](https://www.npmjs.com/package/@pieceful/ravel-markdown) | Portable adapter that extracts Ravel Maps from Markdown fences and directives. |
-| [@pieceful/ravel-markdown-litpro](https://www.npmjs.com/package/@pieceful/ravel-markdown-litpro) | Historical H1-H6, minor-block, and legacy-directive Markdown adapter. |
-| [@pieceful/ravel-myst](https://www.npmjs.com/package/@pieceful/ravel-myst) | Lossless MyST pieces, native code fallbacks, cross-reference, and notebook-cell adapter. |
-| [@pieceful/ravel-myst-plugin](https://www.npmjs.com/package/@pieceful/ravel-myst-plugin) | Native MyST `{ravel:piece}` and `{ravel}` rendering with visible names, pipelines, labels, and optional code cells. |
-| [@pieceful/ravel-noweb](https://www.npmjs.com/package/@pieceful/ravel-noweb) | Lossless strict-noweb and pipe-extended noweb-plus adapter. |
-| [@pieceful/ravel-org](https://www.npmjs.com/package/@pieceful/ravel-org) | Lossless Org/Babel names, groups, references, metadata, and ownership adapter. |
-| [@pieceful/ravel-quarto](https://www.npmjs.com/package/@pieceful/ravel-quarto) | Portable Quarto graph preparation plus an isolated Node project renderer, cache inputs, and temporary-source maps. |
-| [@pieceful/ravel-host-node](https://www.npmjs.com/package/@pieceful/ravel-host-node) | Node filesystem host for project loading, safe artifact writes, manifests, and backups. |
-| `@pieceful/ravel-js-live` | Worker-backed QuickJS/Wasm provider plus Node-only preparation of allowlisted npm modules. |
+| Package                                                                                                  | Purpose                                                                                                             |
+| -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| [@pieceful/ravel](https://www.npmjs.com/package/@pieceful/ravel)                                         | Node.js CLI for checking, inspecting, and building Ravel projects.                                                  |
+| [@pieceful/ravel-core](https://www.npmjs.com/package/@pieceful/ravel-core)                               | Portable chunk parser, graph evaluator, diagnostics, and provenance engine.                                         |
+| [@pieceful/ravel-map](https://www.npmjs.com/package/@pieceful/ravel-map)                                 | Versioned Ravel Map schema, validation, and diagnostic contract.                                                    |
+| [@pieceful/ravel-host-browser](https://www.npmjs.com/package/@pieceful/ravel-host-browser)               | In-memory browser host for one Markdown document, diagnostics, deliverables, and provenance.                        |
+| [@pieceful/ravel-explorer](https://www.npmjs.com/package/@pieceful/ravel-explorer)                       | Bounded graph projections and an optional browser graph renderer for completed Ravel programs.                      |
+| [@pieceful/ravel-projection](https://www.npmjs.com/package/@pieceful/ravel-projection)                   | Portable virtual-document and source-projection primitives for editor integrations.                                 |
+| [@pieceful/ravel-language-bridge](https://www.npmjs.com/package/@pieceful/ravel-language-bridge)         | Versioned bridge protocol for native language analyzers.                                                            |
+| [@pieceful/ravel-language-service](https://www.npmjs.com/package/@pieceful/ravel-language-service)       | Ravel symbols, diagnostics, completions, and safe edit classification.                                              |
+| [@pieceful/ravel-language-typescript](https://www.npmjs.com/package/@pieceful/ravel-language-typescript) | TypeScript bridge and virtual-project integration.                                                                  |
+| [@pieceful/ravel-asciidoc](https://www.npmjs.com/package/@pieceful/ravel-asciidoc)                       | Lossless AsciiDoc sections, attributed blocks, containers, cross-references, and graph-directive macros.            |
+| [@pieceful/ravel-html](https://www.npmjs.com/package/@pieceful/ravel-html)                               | Script-free semantic HTML sections, figures, entity-aware code fragments, navigation, and directive links.          |
+| [@pieceful/ravel-markdown](https://www.npmjs.com/package/@pieceful/ravel-markdown)                       | Portable adapter that extracts Ravel Maps from Markdown fences and directives.                                      |
+| [@pieceful/ravel-markdown-litpro](https://www.npmjs.com/package/@pieceful/ravel-markdown-litpro)         | Historical H1-H6, minor-block, and legacy-directive Markdown adapter.                                               |
+| [@pieceful/ravel-myst](https://www.npmjs.com/package/@pieceful/ravel-myst)                               | Lossless MyST pieces, native code fallbacks, cross-reference, and notebook-cell adapter.                            |
+| [@pieceful/ravel-myst-plugin](https://www.npmjs.com/package/@pieceful/ravel-myst-plugin)                 | Native MyST `{ravel:piece}` and `{ravel}` rendering with visible names, pipelines, labels, and optional code cells. |
+| [@pieceful/ravel-noweb](https://www.npmjs.com/package/@pieceful/ravel-noweb)                             | Lossless strict-noweb and pipe-extended noweb-plus adapter.                                                         |
+| [@pieceful/ravel-org](https://www.npmjs.com/package/@pieceful/ravel-org)                                 | Lossless Org/Babel names, groups, references, metadata, and ownership adapter.                                      |
+| [@pieceful/ravel-quarto](https://www.npmjs.com/package/@pieceful/ravel-quarto)                           | Portable Quarto graph preparation plus an isolated Node project renderer, cache inputs, and temporary-source maps.  |
+| [@pieceful/ravel-host-node](https://www.npmjs.com/package/@pieceful/ravel-host-node)                     | Node filesystem host for project loading, safe artifact writes, manifests, and backups.                             |
+| `@pieceful/ravel-js-live`                                                                                | Worker-backed QuickJS/Wasm provider plus Node-only preparation of allowlisted npm modules.                          |
 
 The implemented vertical slice is intentionally safe and deterministic in
-spirit: parsing and graph evaluation do not evaluate document JavaScript or
-shell commands, and the Node host confines declared inputs and outputs to an
+spirit: parsing and graph evaluation do not evaluate document JavaScript in the host environment or
+execute shell commands, and the Node host confines declared inputs and outputs to an
 explicit filesystem root.
 
 ## CLI install contents

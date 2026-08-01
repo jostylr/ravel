@@ -1,6 +1,6 @@
 # @pieceful/ravel-map
 
-The versioned public contract for Ravel Maps: schema metadata, structural
+The versioned public contract for [Ravel](https://github.com/jostylr/ravel) Maps: schema metadata, structural
 validation, and stable diagnostic data.
 
 ```sh

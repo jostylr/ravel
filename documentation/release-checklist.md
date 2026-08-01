@@ -21,24 +21,24 @@ package metadata, and the generated tarball contents reported by
 
 ## 0.2 release gate
 
-- [ ] Static composition, adapters, browser harnesses, schema checks, and
+- [x] Static composition, adapters, browser harnesses, schema checks, and
       packed-installation tests pass.
-- [ ] `ravel check` performs live-provider analysis without execution;
+- [x] `ravel check` performs live-provider analysis without execution;
       `inspect` remains no-execute; `run` and `build` execute only explicit
       `.run` blocks.
-- [ ] Core exposes the version-1 live analysis, provider, request, outcome,
+- [x] Core exposes the version-1 live analysis, provider, request, outcome,
       plan, and program-result contracts documented in
       [the public API](public-api.md).
-- [ ] JavaScript execution has one final `export default`, copied/frozen
+- [x] JavaScript execution has one final `export default`, copied/frozen
       inputs and resources, declared module imports, resource/output limits,
       and defense-in-depth dynamic-code restrictions.
-- [ ] The current sequential live scheduler is deterministic and reports only
+- [x] The current sequential live scheduler is deterministic and reports only
       the frozen `succeeded`/`failed` execution statuses.
-- [ ] No live block or transform writes host files; directives and hosts remain
+- [x] No live block or transform writes host files; directives and hosts remain
       the only output authority.
-- [ ] The read-only Explorer/browser slice remains bounded, portable, and
+- [x] The read-only Explorer/browser slice remains bounded, portable, and
       free of filesystem, VS Code, shell, and network authority.
-- [ ] Documentation, changelog, package versions, CLI version output, Quarto
+- [x] Documentation, changelog, package versions, CLI version output, Quarto
       bridge metadata, and packed smoke expectations all identify 0.2.0.
 
 ## Explicitly deferred to 0.3

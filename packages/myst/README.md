@@ -1,6 +1,6 @@
 # `@pieceful/ravel-myst`
 
-Lossless MyST Markdown source adapter for Ravel. It recognizes canonical
+Lossless MyST Markdown source adapter for [Ravel](https://github.com/jostylr/ravel). It recognizes canonical
 `{ravel:piece}` directives, the short `{piece}` alias, `{ravel}` graph
 directives, and native MyST `{code}`, `{code-block}`, and `{code-cell}`
 fallbacks carrying an `lp-*` label.
@@ -14,7 +14,7 @@ import { mystToMap } from "@pieceful/ravel-myst";
 
 const { map, diagnostics, surface } = mystToMap(source, {
   uri: "program.myst.md",
-  document: "program"
+  document: "program",
 });
 ```
 

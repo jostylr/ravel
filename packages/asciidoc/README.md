@@ -1,6 +1,6 @@
 # `@pieceful/ravel-asciidoc`
 
-Lossless AsciiDoc source adapter for Ravel. It recognizes section-owned pieces,
+Lossless AsciiDoc source adapter for [Ravel](https://github.com/jostylr/ravel). It recognizes section-owned pieces,
 attributed source blocks and containers, native cross references, exact code
 bodies, definition pipelines, live metadata, and visible `ravel::` directive
 macros without invoking Asciidoctor or executing code.
@@ -10,7 +10,7 @@ import { asciidocToMap } from "@pieceful/ravel-asciidoc";
 
 const { map, diagnostics, surface } = asciidocToMap(source, {
   uri: "program.adoc",
-  document: "program"
+  document: "program",
 });
 ```
 

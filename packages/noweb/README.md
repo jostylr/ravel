@@ -1,6 +1,6 @@
 # `@pieceful/ravel-noweb`
 
-Lossless, portable noweb input adapter for Ravel. It recognizes ordinary
+Lossless, portable noweb input adapter for [Ravel](https://github.com/jostylr/ravel). It recognizes ordinary
 `<<name>>=` definitions, repeated fragments, `<<name>>` references, `@`
 terminators, preceding documentation, configured or filename-inferred
 languages, and classic-compatible Ravel pragmas. Parsing never runs code or
@@ -12,7 +12,7 @@ import { nowebToMap } from "@pieceful/ravel-noweb";
 const { map, diagnostics, surface } = nowebToMap(source, {
   uri: "program.nw",
   document: "program",
-  language: "javascript"
+  language: "javascript",
 });
 ```
 

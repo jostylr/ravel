@@ -1,6 +1,6 @@
 # `@pieceful/ravel-org`
 
-Portable Org/Babel input adapter for Ravel. It recognizes `#+NAME`,
+Portable Org/Babel input adapter for [Ravel](https://github.com/jostylr/ravel). It recognizes `#+NAME`,
 `#+LP_NAME`, `#+LP_PIPE`, `#+HEADER`, source languages, `:noweb-ref`
 aggregation, Org-noweb references, result artifacts, and Babel header
 arguments without invoking Emacs, Babel, or a language runtime.
@@ -10,7 +10,7 @@ import { orgToMap } from "@pieceful/ravel-org";
 
 const { map, diagnostics, surface } = orgToMap(source, {
   uri: "program.org",
-  document: "program"
+  document: "program",
 });
 ```
 

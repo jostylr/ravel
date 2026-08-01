@@ -1,6 +1,6 @@
 # @pieceful/ravel
 
-Ravel's Node.js command-line interface builds static literate-programming
+[Ravel](https://github.com/jostylr/ravel)'s Node.js command-line interface builds static literate-programming
 projects from supported markup sources—including Markdown, MyST, Org, and
 noweb—Ravel Maps, or a `ravel.toml` project configuration.
 

@@ -2,7 +2,7 @@
 
 Browser-safe virtual documents, bidirectional source mappings, expansion
 occurrences, generated-code context, incremental deltas, and composable
-transform maps for Ravel programs.
+transform maps for [Ravel](https://github.com/jostylr/ravel) programs.
 
 The package consumes the public `RavelProgram`/`Deliverable` provenance shape
 from `@pieceful/ravel-core`. It has no Node, filesystem, process, editor, or
@@ -25,28 +25,35 @@ const projections = createProjectionService({
       targetId: "web",
       artifactId: "dist/app.ts",
       languageId: "typescript",
-      stage: "assembled"
-    }
-  ]
+      stage: "assembled",
+    },
+  ],
 });
 
 const delta = await projections.update({
   id: "snapshot-1",
   program,
   sourceVersions: { "guide.md": 7 },
-  sourceTexts: { "guide.md": guideText }
+  sourceTexts: { "guide.md": guideText },
 });
 
 const [virtual] = delta.opened;
-const generated = projections.toVirtual({ uri: "guide.md", offset: 120 }, {
-  targetId: "web",
-  artifactId: "dist/app.ts",
-  stage: "assembled",
-  projectionVersion: virtual.version
-});
-const authored = projections.toSource(virtual.id, { start: 12, end: 18 }, {
-  projectionVersion: virtual.version
-});
+const generated = projections.toVirtual(
+  { uri: "guide.md", offset: 120 },
+  {
+    targetId: "web",
+    artifactId: "dist/app.ts",
+    stage: "assembled",
+    projectionVersion: virtual.version,
+  },
+);
+const authored = projections.toSource(
+  virtual.id,
+  { start: 12, end: 18 },
+  {
+    projectionVersion: virtual.version,
+  },
+);
 ```
 
 `update()` returns opened, changed, unchanged, and closed documents plus
@@ -68,13 +75,13 @@ low-level `mapSource*`/`mapVirtual*` functions.
 Each `ProjectionSegment` describes a generated UTF-16 offset range and its
 best available authored provenance.
 
-| Kind | Meaning | Reverse-edit status |
-| --- | --- | --- |
-| `exact` | Generated code is character-for-character authored text. Exact subranges are reversible when source and generated lengths agree. | Eligible for policy-controlled edits. |
-| `anchored` | Generated text has a responsible invocation, definition, or transform location, but no character correspondence. | Navigation only. |
-| `transformed` | A declared offset or source-map transform preserves a character correspondence for this span. | Mappable, but not automatically editable by the current edit policy. |
-| `opaque` | A transform supplied no usable mapping; only a responsible anchor may remain. | Navigation only. |
-| `synthetic` | The tool inserted text with no authored destination. | Not editable without a separate host policy, such as an imports destination. |
+| Kind          | Meaning                                                                                                                          | Reverse-edit status                                                          |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `exact`       | Generated code is character-for-character authored text. Exact subranges are reversible when source and generated lengths agree. | Eligible for policy-controlled edits.                                        |
+| `anchored`    | Generated text has a responsible invocation, definition, or transform location, but no character correspondence.                 | Navigation only.                                                             |
+| `transformed` | A declared offset or source-map transform preserves a character correspondence for this span.                                    | Mappable, but not automatically editable by the current edit policy.         |
+| `opaque`      | A transform supplied no usable mapping; only a responsible anchor may remain.                                                    | Navigation only.                                                             |
+| `synthetic`   | The tool inserted text with no authored destination.                                                                             | Not editable without a separate host policy, such as an imports destination. |
 
 `writable: true` on a mapping match is necessary, not sufficient, for an
 automatic source edit. A host must still enforce the stricter policy in
@@ -111,18 +118,16 @@ Transform helpers are exported from `@pieceful/ravel-projection/transforms`.
 ```js
 import {
   applyTransformMap,
-  createIndentOffsetMap
+  createIndentOffsetMap,
 } from "@pieceful/ravel-projection/transforms";
 
 const indented = createIndentOffsetMap(assembled.text, 2);
 if (!indented.ok) throw new Error(indented.reason);
 
-const transformed = applyTransformMap(
-  assembled,
-  indented.text,
-  indented.map,
-  { name: "indent", stage: "transformed" }
-);
+const transformed = applyTransformMap(assembled, indented.text, indented.map, {
+  name: "indent",
+  stage: "transformed",
+});
 ```
 
 Use the narrowest honest mapping capability:

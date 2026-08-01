@@ -1,6 +1,6 @@
 # `@pieceful/ravel-language-bridge`
 
-Editor-neutral contracts for connecting Ravel virtual documents to native
+Editor-neutral contracts for connecting [Ravel](https://github.com/jostylr/ravel) virtual documents to native
 target-language services. A bridge advertises its actual request capabilities,
 keeps stable generated documents open, and returns generated locations for the
 trusted Ravel routing layer to map back to literate source.
@@ -45,7 +45,7 @@ import {
   LanguageBridgeError,
   createBridgeCapabilities,
   requireLanguageRequestSupport,
-  throwIfAborted
+  throwIfAborted,
 } from "@pieceful/ravel-language-bridge";
 
 const documents = new Map();
@@ -55,10 +55,10 @@ export const bridge = {
   capabilities: createBridgeCapabilities({
     completion: {
       stages: ["assembled", "transformed"],
-      triggerCharacters: ["."]
+      triggerCharacters: ["."],
     },
     hover: { stages: ["assembled", "transformed", "emitted"] },
-    definition: { stages: ["assembled", "transformed", "emitted"] }
+    definition: { stages: ["assembled", "transformed", "emitted"] },
   }),
 
   async open(document, signal) {
@@ -68,11 +68,13 @@ export const bridge = {
 
   async change(previous, next, changes, signal) {
     throwIfAborted(signal);
-    if (documents.get(previous.uri)?.version !== previous.version ||
-        next.version <= previous.version) {
+    if (
+      documents.get(previous.uri)?.version !== previous.version ||
+      next.version <= previous.version
+    ) {
       throw new LanguageBridgeError(
         BRIDGE_ERROR_CODES.VERSION_REGRESSION,
-        "Virtual document versions must advance."
+        "Virtual document versions must advance.",
       );
     }
     // `next` is authoritative; `changes` is only an optimization hint.
@@ -91,11 +93,11 @@ export const bridge = {
       throw new LanguageBridgeError(
         BRIDGE_ERROR_CODES.STALE_DOCUMENT,
         "The requested virtual document version is not open.",
-        { retryable: true }
+        { retryable: true },
       );
     }
     return nativeServiceRequest(document, request, signal);
-  }
+  },
 };
 ```
 

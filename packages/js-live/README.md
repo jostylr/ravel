@@ -1,6 +1,6 @@
 # @pieceful/ravel-js-live
 
-The QuickJS/WebAssembly execution provider for Ravel 0.2.
+The QuickJS/WebAssembly execution provider for [Ravel](https://github.com/jostylr/ravel) 0.2.
 It analyzes ordinary `js` and `javascript` chunks marked `.run`, resolves their
 declared `ch("...")` and `load("...")` inputs through Ravel core, and evaluates
 them without Node, filesystem, network, console, or output capabilities.
@@ -17,7 +17,7 @@ import { javascriptLiveProvider } from "@pieceful/ravel-js-live";
 
 const result = await executeLiveProgram(program, {
   providers: [javascriptLiveProvider],
-  resources: { "cool.csv": "name,value\nalpha,1\n" }
+  resources: { "cool.csv": "name,value\nalpha,1\n" },
 });
 ```
 
@@ -44,8 +44,8 @@ const provider = createJavaScriptLiveProvider({
     "@ravel/csv": `
       export const parseCsv = (text) =>
         text.trim().split(/\\r?\\n/).map((line) => line.split(","));
-    `
-  }
+    `,
+  },
 });
 ```
 
@@ -67,9 +67,10 @@ without executing them:
 ```js
 import { prepareJavaScriptModules } from "@pieceful/ravel-js-live/node";
 
-const modules = await prepareJavaScriptModules([
-  { specifier: "@ravel/csv", from: "csv-parse/browser/esm/sync" }
-], { rootDirectory: projectDirectory });
+const modules = await prepareJavaScriptModules(
+  [{ specifier: "@ravel/csv", from: "csv-parse/browser/esm/sync" }],
+  { rootDirectory: projectDirectory },
+);
 ```
 
 The `node` subpath is deliberately separate from the browser-safe provider

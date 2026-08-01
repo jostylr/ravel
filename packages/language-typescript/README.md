@@ -1,6 +1,6 @@
 # `@pieceful/ravel-language-typescript`
 
-An in-process native TypeScript/JavaScript language-service bridge for Ravel
+An in-process native TypeScript/JavaScript language-service bridge for [Ravel](https://github.com/jostylr/ravel)
 virtual documents. It keeps TypeScript project state warm and normalizes native
 results to generated-document URIs and zero-based UTF-16 offset ranges. Ravel's
 routing layer is responsible for translating those ranges back to literate
@@ -12,12 +12,11 @@ TypeScript is an optional peer dependency so an editor or host may inject the
 compiler API it already owns:
 
 ```js
-import { createTypeScriptLanguageBridgeWithApi } from
-  "@pieceful/ravel-language-typescript";
+import { createTypeScriptLanguageBridgeWithApi } from "@pieceful/ravel-language-typescript";
 
 const bridge = createTypeScriptLanguageBridgeWithApi(typescript, {
   currentDirectory: workspaceRoot,
-  configSearchRoot: workspaceRoot
+  configSearchRoot: workspaceRoot,
 });
 ```
 

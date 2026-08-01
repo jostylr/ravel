@@ -1,14 +1,14 @@
 # `@pieceful/ravel-quarto`
 
 Pure build and render preparation for Quarto documents backed by the modern
-Markdown adapter. The portable main entry does not define another source
+Markdown adapter for [Ravel](https://github.com/jostylr/ravel). The portable main entry does not define another source
 dialect or invoke Quarto, Pandoc, Jupyter, Knitr, or Ravel execution providers.
 
 ```js
 import { prepareQuartoRender } from "@pieceful/ravel-quarto";
 
 const prepared = prepareQuartoRender(source, {
-  uri: "analysis.qmd"
+  uri: "analysis.qmd",
 });
 ```
 

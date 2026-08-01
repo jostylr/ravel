@@ -1,6 +1,6 @@
 # `@pieceful/ravel-myst-plugin`
 
-MyST rendering plugin for Ravel’s canonical `{ravel:piece}` directive and its
+MyST rendering plugin for [Ravel](https://github.com/jostylr/ravel)’s canonical `{ravel:piece}` directive and its
 short `{piece}` alias. It turns a piece into standard MyST code/container AST
 nodes, giving it a visible caption, syntax highlighting, a stable
 cross-reference label, and optional notebook-cell behavior. It also renders

@@ -1,6 +1,6 @@
 # `@pieceful/ravel-html`
 
-Lossless, script-free HTML source adapter for Ravel. Semantic `section` and
+Lossless, script-free HTML source adapter for [Ravel](https://github.com/jostylr/ravel). Semantic `section` and
 `figure` elements declare visible pieces; `pre > code` elements provide exact
 source fragments; ordinary links can declare conspicuous graph directives.
 
@@ -9,7 +9,7 @@ import { htmlToMap } from "@pieceful/ravel-html";
 
 const { map, diagnostics, surface } = htmlToMap(source, {
   uri: "program.html",
-  document: "program"
+  document: "program",
 });
 ```
 
@@ -20,9 +20,8 @@ code, or writes outputs.
 Canonical section form:
 
 ```html
-<meta name="ravel-document" content="program">
-<section id="lp-main"
-         data-ravel-piece="main | trim()">
+<meta name="ravel-document" content="program" />
+<section id="lp-main" data-ravel-piece="main | trim()">
   <h2>Main program <code>main</code></h2>
   <pre><code class="language-javascript">console.log(_"helper");</code></pre>
 </section>

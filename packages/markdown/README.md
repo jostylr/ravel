@@ -1,6 +1,6 @@
 # @pieceful/ravel-markdown
 
-The portable Markdown adapter for Ravel. It extracts explicitly named Ravel
+The portable Markdown adapter for [Ravel](https://github.com/jostylr/ravel). It extracts explicitly named Ravel
 fences, source ranges, front matter, greedy fragments, and composition
 directives into a Ravel Map.
 
