@@ -1,6 +1,6 @@
 {
   "name": "@pieceful/ravel-map",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "type": "module",
   "description": "Ravel Map public metadata and validation contract.",
   "license": "MIT",

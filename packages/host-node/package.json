@@ -1,6 +1,6 @@
 {
   "name": "@pieceful/ravel-host-node",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "type": "module",
   "description": "Node host capabilities for Ravel.",
   "license": "MIT",
@@ -36,15 +36,15 @@
     "LICENSE"
   ],
   "dependencies": {
-    "@pieceful/ravel-asciidoc": "0.2.0",
-    "@pieceful/ravel-core": "0.2.0",
-    "@pieceful/ravel-html": "0.2.0",
-    "@pieceful/ravel-markdown": "0.2.0",
-    "@pieceful/ravel-markdown-litpro": "0.2.0",
-    "@pieceful/ravel-map": "0.2.0",
-    "@pieceful/ravel-myst": "0.2.0",
-    "@pieceful/ravel-noweb": "0.2.0",
-    "@pieceful/ravel-org": "0.2.0",
-    "smol-toml": "^1.7.0"
+    "@pieceful/ravel-asciidoc": "0.2.1",
+    "@pieceful/ravel-core": "0.2.1",
+    "@pieceful/ravel-html": "0.2.1",
+    "@pieceful/ravel-markdown": "0.2.1",
+    "@pieceful/ravel-markdown-litpro": "0.2.1",
+    "@pieceful/ravel-map": "0.2.1",
+    "@pieceful/ravel-myst": "0.2.1",
+    "@pieceful/ravel-noweb": "0.2.1",
+    "@pieceful/ravel-org": "0.2.1",
+    "smol-toml": "^1.9.1"
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@pieceful/ravel-markdown-litpro",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "type": "module",
   "description": "Historical LitPro Markdown adapter for Ravel.",
   "license": "MIT",
@@ -36,7 +36,7 @@
     "LICENSE"
   ],
   "dependencies": {
-    "@pieceful/ravel-core": "0.2.0",
+    "@pieceful/ravel-core": "0.2.1",
     "mdast-util-from-markdown": "^2.0.3",
     "yaml": "^2.9.0"
   }

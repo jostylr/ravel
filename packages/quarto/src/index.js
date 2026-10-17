@@ -5,7 +5,7 @@ import {
 } from "@pieceful/ravel-core";
 import { modernMarkdownToMap } from "@pieceful/ravel-markdown";
 
-const bridgeVersion = "0.2.0";
+const bridgeVersion = "0.2.1";
 const startMarker = "<!-- ravel:graph:start -->";
 const endMarker = "<!-- ravel:graph:end -->";
 

@@ -1,6 +1,6 @@
 {
   "name": "@pieceful/ravel-language-bridge",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "type": "module",
   "description": "Editor-neutral target-language service contracts for Ravel projections.",
   "license": "MIT",

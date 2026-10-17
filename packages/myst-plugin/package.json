@@ -1,6 +1,6 @@
 {
   "name": "@pieceful/ravel-myst-plugin",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "type": "module",
   "description": "MyST rendering plugin for visible, cross-referenceable Ravel code pieces and graph directives.",
   "license": "MIT",

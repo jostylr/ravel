@@ -1,7 +1,7 @@
 import { analyzeJavaScript, diagnostic } from "./analyzer.js";
 
 const providerId = "quickjs-wasm-worker";
-const providerVersion = "0.2.0";
+const providerVersion = "0.2.1";
 
 const moduleEntries = (modules) => {
   if (modules instanceof Map) return [...modules.entries()];
