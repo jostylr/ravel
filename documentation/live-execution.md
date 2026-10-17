@@ -48,9 +48,16 @@ execution boundary. Direct or aliased access to `eval`, `Function`, and their
 computed global properties is rejected during analysis; the same globals are
 disabled in the QuickJS realm as defense in depth.
 
+The static check is best-effort, not the security boundary. Some forms, such as
+`(() => {}).constructor("…")` or a computed `globalThis[...]` property, reach a
+constructor without naming it and are not caught by analysis. Code reached this
+way still runs only inside the same isolated QuickJS runtime, with copied
+inputs and no host filesystem, network, or process access.
+
 The provider statically discovers literal `ch("...")` dependencies,
 `load("...")` resources, and static module imports. Computed names, dynamic
-imports, unapproved modules, and dynamic code generation are rejected. Values
+imports, unapproved modules, and recognizable dynamic code generation are
+rejected. Values
 supplied by `ch` and `load` are serialized copies and are deeply frozen inside
 the QuickJS realm.
 

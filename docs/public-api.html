@@ -414,7 +414,7 @@ ul.task-list li input[type="checkbox"] {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./release-checklist.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">0.2 release checklist</span></a>
+ <span class="menu-text">Release checklist</span></a>
   </div>
 </li>
       </ul>
@@ -559,7 +559,8 @@ ul.task-list li input[type="checkbox"] {
 <h2 class="anchored" data-anchor-id="piecefulravel-core"><code>@pieceful/ravel-core</code></h2>
 <ul>
 <li><code>parseChunkId</code> and <code>formatChunkId</code> convert canonical chunk identities.</li>
-<li><code>parseChunk</code> parses an individual chunk body into portable syntax data. Adapters may opt into lossless noweb delimiters and provide authored-name to semantic-ID aliases without rewriting the body.</li>
+<li><code>parseChunk</code> parses an individual chunk body into portable syntax data. <code>nowebReferenceAt(body, index)</code> applies the shared noweb reference rule (one line, no surrounding whitespace in the name) used by core and the noweb and Org adapters.</li>
+<li><code>createDirective(name, composeOrBody, source, document)</code> and <code>aliasDirective(name, reference, source, document)</code> build <code>create</code> and <code>alias</code> directives that pass Ravel Map validation; an array is a compose step list and a string is a chunk body. Adapters may opt into lossless noweb delimiters and provide authored-name to semantic-ID aliases without rewriting the body.</li>
 <li><code>parseDefinitionPipeline</code> gives source adapters the shared definition-time transform grammar without evaluating a pipeline.</li>
 <li><code>parseRavelDirectiveBlock(text, { document, sourceAt })</code> gives Markdown, MyST, and future adapters one source-mapped grammar for <code>in</code>, <code>create</code>, <code>alias</code>, and <code>out</code> blocks.</li>
 <li><code>combineMaps(maps)</code> constructs the pre-transform graph.</li>
@@ -589,8 +590,8 @@ ul.task-list li input[type="checkbox"] {
 <p>This Node-only package performs scoped filesystem input and artifact work.</p>
 <ul>
 <li><code>loadBuildInput</code> and <code>loadTomlBuild</code> load direct files or version-1 TOML runs.</li>
-<li><code>planDeliverables</code>, <code>writeBuildArtifacts</code>, and <code>createBuildManifest</code> support managed artifact production. A managed build writes a <code>.ravelmap</code> sidecar for every deliverable and an aggregate <code>.ravelmap</code> bundle.</li>
-<li><code>cleanManagedArtifacts</code>, <code>refreshStaleArtifacts</code>, <code>planOutputBackup</code>, and <code>createOutputBackup</code> implement the safe managed-output lifecycle.</li>
+<li><code>planDeliverables</code>, <code>writeBuildArtifacts</code>, and <code>createBuildManifest</code> support managed artifact production. A managed build writes a <code>.ravelmap</code> sidecar for every deliverable and an aggregate <code>.ravelmap</code> bundle. Pass <code>writeBuildArtifacts(program, dir, { clean: true })</code> to remove previously managed files the build no longer produces, after the new files commit; the result’s <code>removed</code> lists them.</li>
+<li><code>cleanManagedArtifacts</code>, <code>refreshStaleArtifacts</code>, <code>planOutputBackup</code>, and <code>createOutputBackup</code> implement the safe managed-output lifecycle. <code>createOutputBackup</code> archives only manifest-listed files, returns <code>{ path: null, skipped }</code> when there is no previous build, and accepts <code>timestampName: true</code> to append the build timestamp to a configured name.</li>
 </ul>
 <p>Expected input/configuration failures throw <code>RavelInputError</code> with portable diagnostics. Filesystem failures remain ordinary host errors.</p>
 </section>

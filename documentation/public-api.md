@@ -144,6 +144,13 @@ Use this package at adapter, editor, and host boundaries.
 
 - `parseChunkId` and `formatChunkId` convert canonical chunk identities.
 - `parseChunk` parses an individual chunk body into portable syntax data.
+  `nowebReferenceAt(body, index)` applies the shared noweb reference rule
+  (one line, no surrounding whitespace in the name) used by core and the
+  noweb and Org adapters.
+- `createDirective(name, composeOrBody, source, document)` and
+  `aliasDirective(name, reference, source, document)` build `create` and
+  `alias` directives that pass Ravel Map validation; an array is a compose step
+  list and a string is a chunk body.
   Adapters may opt into lossless noweb delimiters and provide authored-name to
   semantic-ID aliases without rewriting the body.
 - `parseDefinitionPipeline` gives source adapters the shared definition-time
@@ -208,9 +215,15 @@ This Node-only package performs scoped filesystem input and artifact work.
 - `loadBuildInput` and `loadTomlBuild` load direct files or version-1 TOML runs.
 - `planDeliverables`, `writeBuildArtifacts`, and `createBuildManifest` support
   managed artifact production. A managed build writes a `.ravelmap` sidecar for
-  every deliverable and an aggregate `.ravelmap` bundle.
+  every deliverable and an aggregate `.ravelmap` bundle. Pass
+  `writeBuildArtifacts(program, dir, { clean: true })` to remove previously
+  managed files the build no longer produces, after the new files commit; the
+  result's `removed` lists them.
 - `cleanManagedArtifacts`, `refreshStaleArtifacts`, `planOutputBackup`, and
   `createOutputBackup` implement the safe managed-output lifecycle.
+  `createOutputBackup` archives only manifest-listed files, returns
+  `{ path: null, skipped }` when there is no previous build, and accepts
+  `timestampName: true` to append the build timestamp to a configured name.
 
 Expected input/configuration failures throw `RavelInputError` with portable
 diagnostics. Filesystem failures remain ordinary host errors.

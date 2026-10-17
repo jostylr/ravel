@@ -20,7 +20,11 @@ hello
 ```
 
 `<<name>>=` starts a definition, `@` on its own line returns to
-documentation, and `<<name>>` inside code is a reference. Repeating the same
+documentation, and `<<name>>` inside code is a reference. A reference must
+close on the same line, and its name cannot begin or end with whitespace, so
+operators such as `std::cout << x` or `a << 2; b >> 1` stay ordinary code.
+Write `@<<` for a literal `<<` that would otherwise read as a reference; the
+`@` is dropped from the output. Repeating the same
 definition concatenates its exact body segments in source order. The
 documentation immediately before each declaration is retained as narrative
 metadata and in the adapter's surface map.

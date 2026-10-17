@@ -71,18 +71,23 @@ All file, import, output, and backup paths are confined to the directory that
 contains the TOML file. Ravel rejects escaping paths and symbolic-link
 traversal. TOML configs are individual runs and are not merged.
 
-`build.clean = true` behaves like `ravel build --clean`: it removes only files
-recorded in the preceding Ravel manifest. `build.backup = true` writes the
-default dated archive under `backups/`; a string names a relative `.zip`
-archive. A backup is made before Ravel cleans or replaces output, and Ravel
-refuses to overwrite an existing archive.
+`build.clean = true` behaves like `ravel build --clean`: after the new build
+has been written, it removes files recorded in the preceding Ravel manifest
+that the new build no longer produces. If the build fails, the previous output
+is left untouched. `build.backup = true` writes a dated archive under
+`backups/`; a string such as `"archives/before-clean.zip"` names the archive,
+and Ravel appends the archived build's Unix timestamp
+(`archives/before-clean-1784723696.zip`) because the setting is reused by every
+build. When that name is already taken, a `-2`, `-3`, … suffix is added, so a
+configured backup never blocks a build or overwrites an archive. The first
+build has nothing to archive and skips the backup.
 
 ## CLI contract
 
 | Command | Effect |
 | --- | --- |
 | `ravel check <input>` | Validate and evaluate without writing artifacts. |
-| `ravel inspect <input>` | Show the completed program, `--chunks`, `--graph`, `--trace`, or a `--provenance <deliverable>` query. |
+| `ravel inspect <input>` | Show the completed program, `--chunks`, `--graph`, `--trace`, or a `--provenance <deliverable>` query. It does not run `.run` blocks, so a reference to a live chunk shows its source rather than its result. |
 | `ravel run <input>` | Execute only `.run` blocks through registered providers and print their exported values without writing artifacts. |
 | `ravel build <input>` | Execute `.run` blocks, materialize permitted live-result text, and build declared artifacts. TOML supplies `out_dir`; direct inputs require `--out-dir`. |
 | `ravel refresh <output-dir>` | Remove only stale managed outputs retained by a prior build. |

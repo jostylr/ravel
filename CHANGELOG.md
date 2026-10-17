@@ -3,9 +3,71 @@
 All notable user-facing changes are recorded here. Ravel follows semantic
 versioning for its published packages and versioned public contracts.
 
+## 0.2.1 — unreleased
+
+### Fixed
+
+- `--clean` and `refresh` now check every path component for symbolic links
+  before deleting, so a symlinked subdirectory of the output directory can no
+  longer make Ravel delete files outside it.
+- `--clean` (and `build.clean = true`) now writes the new build first and only
+  then removes previously managed files it no longer produces. A failed build
+  keeps the previous output and manifest. The `removed` list reports only files
+  actually removed.
+- noweb and Org references must close on one line and may not start or end with
+  whitespace, so C++ `std::cout << x` no longer fails with "Unterminated noweb
+  chunk reference" and `a << 2; b >> 1` is no longer read as a reference. `@<<`
+  writes a literal `<<`.
+- Deliverables that collide with `.ravel-manifest.json` or `.manifest.txt`, or
+  with each other when compared case-insensitively, are rejected instead of
+  being silently overwritten.
+- Backups: the first build skips the backup instead of failing; a backup name
+  configured in TOML gets the archived build's timestamp so it works on every
+  build; derived names add a `-2`, `-3`, … suffix instead of blocking a build.
+  Archives now contain only manifest-listed files (as documented) and are
+  deflate-compressed.
+- A document imported by several `[[files]]` entries is loaded once instead of
+  failing with a duplicate document ID.
+- Reference source positions now report the correct line and column inside
+  multi-line chunks (offsets were already correct).
+- A failed artifact write now restores every staged entry and removes its
+  temporary files even when one restoration step fails; the original error is
+  reported with any rollback problems attached.
+- `createDirective` and `aliasDirective` now produce directives that pass Ravel
+  Map validation, and the map schema accepts a `create` directive with a
+  `body` as core always has.
+
+### Performance
+
+- Parsing large chunks is no longer quadratic: a 150 KB chunk with 8,000
+  references parses in about 17 ms instead of about 3 s.
+
+### Security
+
+- Updated `smol-toml` to 1.9.1, fixing a denial-of-service and quadratic parse
+  on malformed TOML (affects reading `ravel.toml`).
+
+### Documentation and project
+
+- Added [ROADMAP.md](ROADMAP.md) as the single current plan and moved the
+  0.1/0.2/0.3, Explorer, and virtual-document plans to `archive/plans/`.
+- Corrected the filesystem-safety guide (there is no `--root` flag; `.run`
+  blocks are the one form of document code Ravel executes), described the
+  limits of static dynamic-code detection, clarified where `--graph` writes,
+  and documented that `inspect` does not run live blocks.
+- The CLI test suite now also runs under Bun.
+
 ## 0.2.0 — 2026-08-01
 
 ### Added
+
+- First public releases of the AsciiDoc, HTML, MyST, MyST plugin, Org, noweb,
+  Quarto, and LitPro Markdown adapters, all producing equivalent source-mapped
+  Ravel Maps (see `examples/adapter-conformance`).
+- First public releases of `@pieceful/ravel-projection`,
+  `@pieceful/ravel-language-bridge`, `@pieceful/ravel-language-service`, and
+  `@pieceful/ravel-language-typescript`: virtual-document projection and
+  language-tooling building blocks used by the private VS Code extension.
 
 - Added portable `.run` metadata and stable-identity validation to the Markdown
   adapter without executing during parsing.

@@ -234,7 +234,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./design.html">Design and history</a></li><li class="breadcrumb-item"><a href="./release-checklist.html">0.2 release checklist</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./design.html">Design and history</a></li><li class="breadcrumb-item"><a href="./release-checklist.html">Release checklist</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -449,7 +449,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./release-checklist.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">0.2 release checklist</span></a>
+ <span class="menu-text">Release checklist</span></a>
   </div>
 </li>
       </ul>
@@ -464,23 +464,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#release-checklist" id="toc-release-checklist" class="nav-link active" data-scroll-target="#release-checklist">0.2 release checklist</a>
+  <li><a href="#release-checklist" id="toc-release-checklist" class="nav-link active" data-scroll-target="#release-checklist">Release checklist</a>
   <ul class="collapse">
-  <li><a href="#release-gate" id="toc-release-gate" class="nav-link" data-scroll-target="#release-gate">0.2 release gate</a></li>
-  <li><a href="#explicitly-deferred-to-0.3" id="toc-explicitly-deferred-to-0.3" class="nav-link" data-scroll-target="#explicitly-deferred-to-0.3">Explicitly deferred to 0.3</a></li>
+  <li><a href="#release-gate" id="toc-release-gate" class="nav-link" data-scroll-target="#release-gate">Release gate</a></li>
   <li><a href="#publication" id="toc-publication" class="nav-link" data-scroll-target="#publication">Publication</a></li>
   </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/jostylr/ravel/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
-<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./design.html">Design and history</a></li><li class="breadcrumb-item"><a href="./release-checklist.html">0.2 release checklist</a></li></ol></nav></header>
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./design.html">Design and history</a></li><li class="breadcrumb-item"><a href="./release-checklist.html">Release checklist</a></li></ol></nav></header>
 
 
 
 
 <section id="release-checklist" class="level1">
-<h1>0.2 release checklist</h1>
+<h1>Release checklist</h1>
+<p>Use this list for every release. It replaces the per-version checklists kept in the archived plans.</p>
 <p>Run these commands from a clean checkout using Node 22 or newer. The release verification contract is:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> ci</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> test</span>
@@ -492,21 +492,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> run build:site</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Confirm the GitHub Actions Node, Bun, Chromium, and Windows jobs are green for the release commit. Review <code>CHANGELOG.md</code>, all workspace package versions, package metadata, and the generated tarball contents reported by <code>npm run test:pack</code>.</p>
 <section id="release-gate" class="level2">
-<h2 class="anchored" data-anchor-id="release-gate">0.2 release gate</h2>
+<h2 class="anchored" data-anchor-id="release-gate">Release gate</h2>
 <ul class="task-list">
-<li><label><input type="checkbox" checked="">Static composition, adapters, browser harnesses, schema checks, and packed-installation tests pass.</label></li>
-<li><label><input type="checkbox" checked=""><code>ravel check</code> performs live-provider analysis without execution; <code>inspect</code> remains no-execute; <code>run</code> and <code>build</code> execute only explicit <code>.run</code> blocks.</label></li>
-<li><label><input type="checkbox" checked="">Core exposes the version-1 live analysis, provider, request, outcome, plan, and program-result contracts documented in <a href="./public-api.html">the public API</a>.</label></li>
-<li><label><input type="checkbox" checked="">JavaScript execution has one final <code>export default</code>, copied/frozen inputs and resources, declared module imports, resource/output limits, and defense-in-depth dynamic-code restrictions.</label></li>
-<li><label><input type="checkbox" checked="">The current sequential live scheduler is deterministic and reports only the frozen <code>succeeded</code>/<code>failed</code> execution statuses.</label></li>
-<li><label><input type="checkbox" checked="">No live block or transform writes host files; directives and hosts remain the only output authority.</label></li>
-<li><label><input type="checkbox" checked="">The read-only Explorer/browser slice remains bounded, portable, and free of filesystem, VS Code, shell, and network authority.</label></li>
-<li><label><input type="checkbox" checked="">Documentation, changelog, package versions, CLI version output, Quarto bridge metadata, and packed smoke expectations all identify 0.2.0.</label></li>
+<li><label><input type="checkbox">Every command above passes on the release commit.</label></li>
+<li><label><input type="checkbox"><code>npm audit --omit=dev</code> reports no known vulnerabilities in runtime dependencies, or each remaining one is explained in the changelog.</label></li>
+<li><label><input type="checkbox">Every workspace <code>package.json</code>, the inter-package dependency pins, the CLI <code>--version</code> output (<code>packages/cli/src/index.js</code>), the js-live provider version, the Quarto bridge version, and the packed-smoke and Quarto-bridge test expectations all name the new version.</label></li>
+<li><label><input type="checkbox"><code>CHANGELOG.md</code> has a dated entry listing user-visible changes, including any package published for the first time.</label></li>
+<li><label><input type="checkbox"><a href="https://github.com/jostylr/ravel/blob/main/ROADMAP.md">ROADMAP.md</a> is updated: shipped items removed from “Next”, known limitations current.</label></li>
+<li><label><input type="checkbox">The documentation site is rebuilt into <code>docs/</code> and committed.</label></li>
+<li><label><input type="checkbox"><code>ravel check</code> performs live-provider analysis without execution; <code>inspect</code> remains no-execute; <code>run</code> and <code>build</code> execute only explicit <code>.run</code> blocks.</label></li>
+<li><label><input type="checkbox">No live block or transform writes host files; directives and hosts remain the only output authority.</label></li>
 </ul>
-</section>
-<section id="explicitly-deferred-to-0.3" class="level2">
-<h2 class="anchored" data-anchor-id="explicitly-deferred-to-0.3">Explicitly deferred to 0.3</h2>
-<p>The following are intentionally outside the 0.2 release gate and are tracked in <a href="../TODO-0.3.md">TODO-0.3.md</a>: persistent execution caching; advanced scheduler concurrency, stale state, trace, and cancellation semantics; richer resource snapshots and quotas; transform modules and virtual filesystems; large-value/performance budgets; structured Explorer editing and full VS Code round trips; 50k-entity scale guarantees; and broad native-tool compatibility fixtures.</p>
 </section>
 <section id="publication" class="level2">
 <h2 class="anchored" data-anchor-id="publication">Publication</h2>
@@ -531,7 +527,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> publish <span class="at">--workspace</span> @pieceful/ravel-host-node <span class="at">--access</span> public</span>
 <span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> publish <span class="at">--workspace</span> @pieceful/ravel-quarto <span class="at">--access</span> public</span>
 <span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> publish <span class="at">--workspace</span> @pieceful/ravel <span class="at">--access</span> public</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>The VS Code workspace is private and is not published to npm. The command order is a topological order of the public workspace dependencies; publish all 20 packages so the exact <code>0.2.0</code> dependencies used by the CLI and integrations resolve from npm.</p>
+<p>The VS Code workspace is private and is not published to npm. The command order is a topological order of the public workspace dependencies; publish all 20 packages so the exact-version dependencies used by the CLI and integrations resolve from npm. Tag the release commit <code>vX.Y.Z</code> after publishing.</p>
 <p>Run <code>npm whoami</code> first and verify the <code>@pieceful</code> scope permissions. Publishing is intentionally not part of the implementation task.</p>
 
 

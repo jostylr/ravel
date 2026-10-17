@@ -114,8 +114,9 @@ ravel refresh .ravel/runs/site --dry-run
 ravel refresh .ravel/runs/site
 ```
 
-For a completely fresh managed build, remove every manifest-listed file before
-writing the next result:
+For a fresh managed build, remove every manifest-listed file the new result no
+longer produces. Removal happens only after the new build is written, so a
+failed build keeps the previous output:
 
 ```sh
 ravel build --clean --dry-run

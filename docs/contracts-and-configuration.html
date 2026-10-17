@@ -449,7 +449,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./release-checklist.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">0.2 release checklist</span></a>
+ <span class="menu-text">Release checklist</span></a>
   </div>
 </li>
       </ul>
@@ -563,7 +563,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="dt">path</span> <span class="op">=</span> <span class="st">"data/cool.csv"</span>           <span class="co"># UTF-8 file below the project root</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Markup entries may select <code>adapter = "asciidoc"</code>, <code>"html"</code>, <code>"markdown"</code>, <code>"markdown-litpro"</code>, <code>"myst"</code>, <code>"noweb"</code>, or <code>"org"</code>. AsciiDoc uses <code>.adoc</code> or <code>.asciidoc</code> automatically and may retain <code>run</code> and <code>provider</code> metadata. HTML uses <code>.html</code> or <code>.htm</code> and supports the same inert live metadata. Org entries additionally accept <code>references = "org-noweb" | "underscore-quote" | "both"</code>, <code>noweb_pipes = true | false</code>, and <code>execution_owner = "org" | "ravel"</code>. See <a href="./org.html">Org and Babel</a> for the ownership boundary. Noweb uses its corresponding reference policies and <code>dialect = "noweb" | "noweb-plus"</code>. MyST entries accept <code>execution_owner = "myst" | "ravel"</code>; <code>.myst.md</code> selects the adapter without TOML. See <a href="./myst.html">MyST Markdown</a>.</p>
 <p>All file, import, output, and backup paths are confined to the directory that contains the TOML file. Ravel rejects escaping paths and symbolic-link traversal. TOML configs are individual runs and are not merged.</p>
-<p><code>build.clean = true</code> behaves like <code>ravel build --clean</code>: it removes only files recorded in the preceding Ravel manifest. <code>build.backup = true</code> writes the default dated archive under <code>backups/</code>; a string names a relative <code>.zip</code> archive. A backup is made before Ravel cleans or replaces output, and Ravel refuses to overwrite an existing archive.</p>
+<p><code>build.clean = true</code> behaves like <code>ravel build --clean</code>: after the new build has been written, it removes files recorded in the preceding Ravel manifest that the new build no longer produces. If the build fails, the previous output is left untouched. <code>build.backup = true</code> writes a dated archive under <code>backups/</code>; a string such as <code>"archives/before-clean.zip"</code> names the archive, and Ravel appends the archived build’s Unix timestamp (<code>archives/before-clean-1784723696.zip</code>) because the setting is reused by every build. When that name is already taken, a <code>-2</code>, <code>-3</code>, … suffix is added, so a configured backup never blocks a build or overwrites an archive. The first build has nothing to archive and skips the backup.</p>
 </section>
 <section id="cli-contract" class="level2">
 <h2 class="anchored" data-anchor-id="cli-contract">CLI contract</h2>
@@ -585,7 +585,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 <tr class="even">
 <td><code>ravel inspect &lt;input&gt;</code></td>
-<td>Show the completed program, <code>--chunks</code>, <code>--graph</code>, <code>--trace</code>, or a <code>--provenance &lt;deliverable&gt;</code> query.</td>
+<td>Show the completed program, <code>--chunks</code>, <code>--graph</code>, <code>--trace</code>, or a <code>--provenance &lt;deliverable&gt;</code> query. It does not run <code>.run</code> blocks, so a reference to a live chunk shows its source rather than its result.</td>
 </tr>
 <tr class="odd">
 <td><code>ravel run &lt;input&gt;</code></td>

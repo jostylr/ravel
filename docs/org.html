@@ -449,7 +449,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./release-checklist.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">0.2 release checklist</span></a>
+ <span class="menu-text">Release checklist</span></a>
   </div>
 </li>
       </ul>
@@ -526,7 +526,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode org code-with-copy"><code class="sourceCode orgmode"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#+PROPERTY: ravel-reference-style org-noweb</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>The supported values are:</p>
 <ul>
-<li><code>org-noweb</code>: interpret <code>&lt;&lt;name&gt;&gt;</code> as a Ravel reference;</li>
+<li><code>org-noweb</code>: interpret <code>&lt;&lt;name&gt;&gt;</code> as a Ravel reference (on one line, with no leading or trailing whitespace inside the brackets, so <code>&lt;&lt;</code> and <code>&gt;&gt;</code> operators stay code; write <code>@&lt;&lt;</code> for a literal <code>&lt;&lt;</code>);</li>
 <li><code>underscore-quote</code>: leave Org-noweb syntax for Babel and interpret <code>_"name | pipe()"</code>;</li>
 <li><code>both</code>: accept both forms.</li>
 </ul>

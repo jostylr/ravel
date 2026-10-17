@@ -449,7 +449,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./release-checklist.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">0.2 release checklist</span></a>
+ <span class="menu-text">Release checklist</span></a>
   </div>
 </li>
       </ul>
@@ -521,9 +521,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="preview-and-safely-rebuild">Preview and safely rebuild</h2>
 <p>Use a dry run to see deliverables and stale managed files without changing the filesystem:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">npx</span> ravel build greeting.md <span class="at">--out-dir</span> build <span class="at">--dry-run</span> <span class="at">--json</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>If a later edit removes an output, Ravel retains that stale file by default. Use <code>--clean</code> to remove only files named by the prior manifest before building again. Add <code>--backup</code> when you want an archive of the current output first:</p>
+<p>If a later edit removes an output, Ravel retains that stale file by default. Use <code>--clean</code> to remove the files named by the prior manifest that the new build no longer produces; Ravel removes them only after the new build has been written. Add <code>--backup</code> when you want an archive of the current output first:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">npx</span> ravel build greeting.md <span class="at">--out-dir</span> build <span class="at">--backup</span> <span class="at">--clean</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>The unnamed archive is placed under <code>backups/</code> at the project root. A named archive must not already exist.</p>
+<p>The unnamed archive is placed under <code>backups/</code> at the project root and holds the files listed in the previous manifest. A name given with <code>--backup file.zip</code> must not already exist. The first build has nothing to archive, so <code>--backup</code> is skipped.</p>
 </section>
 <section id="next-steps" class="level2">
 <h2 class="anchored" data-anchor-id="next-steps">Next steps</h2>

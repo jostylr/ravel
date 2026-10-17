@@ -414,7 +414,7 @@ ul.task-list li input[type="checkbox"] {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./release-checklist.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">0.2 release checklist</span></a>
+ <span class="menu-text">Release checklist</span></a>
   </div>
 </li>
       </ul>
@@ -447,11 +447,11 @@ ul.task-list li input[type="checkbox"] {
 
 <section id="filesystem-safety-and-trust-boundaries" class="level1">
 <h1>Filesystem safety and trust boundaries</h1>
-<p>Ravel’s portable graph evaluator is static: it parses documents, resolves chunks, applies its documented string transforms, and plans outputs. It does not execute document JavaScript, shell commands, network requests, or arbitrary user code. Filesystem access is supplied only by <code>@pieceful/ravel-host-node</code> and the CLI.</p>
+<p>Ravel’s portable graph evaluator is static: it parses documents, resolves chunks, applies its documented string transforms, and plans outputs. It does not execute shell commands, network requests, or document code. The only document code Ravel runs is explicitly marked <code>.run</code> blocks, and only through <code>ravel run</code> and <code>ravel build</code>, inside the isolated QuickJS runtime described in <a href="./live-execution.html">live execution</a>, which has no filesystem, network, or process access. Filesystem access is supplied only by <code>@pieceful/ravel-host-node</code> and the CLI.</p>
 <section id="project-root" class="level2">
 <h2 class="anchored" data-anchor-id="project-root">Project root</h2>
-<p>For a direct input, the input’s containing directory is the default root. For a TOML project, the configuration’s containing directory is the root. <code>--root</code> may select an explicit root. Every configured source, imported map, output, manifest, provenance map, and default backup path is resolved beneath that root.</p>
-<p>Paths that escape the root with <code>..</code>, absolute paths, or a symbolic-link hop are rejected. This includes output paths: a project cannot use an <code>out</code> directive to overwrite an arbitrary file, nor can a symlinked output directory redirect a build outside the project. These checks are intentional policy, not merely convenience validation.</p>
+<p>For a direct input, the input’s containing directory is the root. For a TOML project, the configuration’s containing directory is the root. Every configured source, imported map, output, manifest, provenance map, <code>--graph</code> path, and backup path is resolved beneath that root. The explicit <code>--out-dir</code> flag is the one exception: it is resolved from the current directory and becomes the root for that build’s output.</p>
+<p>Paths that escape the root with <code>..</code>, absolute paths, or a symbolic-link hop are rejected. This includes output paths: a project cannot use an <code>out</code> directive to overwrite an arbitrary file, nor can a symlinked output directory redirect a build outside the project. The same per-component symlink check applies to deletions by <code>--clean</code> and <code>refresh</code>, so a symlinked subdirectory cannot make Ravel delete files outside the output directory. Deliverable names may not collide with Ravel’s own manifest files or with each other when compared case-insensitively, so a plan behaves the same on case-insensitive file systems. These checks are intentional policy, not merely convenience validation.</p>
 </section>
 <section id="authorized-writes" class="level2">
 <h2 class="anchored" data-anchor-id="authorized-writes">Authorized writes</h2>
@@ -468,8 +468,8 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="clean-refresh-and-backups" class="level2">
 <h2 class="anchored" data-anchor-id="clean-refresh-and-backups">Clean, refresh, and backups</h2>
-<p>Ravel never treats an output directory as disposable just because it was passed to a command. <code>--clean</code> removes only files listed in the preceding manifest, then builds afresh. <code>refresh</code> removes only retained stale managed files and updates the manifest. Both commands support <code>--dry-run</code>.</p>
-<p><code>--backup [path.zip]</code> snapshots the current managed output before a build that would replace it. A named archive must be new. Without a name, Ravel derives a name under <code>backups/</code> below the project root from the output directory and the previous manifest’s Unix timestamp. Backup creation requires a valid prior manifest so it cannot accidentally archive or legitimize an unrelated tree.</p>
+<p>Ravel never treats an output directory as disposable just because it was passed to a command. <code>--clean</code> writes the new build first and then removes only files listed in the preceding manifest that the new build does not produce; a failed build leaves the previous output in place. <code>refresh</code> removes only retained stale managed files and updates the manifest. Both commands support <code>--dry-run</code>.</p>
+<p><code>--backup [path.zip]</code> snapshots the current managed output — the files listed in the previous manifest, plus the manifest itself — before a build that would replace it. Unmanaged files in the output directory are not archived. A name given on the command line must be new. Without a name, Ravel derives one under <code>backups/</code> below the project root from the output directory and the previous manifest’s Unix timestamp; a name configured in TOML gets the same timestamp appended. Derived names gain a <code>-2</code>, <code>-3</code>, … suffix rather than overwrite or block. With no prior manifest there is nothing to archive and the backup is skipped, so Ravel never archives or legitimizes an unrelated tree.</p>
 </section>
 <section id="what-this-does-not-protect" class="level2">
 <h2 class="anchored" data-anchor-id="what-this-does-not-protect">What this does not protect</h2>

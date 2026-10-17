@@ -75,6 +75,10 @@ From the repository root:
       --out-dir .ravel/runs/poc \
       --graph .ravel/runs/poc/program.json
 
+`--out-dir` is relative to the current directory, while `--graph` is relative
+to the project root, so the graph lands in
+`examples/poc/.ravel/runs/poc/program.json`.
+
 The command loads `library.ravel-map.json`, produces `project::main`,
 `library::greeting`, and emitted `project::greeting:browser` chunks, then writes:
 

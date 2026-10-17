@@ -103,25 +103,13 @@ extraction, multiple documents, imports, greedy fragments, transforms,
 composition directives, aliases, derived chunks, output planning, filesystem
 writing, and execution of the generated JavaScript.
 
-The 0.2 release gate is documented in the
-[release checklist](documentation/release-checklist.md). The language-neutral
-live-execution contract, QuickJS/Wasm provider, static live-code checking, and
-the read-only Explorer slice are included in 0.2. Transform modules, virtual
-filesystems, persistent caching, structured Explorer editing, and large-project
-hardening are explicitly deferred to
-[the Ravel 0.3 plan](TODO-0.3.md).
-
-The 0.2 live-code vertical slice is included in this release. Named
-Markdown fences can opt in with `.run`; portable core planning resolves
-`ch("chunk")` value dependencies and `load("resource")` snapshots; and the new
-`@pieceful/ravel-js-live` workspace package evaluates one final JSON-compatible
-`export default` in a fresh, limited QuickJS/Wasm runtime behind a terminable
-worker. Hosts may register immutable ESM source under approved import names,
-without exposing npm or filesystem resolution. Live-to-live dependencies keep
-copied data values; `build` materializes raw string exports, entire JSON values
-through `jsontext()`, or selected object keys through `jsontext("key")` before
-ordinary pipes and outputs. See the
-[live-execution design and current safety boundary](documentation/live-execution.md).
+Live execution, the read-only Explorer, and the language-tooling building
+blocks shipped in 0.2; their boundaries are described in
+[live execution](documentation/live-execution.md) and the
+[Explorer design](documentation/explorer-design.md). What comes next, known
+limitations, and what is out of scope are in the **[roadmap](ROADMAP.md)**,
+which is the single current plan. Shipped changes are in the
+[changelog](CHANGELOG.md).
 
 Try the complete portable pipeline in the
 [live browser playground](https://ravel.jostylr.com/playground/): edit a
@@ -181,7 +169,10 @@ npm run ravel -- inspect examples/poc/project.ravel-map.json \
   --provenance dist/greeting.js --generated-offset 0
 ```
 
-Build the JSON-map proof of concept and save its completed graph:
+Build the JSON-map proof of concept and save its completed graph. `--out-dir`
+is relative to the current directory; `--graph` is relative to the project
+root (here `examples/poc/`), so the graph is written to
+`examples/poc/.ravel/runs/poc/program.json`:
 
 ```sh
 npm run ravel -- build examples/poc/project.ravel-map.json \
@@ -369,14 +360,10 @@ that binary explicitly before running the same command.
 
 ## Current scope and intentional limits
 
-Ravel 0.2 remains intentionally scoped. It does not include arbitrary plugins,
-notebook kernels, shell/network effects, persistent execution caching, or
-structured Explorer editing; those deferred capabilities are tracked in
-TODO-0.3.md.
-
-Those are possible later extensions of the same Ravel Map and graph model. The
-immediate work is to make the existing static path validated, installable,
-explainable, reproducible, and pleasant to use.
+Ravel does not include arbitrary plugins, notebook kernels, shell or network
+effects, persistent execution caching, or structured Explorer editing. The
+[roadmap](ROADMAP.md) lists which of these are planned, in what order, and
+which are deliberately out of scope.
 
 ## Project participation
 

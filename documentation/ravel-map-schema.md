@@ -111,7 +111,7 @@ than contribute text. The initial directive set is:
 | --- | --- | --- |
 | in | target | Load the named Markdown or JSON Ravel Map relative to this map and merge its chunks before transformation. |
 | out | name and from | Make the completed fully qualified source chunk a deliverable under file-like name. |
-| create | document, name, compose | Create a document-local generated definition from staged composition IR. |
+| create | document, name, and compose or body | Create a document-local generated definition from staged composition IR (`compose`) or a raw chunk body (`body`). |
 | alias | document, name, reference | Create an alternate document-local graph name whose provenance retains its target. |
 
 `compose` is an ordered array of `append`, `newline`, `pipe`, and `pass` nodes.

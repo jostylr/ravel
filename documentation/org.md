@@ -77,7 +77,9 @@ Reference policy is selected with:
 
 The supported values are:
 
-- `org-noweb`: interpret `<<name>>` as a Ravel reference;
+- `org-noweb`: interpret `<<name>>` as a Ravel reference (on one line, with no
+  leading or trailing whitespace inside the brackets, so `<<` and `>>`
+  operators stay code; write `@<<` for a literal `<<`);
 - `underscore-quote`: leave Org-noweb syntax for Babel and interpret
   `_"name | pipe()"`;
 - `both`: accept both forms.

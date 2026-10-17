@@ -449,7 +449,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./release-checklist.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">0.2 release checklist</span></a>
+ <span class="menu-text">Release checklist</span></a>
   </div>
 </li>
       </ul>
@@ -493,7 +493,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="re">&lt;&lt;message&gt;&gt;=</span></span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>hello</span>
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="re">@</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p><code>&lt;&lt;name&gt;&gt;=</code> starts a definition, <code>@</code> on its own line returns to documentation, and <code>&lt;&lt;name&gt;&gt;</code> inside code is a reference. Repeating the same definition concatenates its exact body segments in source order. The documentation immediately before each declaration is retained as narrative metadata and in the adapter’s surface map.</p>
+<p><code>&lt;&lt;name&gt;&gt;=</code> starts a definition, <code>@</code> on its own line returns to documentation, and <code>&lt;&lt;name&gt;&gt;</code> inside code is a reference. A reference must close on the same line, and its name cannot begin or end with whitespace, so operators such as <code>std::cout &lt;&lt; x</code> or <code>a &lt;&lt; 2; b &gt;&gt; 1</code> stay ordinary code. Write <code>@&lt;&lt;</code> for a literal <code>&lt;&lt;</code> that would otherwise read as a reference; the <code>@</code> is dropped from the output. Repeating the same definition concatenates its exact body segments in source order. The documentation immediately before each declaration is retained as narrative metadata and in the adapter’s surface map.</p>
 <p>The strict <code>noweb</code> dialect does not split pipes. Therefore <code>&lt;&lt;name | trim()&gt;&gt;=</code> is a classic chunk literally named <code>name | trim()</code>.</p>
 <p>Classic noweb declarations contain no source language. The adapter uses, in order, a matching pragma, per-name configuration, a default configured language, or a recognizable filename extension such as <code>.js</code>.</p>
 </section>

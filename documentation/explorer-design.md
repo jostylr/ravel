@@ -2,11 +2,11 @@
 
 ## Status
 
-This document specifies the Explorer direction from the
-[Ravel 0.2 implementation plan](../TODO-0.2.md). The 0.2 release is limited to
-the current bounded, read-only browser/host slice; structured editing, full VS
-Code round trips, and scale hardening are deferred to
-[TODO-0.3.md](../TODO-0.3.md).
+This document specifies the Explorer direction. The published Explorer is the
+bounded, read-only browser/host slice; structured editing, full VS Code round
+trips, and scale hardening are not scheduled yet. Current status and priority
+are in the
+[roadmap](https://github.com/jostylr/ravel/blob/main/ROADMAP.md).
 
 ## Product statement
 

@@ -65,15 +65,18 @@ npx ravel build greeting.md --out-dir build --dry-run --json
 ```
 
 If a later edit removes an output, Ravel retains that stale file by default.
-Use `--clean` to remove only files named by the prior manifest before building
-again. Add `--backup` when you want an archive of the current output first:
+Use `--clean` to remove the files named by the prior manifest that the new
+build no longer produces; Ravel removes them only after the new build has been
+written. Add `--backup` when you want an archive of the current output first:
 
 ```sh
 npx ravel build greeting.md --out-dir build --backup --clean
 ```
 
-The unnamed archive is placed under `backups/` at the project root. A named
-archive must not already exist.
+The unnamed archive is placed under `backups/` at the project root and holds
+the files listed in the previous manifest. A name given with `--backup
+file.zip` must not already exist. The first build has nothing to archive, so
+`--backup` is skipped.
 
 ## Next steps
 

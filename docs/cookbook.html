@@ -449,7 +449,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./release-checklist.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">0.2 release checklist</span></a>
+ <span class="menu-text">Release checklist</span></a>
   </div>
 </li>
       </ul>
@@ -554,7 +554,7 @@ out("dist/app.js", _"bundle:app.js")</code></pre>
 <p>A normal build retains outputs that used to be declared but are now absent. It lists them as stale in the manifest. Preview removal first:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">ravel</span> refresh .ravel/runs/site <span class="at">--dry-run</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="ex">ravel</span> refresh .ravel/runs/site</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>For a completely fresh managed build, remove every manifest-listed file before writing the next result:</p>
+<p>For a fresh managed build, remove every manifest-listed file the new result no longer produces. Removal happens only after the new build is written, so a failed build keeps the previous output:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">ravel</span> build <span class="at">--clean</span> <span class="at">--dry-run</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="ex">ravel</span> build <span class="at">--clean</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Neither command removes arbitrary neighboring files. Add <code>--backup</code> before a clean build to snapshot the existing managed output in a ZIP archive.</p>

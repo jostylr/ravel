@@ -1,4 +1,7 @@
-# 0.2 release checklist
+# Release checklist
+
+Use this list for every release. It replaces the per-version checklists kept
+in the archived plans.
 
 Run these commands from a clean checkout using Node 22 or newer. The release
 verification contract is:
@@ -19,37 +22,25 @@ the release commit. Review `CHANGELOG.md`, all workspace package versions,
 package metadata, and the generated tarball contents reported by
 `npm run test:pack`.
 
-## 0.2 release gate
+## Release gate
 
-- [x] Static composition, adapters, browser harnesses, schema checks, and
-      packed-installation tests pass.
-- [x] `ravel check` performs live-provider analysis without execution;
+- [ ] Every command above passes on the release commit.
+- [ ] `npm audit --omit=dev` reports no known vulnerabilities in runtime
+      dependencies, or each remaining one is explained in the changelog.
+- [ ] Every workspace `package.json`, the inter-package dependency pins, the
+      CLI `--version` output (`packages/cli/src/index.js`), the js-live
+      provider version, the Quarto bridge version, and the packed-smoke and
+      Quarto-bridge test expectations all name the new version.
+- [ ] `CHANGELOG.md` has a dated entry listing user-visible changes, including
+      any package published for the first time.
+- [ ] [ROADMAP.md](https://github.com/jostylr/ravel/blob/main/ROADMAP.md) is
+      updated: shipped items removed from "Next", known limitations current.
+- [ ] The documentation site is rebuilt into `docs/` and committed.
+- [ ] `ravel check` performs live-provider analysis without execution;
       `inspect` remains no-execute; `run` and `build` execute only explicit
       `.run` blocks.
-- [x] Core exposes the version-1 live analysis, provider, request, outcome,
-      plan, and program-result contracts documented in
-      [the public API](public-api.md).
-- [x] JavaScript execution has one final `export default`, copied/frozen
-      inputs and resources, declared module imports, resource/output limits,
-      and defense-in-depth dynamic-code restrictions.
-- [x] The current sequential live scheduler is deterministic and reports only
-      the frozen `succeeded`/`failed` execution statuses.
-- [x] No live block or transform writes host files; directives and hosts remain
+- [ ] No live block or transform writes host files; directives and hosts remain
       the only output authority.
-- [x] The read-only Explorer/browser slice remains bounded, portable, and
-      free of filesystem, VS Code, shell, and network authority.
-- [x] Documentation, changelog, package versions, CLI version output, Quarto
-      bridge metadata, and packed smoke expectations all identify 0.2.0.
-
-## Explicitly deferred to 0.3
-
-The following are intentionally outside the 0.2 release gate and are tracked
-in [TODO-0.3.md](../TODO-0.3.md): persistent execution caching; advanced
-scheduler concurrency, stale state, trace, and cancellation semantics; richer
-resource snapshots and quotas; transform modules and virtual filesystems;
-large-value/performance budgets; structured Explorer editing and full VS Code
-round trips; 50k-entity scale guarantees; and broad native-tool compatibility
-fixtures.
 
 ## Publication
 
@@ -81,8 +72,9 @@ npm publish --workspace @pieceful/ravel --access public
 
 The VS Code workspace is private and is not published to npm. The command
 order is a topological order of the public workspace dependencies; publish all
-20 packages so the exact `0.2.0`
-dependencies used by the CLI and integrations resolve from npm.
+20 packages so the exact-version dependencies used by the CLI and
+integrations resolve from npm. Tag the release commit `vX.Y.Z` after
+publishing.
 
 Run `npm whoami` first and verify the `@pieceful` scope permissions. Publishing
 is intentionally not part of the implementation task.
