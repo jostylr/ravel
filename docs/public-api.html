@@ -154,6 +154,10 @@ ul.task-list li input[type="checkbox"] {
  <span class="dropdown-text">Pipes and directives</span></a>
   </li>  
         <li>
+    <a class="dropdown-item" href="./transforms-and-collections.html">
+ <span class="dropdown-text">Transforms and collections</span></a>
+  </li>  
+        <li>
     <a class="dropdown-item" href="./provenance-maps.html">
  <span class="dropdown-text">Provenance maps</span></a>
   </li>  
@@ -170,7 +174,7 @@ ul.task-list li input[type="checkbox"] {
   </li>  
         <li>
     <a class="dropdown-item" href="./contracts-and-configuration.html">
- <span class="dropdown-text">0.2 contracts</span></a>
+ <span class="dropdown-text">Contracts and configuration</span></a>
   </li>  
         <li>
     <a class="dropdown-item" href="./ravel-map-schema.html">
@@ -323,6 +327,12 @@ ul.task-list li input[type="checkbox"] {
  <span class="menu-text">Ravel pipes and directives reference</span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./transforms-and-collections.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Transforms and collections</span></a>
+  </div>
+</li>
       </ul>
   </li>
         <li class="sidebar-item sidebar-item-section">
@@ -337,7 +347,7 @@ ul.task-list li input[type="checkbox"] {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./contracts-and-configuration.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">0.2 contracts and configuration</span></a>
+ <span class="menu-text">Contracts and configuration</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -433,6 +443,7 @@ ul.task-list li input[type="checkbox"] {
   <ul class="collapse">
   <li><a href="#piecefulravel-map" id="toc-piecefulravel-map" class="nav-link" data-scroll-target="#piecefulravel-map"><code>@pieceful/ravel-map</code></a></li>
   <li><a href="#piecefulravel-markdown" id="toc-piecefulravel-markdown" class="nav-link" data-scroll-target="#piecefulravel-markdown"><code>@pieceful/ravel-markdown</code></a></li>
+  <li><a href="#piecefulravel-transforms" id="toc-piecefulravel-transforms" class="nav-link" data-scroll-target="#piecefulravel-transforms"><code>@pieceful/ravel-transforms</code></a></li>
   <li><a href="#piecefulravel-markdown-litpro" id="toc-piecefulravel-markdown-litpro" class="nav-link" data-scroll-target="#piecefulravel-markdown-litpro"><code>@pieceful/ravel-markdown-litpro</code></a></li>
   <li><a href="#piecefulravel-noweb" id="toc-piecefulravel-noweb" class="nav-link" data-scroll-target="#piecefulravel-noweb"><code>@pieceful/ravel-noweb</code></a></li>
   <li><a href="#piecefulravel-org" id="toc-piecefulravel-org" class="nav-link" data-scroll-target="#piecefulravel-org"><code>@pieceful/ravel-org</code></a></li>
@@ -441,7 +452,10 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#piecefulravel-quarto" id="toc-piecefulravel-quarto" class="nav-link" data-scroll-target="#piecefulravel-quarto"><code>@pieceful/ravel-quarto</code></a></li>
   <li><a href="#piecefulravel-myst" id="toc-piecefulravel-myst" class="nav-link" data-scroll-target="#piecefulravel-myst"><code>@pieceful/ravel-myst</code></a></li>
   <li><a href="#piecefulravel-myst-plugin" id="toc-piecefulravel-myst-plugin" class="nav-link" data-scroll-target="#piecefulravel-myst-plugin"><code>@pieceful/ravel-myst-plugin</code></a></li>
-  <li><a href="#piecefulravel-core" id="toc-piecefulravel-core" class="nav-link" data-scroll-target="#piecefulravel-core"><code>@pieceful/ravel-core</code></a></li>
+  <li><a href="#piecefulravel-core" id="toc-piecefulravel-core" class="nav-link" data-scroll-target="#piecefulravel-core"><code>@pieceful/ravel-core</code></a>
+  <ul class="collapse">
+  <li><a href="#custom-transforms" id="toc-custom-transforms" class="nav-link" data-scroll-target="#custom-transforms">Custom transforms</a></li>
+  </ul></li>
   <li><a href="#piecefulravel-js-live-0.2" id="toc-piecefulravel-js-live-0.2" class="nav-link" data-scroll-target="#piecefulravel-js-live-0.2"><code>@pieceful/ravel-js-live</code> (0.2)</a></li>
   <li><a href="#piecefulravel-host-node" id="toc-piecefulravel-host-node" class="nav-link" data-scroll-target="#piecefulravel-host-node"><code>@pieceful/ravel-host-node</code></a></li>
   <li><a href="#piecefulravel" id="toc-piecefulravel" class="nav-link" data-scroll-target="#piecefulravel"><code>@pieceful/ravel</code></a></li>
@@ -473,6 +487,13 @@ ul.task-list li input[type="checkbox"] {
 <ul>
 <li><code>markdownToMap(text, options)</code> converts the compatibility fence profile or explicitly selected modern profile to <code>{ map, diagnostics }</code>.</li>
 <li><code>modernMarkdownToMap(text, options)</code> parses heading-owned and named-fence modern Markdown.</li>
+<li><code>parseFrontMatter(text)</code> returns <code>{ data, start, end, bodyStart }</code> for leading YAML front matter and throws on invalid YAML.</li>
+</ul>
+</section>
+<section id="piecefulravel-transforms" class="level2">
+<h2 class="anchored" data-anchor-id="piecefulravel-transforms"><code>@pieceful/ravel-transforms</code></h2>
+<ul>
+<li><code>markdown</code>, <code>template</code>, and <code>json</code> are the built-in transforms, and <code>builtinTransforms</code> is the frozen map of all three that the Node and browser hosts register by default. <code>templateData(args)</code> exposes the argument-merging rule. See <a href="./transforms-and-collections.html">transforms and collections</a>.</li>
 </ul>
 </section>
 <section id="piecefulravel-markdown-litpro" class="level2">
@@ -573,7 +594,19 @@ ul.task-list li input[type="checkbox"] {
 <li><code>generatedRangesForSourceRange(map, uri, range)</code> maps a half-open source range, while <code>explainGeneratedOffset(program, deliverable, offset)</code> adds the definition, references, and dependency path.</li>
 <li><code>provenanceMapVersion</code> identifies the generated provenance contract.</li>
 </ul>
-<p>The <code>@pieceful/ravel-core/directives</code> entry point exposes constructors for the portable directive IR. Custom transforms are functions that receive a string value and return a string; a failed or non-string result becomes a diagnostic.</p>
+<p>The <code>@pieceful/ravel-core/directives</code> entry point exposes constructors for the portable directive IR.</p>
+<section id="custom-transforms" class="level3">
+<h3 class="anchored" data-anchor-id="custom-transforms">Custom transforms</h3>
+<p>A transform is a function <code>(value, context) =&gt; string | { parts }</code>. The context holds <code>arguments</code> (the step’s evaluated arguments: literals, <code>text()</code> values, and <code>ch()</code> chunk text), <code>transform</code> (the step name), <code>chunk</code>, and <code>parts: true</code>. A thrown error or any other result becomes a source-linked <code>RV121</code> diagnostic.</p>
+<p>Returning <code>{ parts }</code> keeps provenance. Each part is one of:</p>
+<ul>
+<li>a string — new text, attributed to the transform step;</li>
+<li><code>{ input: [start, end] }</code> — a range of the piped value, keeping its mapping;</li>
+<li><code>{ argument: i, start, end }</code> — a range of argument <code>i</code>’s text, keeping its mapping (useful when the argument came from <code>ch()</code>);</li>
+<li><code>{ text, argument: i }</code> — derived text, attributed to argument <code>i</code>’s origins.</li>
+</ul>
+<p>The parts are concatenated to form the output. Ranges outside their text are reported as <code>RV121</code> errors. <code>template</code> uses this so layout text stays exactly mapped.</p>
+</section>
 </section>
 <section id="piecefulravel-js-live-0.2" class="level2">
 <h2 class="anchored" data-anchor-id="piecefulravel-js-live-0.2"><code>@pieceful/ravel-js-live</code> (0.2)</h2>
@@ -589,7 +622,7 @@ ul.task-list li input[type="checkbox"] {
 <h2 class="anchored" data-anchor-id="piecefulravel-host-node"><code>@pieceful/ravel-host-node</code></h2>
 <p>This Node-only package performs scoped filesystem input and artifact work.</p>
 <ul>
-<li><code>loadBuildInput</code> and <code>loadTomlBuild</code> load direct files or version-1 TOML runs.</li>
+<li><code>loadBuildInput</code> and <code>loadTomlBuild</code> load direct files or version-1 TOML runs, including <code>[[collections]]</code>. The result’s <code>transforms</code> holds the built-in transforms plus any <code>[[transforms]]</code> modules; pass it to <code>transformGraph(loaded.pretransform, { transforms: loaded.transforms })</code>.</li>
 <li><code>planDeliverables</code>, <code>writeBuildArtifacts</code>, and <code>createBuildManifest</code> support managed artifact production. A managed build writes a <code>.ravelmap</code> sidecar for every deliverable and an aggregate <code>.ravelmap</code> bundle. Pass <code>writeBuildArtifacts(program, dir, { clean: true })</code> to remove previously managed files the build no longer produces, after the new files commit; the result’s <code>removed</code> lists them.</li>
 <li><code>cleanManagedArtifacts</code>, <code>refreshStaleArtifacts</code>, <code>planOutputBackup</code>, and <code>createOutputBackup</code> implement the safe managed-output lifecycle. <code>createOutputBackup</code> archives only manifest-listed files, returns <code>{ path: null, skipped }</code> when there is no previous build, and accepts <code>timestampName: true</code> to append the build timestamp to a configured name.</li>
 </ul>

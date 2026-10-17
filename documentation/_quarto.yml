@@ -44,13 +44,15 @@ website:
             href: quarto.md
           - text: "Pipes and directives"
             href: pipes-and-directives.md
+          - text: "Transforms and collections"
+            href: transforms-and-collections.md
           - text: "Provenance maps"
             href: provenance-maps.md
       - text: "Reference"
         menu:
           - text: "Public API"
             href: public-api.md
-          - text: "0.2 contracts"
+          - text: "Contracts and configuration"
             href: contracts-and-configuration.md
           - text: "Ravel Map schema"
             href: ravel-map-schema.md
@@ -81,6 +83,7 @@ website:
           - live-execution.md
           - chunk-syntax.md
           - pipes-and-directives.md
+          - transforms-and-collections.md
       - section: "Reference"
         contents:
           - contracts-and-configuration.md

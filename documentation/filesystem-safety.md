@@ -9,6 +9,13 @@ document code Ravel runs is explicitly marked `.run` blocks, and only through
 process access. Filesystem access is supplied only by
 `@pieceful/ravel-host-node` and the CLI.
 
+The one exception is configuration, not documents: modules listed under
+`[[transforms]]` in `ravel.toml` are imported and run as ordinary Node code
+with your privileges whenever the project is checked or built (see
+[transforms and collections](transforms-and-collections.md)). A document cannot
+add one. Ravel's built-in `markdown`, `template`, and `json` transforms are
+pure string functions.
+
 ## Project root
 
 For a direct input, the input's containing directory is the root. For a TOML
@@ -67,7 +74,8 @@ skipped, so Ravel never archives or legitimizes an unrelated tree.
 ## What this does not protect
 
 The project root is trusted input. A build reads the source files and TOML
-configuration you select; review them before building an untrusted checkout.
+configuration you select; review them — and any `[[transforms]]` modules,
+which run as host code — before building an untrusted checkout.
 Ravel's containment policy does not make hostile source content harmless to a
 downstream compiler, runtime, deployment system, or a person who later executes
 the generated artifacts. Treat generated code as code from its source authors.

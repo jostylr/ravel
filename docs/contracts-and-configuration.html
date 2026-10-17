@@ -189,6 +189,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="dropdown-text">Pipes and directives</span></a>
   </li>  
         <li>
+    <a class="dropdown-item" href="./transforms-and-collections.html">
+ <span class="dropdown-text">Transforms and collections</span></a>
+  </li>  
+        <li>
     <a class="dropdown-item" href="./provenance-maps.html">
  <span class="dropdown-text">Provenance maps</span></a>
   </li>  
@@ -205,7 +209,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </li>  
         <li>
     <a class="dropdown-item" href="./contracts-and-configuration.html">
- <span class="dropdown-text">0.2 contracts</span></a>
+ <span class="dropdown-text">Contracts and configuration</span></a>
   </li>  
         <li>
     <a class="dropdown-item" href="./ravel-map-schema.html">
@@ -234,7 +238,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./contracts-and-configuration.html">Reference</a></li><li class="breadcrumb-item"><a href="./contracts-and-configuration.html">0.2 contracts and configuration</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./contracts-and-configuration.html">Reference</a></li><li class="breadcrumb-item"><a href="./contracts-and-configuration.html">Contracts and configuration</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -358,6 +362,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="menu-text">Ravel pipes and directives reference</span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./transforms-and-collections.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Transforms and collections</span></a>
+  </div>
+</li>
       </ul>
   </li>
         <li class="sidebar-item sidebar-item-section">
@@ -372,7 +382,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./contracts-and-configuration.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">0.2 contracts and configuration</span></a>
+ <span class="menu-text">Contracts and configuration</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -464,7 +474,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#contracts-and-configuration" id="toc-contracts-and-configuration" class="nav-link active" data-scroll-target="#contracts-and-configuration">0.2 contracts and configuration</a>
+  <li><a href="#contracts-and-configuration" id="toc-contracts-and-configuration" class="nav-link active" data-scroll-target="#contracts-and-configuration">Contracts and configuration</a>
   <ul class="collapse">
   <li><a href="#stable-versioned-surfaces" id="toc-stable-versioned-surfaces" class="nav-link" data-scroll-target="#stable-versioned-surfaces">Stable versioned surfaces</a></li>
   <li><a href="#canonical-ravel.toml" id="toc-canonical-ravel.toml" class="nav-link" data-scroll-target="#canonical-ravel.toml">Canonical <code>ravel.toml</code></a></li>
@@ -476,14 +486,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="toc-actions"><ul><li><a href="https://github.com/jostylr/ravel/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
-<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./contracts-and-configuration.html">Reference</a></li><li class="breadcrumb-item"><a href="./contracts-and-configuration.html">0.2 contracts and configuration</a></li></ol></nav></header>
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./contracts-and-configuration.html">Reference</a></li><li class="breadcrumb-item"><a href="./contracts-and-configuration.html">Contracts and configuration</a></li></ol></nav></header>
 
 
 
 
 <section id="contracts-and-configuration" class="level1">
-<h1>0.2 contracts and configuration</h1>
-<p>This reference distinguishes Ravel’s implemented 0.2 contracts from planned work. A value described as a versioned contract may be consumed by tools; other object shapes and implementation details are not public API.</p>
+<h1>Contracts and configuration</h1>
+<p>This reference distinguishes Ravel’s implemented contracts from planned work. A value described as a versioned contract may be consumed by tools; other object shapes and implementation details are not public API.</p>
 <section id="stable-versioned-surfaces" class="level2">
 <h2 class="anchored" data-anchor-id="stable-versioned-surfaces">Stable versioned surfaces</h2>
 <table class="caption-top table">
@@ -546,22 +556,36 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="dt">backup</span> <span class="op">=</span> <span class="cn">false</span>                    <span class="co"># false, true, or a relative .zip path</span></span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="kw">[[files]]</span></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="dt">path</span> <span class="op">=</span> <span class="st">"guide.md"</span>                <span class="co"># required, relative to this file</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="dt">path</span> <span class="op">=</span> <span class="st">"guide.md"</span>                <span class="co"># relative to this file</span></span>
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="dt">document</span> <span class="op">=</span> <span class="st">"guide"</span>               <span class="co"># optional document override</span></span>
 <span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="dt">mode</span> <span class="op">=</span> <span class="st">"primary"</span>                 <span class="co"># opt-in (default) or primary</span></span>
 <span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="kw">[[outputs]]</span></span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="dt">name</span> <span class="op">=</span> <span class="st">"dist/main.js"</span>            <span class="co"># required output-relative path</span></span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="dt">from</span> <span class="op">=</span> <span class="st">"guide::main.javascript"</span>  <span class="co"># required canonical chunk address</span></span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="kw">[[live.modules]]</span></span>
-<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="dt">specifier</span> <span class="op">=</span> <span class="st">"@example/csv"</span>       <span class="co"># exact import visible inside live code</span></span>
-<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="dt">from</span> <span class="op">=</span> <span class="st">"csv-parse/browser/esm/sync"</span> <span class="co"># installed package export to bundle</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="kw">[[collections]]</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="dt">name</span> <span class="op">=</span> <span class="st">"pages"</span>                   <span class="co"># required lowercase identifier</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="dt">glob</span> <span class="op">=</span> <span class="st">"pages/**/*.md"</span>           <span class="co"># required, relative to this file</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="dt">out</span> <span class="op">=</span> <span class="st">"{dir}/{slug}.html"</span>        <span class="co"># required, relative to out_dir</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="dt">layout</span> <span class="op">=</span> <span class="st">"guide::layout.html"</span>    <span class="co"># optional chunk filled by template</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="dt">pipe</span> <span class="op">=</span> <span class="st">"markdown"</span>                <span class="co"># optional; default "markdown"</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="dt">references</span> <span class="op">=</span> <span class="cn">false</span>               <span class="co"># optional; allow _"..." in item bodies</span></span>
 <span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="kw">[[live.resources]]</span></span>
-<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="dt">name</span> <span class="op">=</span> <span class="st">"cool.csv"</span>                <span class="co"># exact load("cool.csv") name</span></span>
-<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="dt">path</span> <span class="op">=</span> <span class="st">"data/cool.csv"</span>           <span class="co"># UTF-8 file below the project root</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="kw">[[transforms]]</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="dt">name</span> <span class="op">=</span> <span class="st">"smartquotes"</span>             <span class="co"># pipeline name, e.g. _"x | smartquotes"</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="dt">module</span> <span class="op">=</span> <span class="st">"transforms/smartquotes.mjs"</span> <span class="co"># ES module below the project root</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="dt">export</span> <span class="op">=</span> <span class="st">"default"</span>               <span class="co"># optional export name</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="kw">[[outputs]]</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="dt">name</span> <span class="op">=</span> <span class="st">"dist/main.js"</span>            <span class="co"># required output-relative path</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a><span class="dt">from</span> <span class="op">=</span> <span class="st">"guide::main.javascript"</span>  <span class="co"># required canonical chunk address</span></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a><span class="kw">[[live.modules]]</span></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a><span class="dt">specifier</span> <span class="op">=</span> <span class="st">"@example/csv"</span>       <span class="co"># exact import visible inside live code</span></span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a><span class="dt">from</span> <span class="op">=</span> <span class="st">"csv-parse/browser/esm/sync"</span> <span class="co"># installed package export to bundle</span></span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a><span class="kw">[[live.resources]]</span></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a><span class="dt">name</span> <span class="op">=</span> <span class="st">"cool.csv"</span>                <span class="co"># exact load("cool.csv") name</span></span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a><span class="dt">path</span> <span class="op">=</span> <span class="st">"data/cool.csv"</span>           <span class="co"># UTF-8 file below the project root</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Markup entries may select <code>adapter = "asciidoc"</code>, <code>"html"</code>, <code>"markdown"</code>, <code>"markdown-litpro"</code>, <code>"myst"</code>, <code>"noweb"</code>, or <code>"org"</code>. AsciiDoc uses <code>.adoc</code> or <code>.asciidoc</code> automatically and may retain <code>run</code> and <code>provider</code> metadata. HTML uses <code>.html</code> or <code>.htm</code> and supports the same inert live metadata. Org entries additionally accept <code>references = "org-noweb" | "underscore-quote" | "both"</code>, <code>noweb_pipes = true | false</code>, and <code>execution_owner = "org" | "ravel"</code>. See <a href="./org.html">Org and Babel</a> for the ownership boundary. Noweb uses its corresponding reference policies and <code>dialect = "noweb" | "noweb-plus"</code>. MyST entries accept <code>execution_owner = "myst" | "ravel"</code>; <code>.myst.md</code> selects the adapter without TOML. See <a href="./myst.html">MyST Markdown</a>.</p>
+<p>A config needs at least one <code>[[files]]</code> or <code>[[collections]]</code> entry. <code>[[collections]]</code> and <code>[[transforms]]</code> are described in <a href="./transforms-and-collections.html">transforms and collections</a>. Project transforms run as host code; see <a href="./filesystem-safety.html">filesystem safety</a>.</p>
 <p>All file, import, output, and backup paths are confined to the directory that contains the TOML file. Ravel rejects escaping paths and symbolic-link traversal. TOML configs are individual runs and are not merged.</p>
 <p><code>build.clean = true</code> behaves like <code>ravel build --clean</code>: after the new build has been written, it removes files recorded in the preceding Ravel manifest that the new build no longer produces. If the build fails, the previous output is left untouched. <code>build.backup = true</code> writes a dated archive under <code>backups/</code>; a string such as <code>"archives/before-clean.zip"</code> names the archive, and Ravel appends the archived build’s Unix timestamp (<code>archives/before-clean-1784723696.zip</code>) because the setting is reused by every build. When that name is already taken, a <code>-2</code>, <code>-3</code>, … suffix is added, so a configured backup never blocks a build or overwrites an archive. The first build has nothing to archive and skips the backup.</p>
 </section>

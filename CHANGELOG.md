@@ -3,6 +3,36 @@
 All notable user-facing changes are recorded here. Ravel follows semantic
 versioning for its published packages and versioned public contracts.
 
+## 0.3.0 — unreleased
+
+### Added
+
+- `@pieceful/ravel-transforms`, a new package with built-in `markdown`
+  (CommonMark; raw HTML escaped unless `markdown({"html": true})`),
+  `template` (`{{ name }}`, `{{ name | html }}`, `{{#each list}}…{{/each}}`),
+  and `json` transforms. The CLI, Node host, and browser host register them
+  automatically.
+- `[[transforms]]` in `ravel.toml` registers project ES modules as pipeline
+  transforms (or replaces a built-in one). These run as host code and can only
+  be declared in configuration.
+- `[[collections]]` in `ravel.toml` turns every file matching a glob into an
+  output: each item's body (after YAML front matter) goes through a pipeline
+  and, optionally, a shared `layout` filled by `template`. Each item exposes
+  `body`, `data.json`, and `page` chunks, and `<name>::index.json` lists all
+  items for index pages. `[[files]]` is optional when collections are present.
+- Custom transforms may return `{ parts }` to keep provenance; `template` does,
+  so layout text keeps exact source mappings and inserted values point at the
+  front matter or body they came from.
+- The LitPro Markdown adapter now warns (`LPA201`) when it drops `exec:`,
+  `define:`, `h5:`/`h6:` link headings, or other legacy directives, and
+  (`LPA202`) when `save:`/`out:`/`load:` arguments such as output pipelines are
+  not applied.
+- `ravel check` prints warnings, and `build`, `run`, and `inspect` print them to
+  standard error, in human-readable mode.
+- `parseFrontMatter` is exported from `@pieceful/ravel-markdown`.
+- A runnable static-site example in `examples/site` and a
+  "Transforms and collections" guide.
+
 ## 0.2.1 — unreleased
 
 ### Fixed

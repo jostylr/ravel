@@ -189,6 +189,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="dropdown-text">Pipes and directives</span></a>
   </li>  
         <li>
+    <a class="dropdown-item" href="./transforms-and-collections.html">
+ <span class="dropdown-text">Transforms and collections</span></a>
+  </li>  
+        <li>
     <a class="dropdown-item" href="./provenance-maps.html">
  <span class="dropdown-text">Provenance maps</span></a>
   </li>  
@@ -205,7 +209,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </li>  
         <li>
     <a class="dropdown-item" href="./contracts-and-configuration.html">
- <span class="dropdown-text">0.2 contracts</span></a>
+ <span class="dropdown-text">Contracts and configuration</span></a>
   </li>  
         <li>
     <a class="dropdown-item" href="./ravel-map-schema.html">
@@ -358,6 +362,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="menu-text">Ravel pipes and directives reference</span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./transforms-and-collections.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Transforms and collections</span></a>
+  </div>
+</li>
       </ul>
   </li>
         <li class="sidebar-item sidebar-item-section">
@@ -372,7 +382,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./contracts-and-configuration.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">0.2 contracts and configuration</span></a>
+ <span class="menu-text">Contracts and configuration</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -552,6 +562,43 @@ _"other-document::major/child:minor"</code></pre>
 <section id="directives-and-live-blocks" class="level2">
 <h2 class="anchored" data-anchor-id="directives-and-live-blocks">Directives and live blocks</h2>
 <p>Historical <code>save:</code> and <code>out:</code> links become portable <code>out</code> plans. <code>load:</code> links become <code>in</code> plans and preserve their aliases for the Node host. Other legacy directives and <code>&lt;!--+ ... --&gt;</code> instructions are retained as inert metadata; the adapter never evaluates them or grants filesystem, shell, network, or JavaScript authority.</p>
+<p>Anything the adapter keeps only as metadata is reported as a <strong>warning</strong>, so a converted project never looks complete when it is not. Warnings do not fail <code>check</code> or <code>build</code>; <code>ravel check</code> prints them with their source location.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Code</th>
+<th>When</th>
+<th>What to do</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>LPA201</code></td>
+<td><code>exec:</code> (a shell command) was dropped.</td>
+<td>Run that step outside Ravel.</td>
+</tr>
+<tr class="even">
+<td><code>LPA201</code></td>
+<td><code>define:</code> (a JavaScript command) was dropped.</td>
+<td>Port it to a module registered with <code>[[transforms]]</code> (<a href="./transforms-and-collections.html">guide</a>).</td>
+</tr>
+<tr class="odd">
+<td><code>LPA201</code></td>
+<td><code>h5:</code>/<code>h6:</code> link headings were dropped.</td>
+<td>Write a real <code>#####</code>/<code>######</code> heading.</td>
+</tr>
+<tr class="even">
+<td><code>LPA201</code></td>
+<td>Any other legacy directive was dropped.</td>
+<td>Replace it by hand; it is kept in <code>metadata.plannedEffects</code>.</td>
+</tr>
+<tr class="odd">
+<td><code>LPA202</code></td>
+<td><code>save:</code>/<code>out:</code> or <code>load:</code> arguments, such as an output pipeline <code>\| caps \| postcss</code>, were not applied.</td>
+<td>Move the pipeline onto the source reference, e.g.&nbsp;<code>_"piece \| transform"</code>.</td>
+</tr>
+</tbody>
+</table>
 <p>Fences may use <code>.run</code> and <code>provider=...</code>. As with every Ravel adapter, those fields are execution declarations only. Parsing does not run the code.</p>
 <p>Counted substitutions such as <code>\1_"piece"</code> use the core definition-phase delay mechanism and retain source locations.</p>
 </section>

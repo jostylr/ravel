@@ -1,6 +1,6 @@
-# 0.2 contracts and configuration
+# Contracts and configuration
 
-This reference distinguishes Ravel's implemented 0.2 contracts from planned
+This reference distinguishes Ravel's implemented contracts from planned
 work. A value described as a versioned contract may be consumed by tools; other
 object shapes and implementation details are not public API.
 
@@ -37,9 +37,22 @@ clean = false                     # optional; default false
 backup = false                    # false, true, or a relative .zip path
 
 [[files]]
-path = "guide.md"                # required, relative to this file
+path = "guide.md"                # relative to this file
 document = "guide"               # optional document override
 mode = "primary"                 # opt-in (default) or primary
+
+[[collections]]
+name = "pages"                   # required lowercase identifier
+glob = "pages/**/*.md"           # required, relative to this file
+out = "{dir}/{slug}.html"        # required, relative to out_dir
+layout = "guide::layout.html"    # optional chunk filled by template
+pipe = "markdown"                # optional; default "markdown"
+references = false               # optional; allow _"..." in item bodies
+
+[[transforms]]
+name = "smartquotes"             # pipeline name, e.g. _"x | smartquotes"
+module = "transforms/smartquotes.mjs" # ES module below the project root
+export = "default"               # optional export name
 
 [[outputs]]
 name = "dist/main.js"            # required output-relative path
@@ -66,6 +79,11 @@ ownership boundary. Noweb uses its corresponding reference policies and
 `dialect = "noweb" | "noweb-plus"`. MyST entries accept
 `execution_owner = "myst" | "ravel"`; `.myst.md` selects the adapter
 without TOML. See [MyST Markdown](myst.md).
+
+A config needs at least one `[[files]]` or `[[collections]]` entry.
+`[[collections]]` and `[[transforms]]` are described in
+[transforms and collections](transforms-and-collections.md). Project transforms
+run as host code; see [filesystem safety](filesystem-safety.md).
 
 All file, import, output, and backup paths are confined to the directory that
 contains the TOML file. Ravel rejects escaping paths and symbolic-link

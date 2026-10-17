@@ -24,6 +24,15 @@ Use this package at adapter, editor, and host boundaries.
   explicitly selected modern profile to `{ map, diagnostics }`.
 - `modernMarkdownToMap(text, options)` parses heading-owned and named-fence
   modern Markdown.
+- `parseFrontMatter(text)` returns `{ data, start, end, bodyStart }` for
+  leading YAML front matter and throws on invalid YAML.
+
+## `@pieceful/ravel-transforms`
+
+- `markdown`, `template`, and `json` are the built-in transforms, and
+  `builtinTransforms` is the frozen map of all three that the Node and browser
+  hosts register by default. `templateData(args)` exposes the argument-merging
+  rule. See [transforms and collections](transforms-and-collections.md).
 
 ## `@pieceful/ravel-markdown-litpro`
 
@@ -184,8 +193,27 @@ Use this package at adapter, editor, and host boundaries.
 - `provenanceMapVersion` identifies the generated provenance contract.
 
 The `@pieceful/ravel-core/directives` entry point exposes constructors for the
-portable directive IR. Custom transforms are functions that receive a string
-value and return a string; a failed or non-string result becomes a diagnostic.
+portable directive IR.
+
+### Custom transforms
+
+A transform is a function `(value, context) => string | { parts }`. The
+context holds `arguments` (the step's evaluated arguments: literals, `text()`
+values, and `ch()` chunk text), `transform` (the step name), `chunk`, and
+`parts: true`. A thrown error or any other result becomes a source-linked
+`RV121` diagnostic.
+
+Returning `{ parts }` keeps provenance. Each part is one of:
+
+- a string — new text, attributed to the transform step;
+- `{ input: [start, end] }` — a range of the piped value, keeping its mapping;
+- `{ argument: i, start, end }` — a range of argument `i`'s text, keeping its
+  mapping (useful when the argument came from `ch()`);
+- `{ text, argument: i }` — derived text, attributed to argument `i`'s origins.
+
+The parts are concatenated to form the output. Ranges outside their text are
+reported as `RV121` errors. `template` uses this so layout text stays exactly
+mapped.
 
 ## `@pieceful/ravel-js-live` (0.2)
 
@@ -212,7 +240,10 @@ allowlisted by a host into the immutable ESM-source registry.
 
 This Node-only package performs scoped filesystem input and artifact work.
 
-- `loadBuildInput` and `loadTomlBuild` load direct files or version-1 TOML runs.
+- `loadBuildInput` and `loadTomlBuild` load direct files or version-1 TOML runs,
+  including `[[collections]]`. The result's `transforms` holds the built-in
+  transforms plus any `[[transforms]]` modules; pass it to
+  `transformGraph(loaded.pretransform, { transforms: loaded.transforms })`.
 - `planDeliverables`, `writeBuildArtifacts`, and `createBuildManifest` support
   managed artifact production. A managed build writes a `.ravelmap` sidecar for
   every deliverable and an aggregate `.ravelmap` bundle. Pass

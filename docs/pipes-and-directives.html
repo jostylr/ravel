@@ -189,6 +189,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="dropdown-text">Pipes and directives</span></a>
   </li>  
         <li>
+    <a class="dropdown-item" href="./transforms-and-collections.html">
+ <span class="dropdown-text">Transforms and collections</span></a>
+  </li>  
+        <li>
     <a class="dropdown-item" href="./provenance-maps.html">
  <span class="dropdown-text">Provenance maps</span></a>
   </li>  
@@ -205,7 +209,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </li>  
         <li>
     <a class="dropdown-item" href="./contracts-and-configuration.html">
- <span class="dropdown-text">0.2 contracts</span></a>
+ <span class="dropdown-text">Contracts and configuration</span></a>
   </li>  
         <li>
     <a class="dropdown-item" href="./ravel-map-schema.html">
@@ -358,6 +362,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="menu-text">Ravel pipes and directives reference</span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./transforms-and-collections.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Transforms and collections</span></a>
+  </div>
+</li>
       </ul>
   </li>
         <li class="sidebar-item sidebar-item-section">
@@ -372,7 +382,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./contracts-and-configuration.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">0.2 contracts and configuration</span></a>
+ <span class="menu-text">Contracts and configuration</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -563,6 +573,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>For example, if <code>source</code> is <code>"  value  \n"</code>:</p>
 <pre class="text"><code>_"source | trim() | indent(2)"</code></pre>
 <p>produces <code>"  value"</code>.</p>
+<p>Ravel also provides the <code>markdown</code>, <code>template</code>, and <code>json</code> transforms in every project, and a project can register its own; see <a href="./transforms-and-collections.html">transforms and collections</a>.</p>
 <p>Arguments are normally JSON-like literals. An ordinary transform may also take <code>text(...)</code> and <code>ch(...)</code> arguments; those are evaluated before the transform is invoked:</p>
 <pre class="text"><code>_"source | surround(text('['), ch('source'))"</code></pre>
 <p>Here a host-provided <code>surround</code> command receives the literal <code>"["</code> and the value of <code>source</code> as its two arguments.</p>

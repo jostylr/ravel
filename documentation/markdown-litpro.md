@@ -67,6 +67,18 @@ directives and `<!--+ ... -->` instructions are retained as inert metadata;
 the adapter never evaluates them or grants filesystem, shell, network, or
 JavaScript authority.
 
+Anything the adapter keeps only as metadata is reported as a **warning**, so
+a converted project never looks complete when it is not. Warnings do not fail
+`check` or `build`; `ravel check` prints them with their source location.
+
+| Code | When | What to do |
+| --- | --- | --- |
+| `LPA201` | `exec:` (a shell command) was dropped. | Run that step outside Ravel. |
+| `LPA201` | `define:` (a JavaScript command) was dropped. | Port it to a module registered with `[[transforms]]` ([guide](transforms-and-collections.md)). |
+| `LPA201` | `h5:`/`h6:` link headings were dropped. | Write a real `#####`/`######` heading. |
+| `LPA201` | Any other legacy directive was dropped. | Replace it by hand; it is kept in `metadata.plannedEffects`. |
+| `LPA202` | `save:`/`out:` or `load:` arguments, such as an output pipeline `\| caps \| postcss`, were not applied. | Move the pipeline onto the source reference, e.g. `_"piece \| transform"`. |
+
 Fences may use `.run` and `provider=...`. As with every Ravel adapter, those
 fields are execution declarations only. Parsing does not run the code.
 

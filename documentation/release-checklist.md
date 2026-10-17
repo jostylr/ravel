@@ -49,6 +49,7 @@ pass the gate above:
 
 ```sh
 npm publish --workspace @pieceful/ravel-core --access public
+npm publish --workspace @pieceful/ravel-transforms --access public
 npm publish --workspace @pieceful/ravel-explorer --access public
 npm publish --workspace @pieceful/ravel-js-live --access public
 npm publish --workspace @pieceful/ravel-language-bridge --access public
@@ -72,7 +73,7 @@ npm publish --workspace @pieceful/ravel --access public
 
 The VS Code workspace is private and is not published to npm. The command
 order is a topological order of the public workspace dependencies; publish all
-20 packages so the exact-version dependencies used by the CLI and
+21 packages so the exact-version dependencies used by the CLI and
 integrations resolve from npm. Tag the release commit `vX.Y.Z` after
 publishing.
 

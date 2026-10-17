@@ -8,7 +8,9 @@ path so that one can see where the rendered code comes from.
 It can run live JavaScript, whose execution is sequestered using QuickJS, on the
 document pieces as well as load documents to process such as csv files.
 
-Ravel 0.2 is a command-line static-weaving and bounded live-execution tool.
+Ravel 0.3 is a command-line static-weaving and bounded live-execution tool
+that can also build content sites: a folder of Markdown pages becomes one page
+each through a shared layout, with every output traced back to its source.
 It loads many of the `@pieceful/ravel-*` npm packages though there are some that
 need to be separately loaded.
 
@@ -57,6 +59,7 @@ Under examples/adapter-conformance is an example of some data analysis being don
 | [@pieceful/ravel-noweb](https://www.npmjs.com/package/@pieceful/ravel-noweb)                             | Lossless strict-noweb and pipe-extended noweb-plus adapter.                                                         |
 | [@pieceful/ravel-org](https://www.npmjs.com/package/@pieceful/ravel-org)                                 | Lossless Org/Babel names, groups, references, metadata, and ownership adapter.                                      |
 | [@pieceful/ravel-quarto](https://www.npmjs.com/package/@pieceful/ravel-quarto)                           | Portable Quarto graph preparation plus an isolated Node project renderer, cache inputs, and temporary-source maps.  |
+| [@pieceful/ravel-transforms](https://www.npmjs.com/package/@pieceful/ravel-transforms)                   | Built-in `markdown`, `template`, and `json` pipeline transforms, registered automatically by the hosts.             |
 | [@pieceful/ravel-host-node](https://www.npmjs.com/package/@pieceful/ravel-host-node)                     | Node filesystem host for project loading, safe artifact writes, manifests, and backups.                             |
 | [@pieceful/ravel-js-live](https://www.npmjs.com/package/@pieceful/ravel-js-live)                         | Worker-backed QuickJS/Wasm provider plus Node-only preparation of allowlisted npm modules.                          |
 
@@ -69,7 +72,8 @@ explicit filesystem root.
 
 Installing `@pieceful/ravel` installs the CLI and its required runtime
 packages automatically: `@pieceful/ravel-core`, `@pieceful/ravel-host-node`,
-`@pieceful/ravel-js-live`, `@pieceful/ravel-map`, and the AsciiDoc, HTML,
+`@pieceful/ravel-js-live`, `@pieceful/ravel-map`, `@pieceful/ravel-transforms`,
+and the AsciiDoc, HTML,
 Markdown, LitPro Markdown, MyST, noweb, and Org adapters. Install the Quarto,
 MyST plugin, projection, language-bridge/service/TypeScript, browser host, or
 Explorer packages separately when building those integrations. The VS Code
@@ -84,7 +88,11 @@ Ravel can currently:
 - join contiguous fenced fragments with an explicit greedy mode;
 - resolve local, global, cross-document, minor, and typed chunk addresses;
 - compose chunks with underscore-quoted references;
-- apply built-in definition-time and use-site transforms;
+- apply built-in definition-time and use-site transforms, including
+  `markdown` and `template`, plus project transform modules registered in
+  `ravel.toml`;
+- turn every file matching a pattern into an output with `[[collections]]`,
+  filling a shared layout from each file's front matter and body;
 - create derived chunks with `emit`;
 - load supported markup sources or JSON Ravel Maps with `in`;
 - define graph structure with `create`, `compose`, `alias`, `pipe`, and `pass`;
@@ -92,7 +100,8 @@ Ravel can currently:
 - inspect a completed graph or write deliverables through the Node CLI;
 - run explicitly marked JavaScript blocks through QuickJS/Wasm without giving
   them Node or filesystem access;
-- report source-linked parsing, resolution, transform, and cycle diagnostics;
+- report source-linked parsing, resolution, transform, and cycle diagnostics,
+  and warn when a LitPro conversion drops legacy commands;
 - reject input/output path escapes and symbolic-link traversal;
 - run the current automated suites under Node and Bun;
 - run the browser harnesses in headless Chromium; and

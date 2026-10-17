@@ -18,11 +18,11 @@
   </url>
   <url>
     <loc>https://ravel.jostylr.com/release-checklist.html</loc>
-    <lastmod>2026-10-17T20:18:59.142Z</lastmod>
+    <lastmod>2026-10-17T23:18:32.454Z</lastmod>
   </url>
   <url>
     <loc>https://ravel.jostylr.com/filesystem-safety.html</loc>
-    <lastmod>2026-10-17T20:19:46.867Z</lastmod>
+    <lastmod>2026-10-17T23:17:28.617Z</lastmod>
   </url>
   <url>
     <loc>https://ravel.jostylr.com/getting-started.html</loc>
@@ -41,40 +41,44 @@
     <lastmod>2026-07-30T15:24:36.131Z</lastmod>
   </url>
   <url>
-    <loc>https://ravel.jostylr.com/history.html</loc>
-    <lastmod>2026-07-18T19:37:20.761Z</lastmod>
-  </url>
-  <url>
-    <loc>https://ravel.jostylr.com/live-execution.html</loc>
-    <lastmod>2026-10-17T20:19:46.865Z</lastmod>
-  </url>
-  <url>
-    <loc>https://ravel.jostylr.com/pipes-and-directives.html</loc>
-    <lastmod>2026-07-28T01:48:50.219Z</lastmod>
-  </url>
-  <url>
-    <loc>https://ravel.jostylr.com/chunk-syntax.html</loc>
-    <lastmod>2026-07-20T17:28:10.712Z</lastmod>
-  </url>
-  <url>
-    <loc>https://ravel.jostylr.com/public-api.html</loc>
-    <lastmod>2026-10-17T20:20:08.719Z</lastmod>
-  </url>
-  <url>
-    <loc>https://ravel.jostylr.com/adr/typescript-language-service-api.html</loc>
-    <lastmod>2026-07-31T15:32:07.121Z</lastmod>
-  </url>
-  <url>
-    <loc>https://ravel.jostylr.com/markdown-litpro.html</loc>
-    <lastmod>2026-07-29T23:17:25.656Z</lastmod>
+    <loc>https://ravel.jostylr.com/migration-from-legacy.html</loc>
+    <lastmod>2026-08-01T15:04:43.608Z</lastmod>
   </url>
   <url>
     <loc>https://ravel.jostylr.com/runtime-support.html</loc>
     <lastmod>2026-08-01T15:04:43.265Z</lastmod>
   </url>
   <url>
-    <loc>https://ravel.jostylr.com/migration-from-legacy.html</loc>
-    <lastmod>2026-08-01T15:04:43.608Z</lastmod>
+    <loc>https://ravel.jostylr.com/markdown-litpro.html</loc>
+    <lastmod>2026-10-17T23:17:40.633Z</lastmod>
+  </url>
+  <url>
+    <loc>https://ravel.jostylr.com/adr/typescript-language-service-api.html</loc>
+    <lastmod>2026-07-31T15:32:07.121Z</lastmod>
+  </url>
+  <url>
+    <loc>https://ravel.jostylr.com/public-api.html</loc>
+    <lastmod>2026-10-17T23:17:57.336Z</lastmod>
+  </url>
+  <url>
+    <loc>https://ravel.jostylr.com/chunk-syntax.html</loc>
+    <lastmod>2026-07-20T17:28:10.712Z</lastmod>
+  </url>
+  <url>
+    <loc>https://ravel.jostylr.com/pipes-and-directives.html</loc>
+    <lastmod>2026-10-17T23:17:57.336Z</lastmod>
+  </url>
+  <url>
+    <loc>https://ravel.jostylr.com/live-execution.html</loc>
+    <lastmod>2026-10-17T20:19:46.865Z</lastmod>
+  </url>
+  <url>
+    <loc>https://ravel.jostylr.com/history.html</loc>
+    <lastmod>2026-07-18T19:37:20.761Z</lastmod>
+  </url>
+  <url>
+    <loc>https://ravel.jostylr.com/transforms-and-collections.html</loc>
+    <lastmod>2026-10-17T23:17:11.220Z</lastmod>
   </url>
   <url>
     <loc>https://ravel.jostylr.com/asciidoc.html</loc>
@@ -98,7 +102,7 @@
   </url>
   <url>
     <loc>https://ravel.jostylr.com/contracts-and-configuration.html</loc>
-    <lastmod>2026-10-17T20:19:46.866Z</lastmod>
+    <lastmod>2026-10-17T23:17:28.617Z</lastmod>
   </url>
   <url>
     <loc>https://ravel.jostylr.com/design.html</loc>

@@ -7,7 +7,7 @@ in [CHANGELOG.md](CHANGELOG.md); the release procedure is in
 Older plans are preserved, unedited, in [archive/plans/](archive/plans/README.md)
 for design history only — when they disagree with this file, this file wins.
 
-Last reviewed: 2026-10-17 (0.2.1).
+Last reviewed: 2026-10-17 (0.3.0).
 
 ## Where Ravel is today
 
@@ -15,6 +15,7 @@ Last reviewed: 2026-10-17 (0.2.1).
 | --- | --- | --- |
 | Static composition (core, map, CLI, Node host) | **Stable for 0.x use.** Published since 0.1. | Ravel Map v1, TOML config v1, manifest v2, provenance-map v1 are the versioned contracts. |
 | Source adapters: Markdown fences, LitPro Markdown, MyST (+ plugin), Org, noweb, AsciiDoc, HTML, Quarto | **Published 0.2.** | All eight produce equivalent outputs for `examples/adapter-conformance`. LitPro compatibility covers a fixture subset, not the full historical corpus. |
+| Transforms and collections | **New in 0.3.** | Built-in `markdown`/`template`/`json`, `[[transforms]]` project modules (host code), `[[collections]]` glob inputs with layouts and an index; template output keeps exact layout provenance. |
 | Live execution (`.run`, QuickJS/Wasm in workers) | **Published 0.2, intentionally small.** | Sequential, one JSON `export default`, copied inputs, host-approved ESM only, no caching. |
 | Explorer | **Published 0.2, read-only.** | Bounded graph/provenance/trace views; no editing. |
 | Virtual documents, language bridge/service, TypeScript adapter | **Published 0.2 as building blocks.** | Consumed by the private VS Code extension; see the status table below. |
@@ -24,37 +25,34 @@ Last reviewed: 2026-10-17 (0.2.1).
 (`artsideas/website/ravel-site`, not continued) — built a page with Markdown
 fences, `.run` blocks, `ch()`, `out()`, manifests and provenance. The safety,
 manifest and provenance core worked without problems and builds took ~0.2 s.
-It stopped being a fit for three reasons that shape the priorities below:
-there is no way to register Markdown/template transforms from the CLI or TOML
-(the author hand-wrote a Markdown renderer and `%%MARKER%%` templating inside
-live JS, which also collapsed provenance to one coarse segment); there is no
-collection input (one source per page, front matter, per-item outputs); and the
+It stopped being a fit for three reasons, all addressed in 0.3: there was no
+way to register Markdown/template transforms (the author hand-wrote a Markdown
+renderer and `%%MARKER%%` templating inside live JS, which also collapsed
+provenance to one coarse segment); there was no collection input; and the
 LitPro adapter reported zero diagnostics while silently dropping `exec:` and
-`define:` commands and output pipelines the old build relied on.
+`define:` commands and output pipelines the old build relied on. The next real
+project should confirm whether 0.3 closes those gaps in practice.
 
 ## Next, in priority order
 
 Each item should land with fixtures and documentation. Order reflects what the
 one real user hit first; revisit it after the next real project.
 
-1. **Transform registration from TOML and the CLI.** A `[[transforms]]` table
-   naming host-side Node modules (the core already accepts
-   `transformGraph(map, { transforms })`), plus first-party `markdown` and
-   simple template/field-interpolation transforms. This keeps composition in
-   the graph, so provenance stays fine-grained instead of collapsing into one
-   live block.
-2. **Collection inputs.** A deterministic glob input with per-file front matter
-   and per-item `out()` planning — the core shape of a static site or a book
-   with many chapters.
-3. **Honest LitPro migration.** Warn when `exec:`/`define:` commands, output
-   pipelines, or apparent references inside code strings are dropped or
-   reinterpreted; add `ravel migrate --report` so migration audits do not need
-   hand-written scripts. Then port the historical LitPro corpus (inventory,
+1. **A real content project on 0.3.** Build something real with collections
+   and transforms (a course site, a book with chapters) and let what it hits
+   reorder this list.
+2. **LitPro migration, part two.** 0.3 warns about dropped commands and
+   unapplied output pipelines. Still open: flag apparent `_"…"` references
+   captured inside code strings; add `ravel migrate --report` so a migration
+   audit is one command; then port the historical LitPro corpus (inventory,
    import unmodified fixtures labelled by dialect, golden graphs, documented
    deviations).
-4. **Static data chunks.** JSON/YAML fences that `ch()` and references can read
-   without a `.run` block, and field access such as `_"site-data:name"` in
-   static fences.
+3. **Collections, part two.** Pagination and grouping (by tag or folder) for
+   index pages; per-collection sort keys other than path; optional parsing of
+   item files as Ravel documents so items can define their own chunks.
+4. **Static data chunks.** JSON chunks already feed `template` through `ch()`.
+   Still open: YAML fences, and field access such as `_"site-data:name"`
+   directly in references.
 5. **Persistent live-result caching** with cache keys and inspection, without
    retaining closures, realms or mutable provider state.
 6. **Core performance.** 0.2.1 removed the quadratic position scans (a 150 KB
@@ -86,10 +84,24 @@ on them yet.
 - **Native-tool compatibility:** fixtures showing which sources still work
   unmodified in Org Babel, classic noweb, MyST, Jupyter, Knitr, Asciidoctor and
   Quarto, with adapter ownership limits documented.
-- **Site-building conveniences** (only if item 2 lands and is used): watch/serve,
-  static asset copying, and link checking as host plugins.
+- **Site-building conveniences** (only if collections get real use):
+  watch/serve, static asset copying, image processing, and link checking as
+  host plugins.
+- **Sandboxed project transforms:** running `[[transforms]]` modules inside
+  QuickJS (bundled like `[[live.modules]]`) instead of as host code, so an
+  untrusted checkout can be built safely.
 
-## Known limitations (true as of 0.2.1)
+## Known limitations (true as of 0.3.0)
+
+- `[[transforms]]` modules run as ordinary Node code with the user's
+  privileges whenever a project is checked or built. Review them like build
+  scripts.
+- `markdown` is CommonMark only (no tables, task lists, or footnotes); register
+  a project transform such as markdown-it for GitHub-flavored Markdown.
+- Transformed Markdown is mapped coarsely: a rendered page's body points at
+  its whole source body, not at individual paragraphs.
+- Collection items are content only; their files are not parsed as Ravel
+  documents, so they cannot define chunks or directives.
 
 - `ravel inspect` evaluates without running `.run` blocks, so references to a
   live chunk show its source text rather than its result; `build` output can

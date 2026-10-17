@@ -64,6 +64,10 @@ _"source | trim() | indent(2)"
 
 produces `"  value"`.
 
+Ravel also provides the `markdown`, `template`, and `json` transforms in
+every project, and a project can register its own; see
+[transforms and collections](transforms-and-collections.md).
+
 Arguments are normally JSON-like literals. An ordinary transform may also take
 `text(...)` and `ch(...)` arguments; those are evaluated before the transform
 is invoked:
