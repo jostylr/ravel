@@ -11,10 +11,6 @@ const run = promisify(execFile);
 const cli = fileURLToPath(new URL("../packages/cli/src/index.js", import.meta.url));
 const proofOfConcept = fileURLToPath(new URL("../examples/poc/project.ravel-map.json", import.meta.url));
 
-// Bun's current node:test compatibility layer inherits its test-runner state
-// into child Bun processes. Keep subprocess CLI assertions in the Node suite;
-// the portable engine and host assertions still run under both runtimes.
-if (!process.versions.bun) {
 test("CLI check validates a project without writing outputs", async () => {
   const result = await run(process.execPath, [cli, "check", "examples/poc/project.ravel-map.json"]);
   assert.match(result.stdout, /Ravel check passed\./);
@@ -158,9 +154,14 @@ test("CLI builds a canonical ravel.toml and honors its clean and backup policy",
 
     await writeFile(join(sandbox, "ravel.toml"), config('"archives/before-clean.zip"'));
     const second = await run(process.execPath, [cli], { cwd: sandbox });
-    assert.match(second.stdout, /Backup: .*archives(?:\/|\\)before-clean\.zip/);
-    assert.equal((await readFile(join(sandbox, "archives", "before-clean.zip"))).subarray(0, 4).toString("binary"), "PK\x03\x04");
-    assert.deepEqual(await readdir(join(sandbox, "archives")), ["before-clean.zip"]);
+    // A configured name is reused by every build, so it carries the archived build's timestamp.
+    assert.match(second.stdout, /Backup: .*archives(?:\/|\\)before-clean-\d+\.zip/);
+    const [archive] = await readdir(join(sandbox, "archives"));
+    assert.match(archive, /^before-clean-\d+\.zip$/);
+    assert.equal((await readFile(join(sandbox, "archives", archive))).subarray(0, 4).toString("binary"), "PK\x03\x04");
+    const third = await run(process.execPath, [cli], { cwd: sandbox });
+    assert.match(third.stdout, /Backup: .*before-clean-\d+(?:-\d+)?\.zip/);
+    assert.equal((await readdir(join(sandbox, "archives"))).length, 2);
   } finally {
     await rm(sandbox, { recursive: true, force: true });
   }
@@ -376,7 +377,7 @@ test("CLI dry-run reports stale outputs without deleting them", async () => {
     assert.equal(await readFile(join(output, "dist", "removed.txt"), "utf8"), "ready\\n");
 
     const clean = await run(process.execPath, [cli, "build", input, "--out-dir", output, "--clean", "--json"]);
-    assert.deepEqual(JSON.parse(clean.stdout).removed.map((entry) => entry.name), ["dist/current.txt", "dist/removed.txt"]);
+    assert.deepEqual(JSON.parse(clean.stdout).removed.map((entry) => entry.name), ["dist/removed.txt"]);
     await assert.rejects(readFile(join(output, "dist", "removed.txt"), "utf8"), { code: "ENOENT" });
     assert.match(await readFile(join(output, ".manifest.txt"), "utf8"), /Current files:\n  dist\/current\.txt \(project::main\)/);
 
@@ -400,4 +401,3 @@ test("CLI rejects unknown flags with a usage exit code", async () => {
     (error) => error.code === 2 && /Unknown option/.test(error.stderr)
   );
 });
-}

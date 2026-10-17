@@ -1,5 +1,6 @@
-import { lstat, readFile, readdir, mkdir, rename, unlink, writeFile } from "node:fs/promises";
+import { lstat, readFile, mkdir, rename, unlink, writeFile } from "node:fs/promises";
 import { createHash, randomUUID } from "node:crypto";
+import { deflateRawSync } from "node:zlib";
 import { basename, dirname, extname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { parse as parseToml } from "smol-toml";
 import {
@@ -298,6 +299,7 @@ const collectPretransformMaps = async (
   const activeScope = scope ?? await createInputScope(dirname(resolve(entryPath)));
   const visited = new Set();
   const maps = [];
+  const mapPaths = [];
   const diagnostics = [];
   const authoredSourcePaths = new Set();
   const authoredSourceTexts = new Map();
@@ -390,12 +392,14 @@ const collectPretransformMaps = async (
       });
     }
     maps.push(map);
+    mapPaths.push(absolutePath);
   };
 
   await visit(entryPath, entryOptions);
   throwIfAborted(signal);
   return {
     maps,
+    mapPaths,
     diagnostics,
     rootDirectory: activeScope.root,
     authoredSourcePaths: [...authoredSourcePaths].sort(),
@@ -662,7 +666,15 @@ export const loadTomlBuild = async (configPath, options = {}) => {
     }, scope, options.overlays);
   }));
   throwIfAborted(options.signal);
-  const pretransform = combineMaps(results.flatMap((result) => result.maps));
+  // Several [[files]] may import the same document; load it once, keeping the
+  // first occurrence in configuration order.
+  const seenMapPaths = new Set();
+  const pretransform = combineMaps(results.flatMap((result) => result.maps.filter((_, index) => {
+    const path = result.mapPaths[index];
+    if (seenMapPaths.has(path)) return false;
+    seenMapPaths.add(path);
+    return true;
+  })));
   pretransform.diagnostics.push(...results.flatMap((result) => result.diagnostics));
   for (const output of config.outputs ?? []) {
     if (!output || typeof output !== "object") throw inputError("RC102", "Each [[outputs]] entry must be a table.", absoluteConfig);
@@ -748,19 +760,21 @@ const sidecarName = (name) => name + ".ravelmap";
 /** Build a deterministic, non-writing description of artifact output. */
 export const planDeliverables = (program, outputDirectory) => {
   const root = resolve(outputDirectory);
-  const destinations = new Set();
+  // Compare case-insensitively so a plan is portable to macOS and Windows,
+  // where `README.md` and `readme.md` name the same file.
+  const destinations = new Set([manifestName, textManifestName].map((name) => safeDestination(root, name).toLowerCase()));
+  const claim = (destination, message) => {
+    const key = destination.toLowerCase();
+    if (destinations.has(key)) throw new Error(message);
+    destinations.add(key);
+  };
   const deliverables = orderedDeliverables(program).map((deliverable) => {
     const destination = safeDestination(root, deliverable.name);
-    if (destinations.has(destination)) throw new Error("Multiple deliverables resolve to the same destination: " + deliverable.name);
-    destinations.add(destination);
+    claim(destination, "Deliverable collides with another output or Ravel's manifest (names are compared case-insensitively): " + deliverable.name);
     const hasProvenance = Array.isArray(deliverable.segments);
     const ravelmap = hasProvenance ? sidecarName(deliverable.name) : null;
     if (ravelmap) {
-      const mapDestination = safeDestination(root, ravelmap);
-      if (destinations.has(mapDestination)) {
-        throw new Error("A deliverable provenance map collides with another output: " + ravelmap);
-      }
-      destinations.add(mapDestination);
+      claim(safeDestination(root, ravelmap), "A deliverable provenance map collides with another output: " + ravelmap);
     }
     return {
       name: deliverable.name,
@@ -772,10 +786,7 @@ export const planDeliverables = (program, outputDirectory) => {
     };
   });
   if (deliverables.some((deliverable) => deliverable.ravelmap)) {
-    const aggregateDestination = safeDestination(root, aggregateProvenanceName);
-    if (destinations.has(aggregateDestination)) {
-      throw new Error("The aggregate provenance map collides with another output: " + aggregateProvenanceName);
-    }
+    claim(safeDestination(root, aggregateProvenanceName), "The aggregate provenance map collides with another output: " + aggregateProvenanceName);
   }
   return {
     version: 1,
@@ -887,8 +898,9 @@ const writeFilesAtomically = async (scope, entries, description) => {
       const token = randomUUID();
       const temporary = join(dirname(entry.destination), "." + basename(entry.destination) + ".ravel-stage-" + token);
       const backup = join(dirname(entry.destination), "." + basename(entry.destination) + ".ravel-backup-" + token);
-      await writeFile(temporary, entry.value, "utf8");
+      // Record the entry before writing so a failed write still removes its temporary file.
       staged.push({ ...entry, exists, temporary, backup, committed: false, backedUp: false });
+      await writeFile(temporary, entry.value, "utf8");
     }
 
     for (const entry of staged) {
@@ -911,16 +923,25 @@ const writeFilesAtomically = async (scope, entries, description) => {
       }
     }
   } catch (error) {
+    // Restore every entry even if one restoration fails, then report the
+    // original failure with any rollback problems attached.
+    const rollbackErrors = [];
     for (const entry of staged.slice().reverse()) {
-      if (entry.committed) await removeIfPresent(entry.destination);
-      if (entry.backedUp) {
+      for (const step of [
+        () => entry.committed && removeIfPresent(entry.destination),
+        () => entry.backedUp && rename(entry.backup, entry.destination),
+        () => removeIfPresent(entry.temporary)
+      ]) {
         try {
-          await rename(entry.backup, entry.destination);
+          await step();
         } catch (rollbackError) {
-          if (!missing(rollbackError)) throw rollbackError;
+          if (!missing(rollbackError)) rollbackErrors.push(rollbackError);
         }
       }
-      await removeIfPresent(entry.temporary);
+    }
+    if (rollbackErrors.length) {
+      error.message += " (rollback incomplete: " + rollbackErrors.map((entry) => entry.message).join("; ") + ")";
+      error.rollbackErrors = rollbackErrors;
     }
     throw error;
   }
@@ -1011,10 +1032,14 @@ export const writeBuildManifest = async (program, outputDirectory, {
 export const writeBuildArtifacts = async (program, outputDirectory, {
   rootDirectory = outputDirectory,
   stale = [],
+  clean = false,
   generatedAt = new Date().toISOString()
 } = {}) => {
   const scope = await createOutputScope(outputDirectory, rootDirectory);
   const plan = planDeliverables(program, scope.root);
+  // With `clean`, previously managed files are removed only after the new
+  // build has committed, so a failed write keeps the last good output.
+  const previous = clean ? await readManifest(scope.root, rootDirectory) : null;
   const manifest = createBuildManifest(program, scope.root, { stale, builtAt: generatedAt });
   const deliverableEntries = plan.deliverables.map((deliverable) => ({
     destination: safeDestination(scope.root, deliverable.name),
@@ -1043,8 +1068,27 @@ export const writeBuildArtifacts = async (program, outputDirectory, {
     { destination: manifestDestination, value: JSON.stringify(manifest, null, 2) + "\n" },
     { destination: textManifestDestination, value: formatTextManifest(manifest, generatedAt) }
   ], "Build artifact path");
+  // Remove previously managed deliverables (and their sidecars) that this
+  // build no longer produces; files it rewrote were already replaced.
+  const active = new Set(plan.deliverables.map((deliverable) => deliverable.name));
+  const supersededDeliverables = previous
+    ? managedDeliverables(previous.manifest).filter((deliverable) => !active.has(deliverable.name))
+    : [];
+  const superseded = supersededDeliverables.flatMap((deliverable) => [
+    safeDestination(scope.root, deliverable.name),
+    ...(deliverable.ravelmap ? [safeDestination(scope.root, deliverable.ravelmap)] : [])
+  ]);
+  if (previous?.manifest.provenance?.aggregate && !aggregateEntry.length) {
+    superseded.push(safeDestination(scope.root, previous.manifest.provenance.aggregate));
+  }
+  await removeManagedTargets(scope, superseded);
   return {
     written: deliverableEntries.map((entry) => entry.destination),
+    removed: supersededDeliverables.map((deliverable) => ({
+      name: deliverable.name,
+      path: portableRelative(scope.root, safeDestination(scope.root, deliverable.name)),
+      from: deliverable.from ?? null
+    })).sort((left, right) => left.name.localeCompare(right.name)),
     provenance: {
       sidecars: provenanceEntries.map((entry) => entry.destination),
       aggregate: aggregateEntry[0]?.destination ?? null
@@ -1076,6 +1120,23 @@ const planManagedRemoval = async (outputDirectory, rootDirectory, staleOnly) => 
   };
 };
 
+/** Delete managed files only after every path component passes the symlink policy. */
+const removeManagedTargets = async (scope, targets) => {
+  for (const target of targets) {
+    await assertNoSymlinks(scope.root, target, "Managed output path");
+    await existingFile(target, "Managed output path");
+  }
+  for (const target of targets) await removeIfPresent(target);
+};
+
+const managedTargets = (root, manifest) => [
+  ...managedDeliverables(manifest).flatMap((deliverable) => [
+    safeDestination(root, deliverable.name),
+    ...(deliverable.ravelmap ? [safeDestination(root, deliverable.ravelmap)] : [])
+  ]),
+  ...(manifest.provenance?.aggregate ? [safeDestination(root, manifest.provenance.aggregate)] : [])
+];
+
 const removeManagedFiles = async (plan, rootDirectory, dryRun, removeManifest) => {
   if (!plan.manifest || dryRun) return { removed: plan.deliverables, manifestRemoved: false };
   const scope = await createOutputScope(plan.outputDirectory, rootDirectory);
@@ -1087,8 +1148,7 @@ const removeManagedFiles = async (plan, rootDirectory, dryRun, removeManifest) =
     ...(plan.aggregate ? [safeDestination(scope.root, plan.aggregate)] : []),
     ...(removeManifest ? [safeDestination(scope.root, manifestName), safeDestination(scope.root, textManifestName)] : [])
   ];
-  for (const target of targets) await existingFile(target, "Managed output path");
-  for (const target of targets) await removeIfPresent(target);
+  await removeManagedTargets(scope, targets);
   return { removed: plan.deliverables, manifestRemoved: removeManifest };
 };
 
@@ -1154,30 +1214,34 @@ const zipArchive = (files) => {
     }
     const { date, time } = zipDateTime(file.mtime);
     const crc = crc32(file.value);
+    // Deflate when it helps; tiny or incompressible files stay stored.
+    const deflated = deflateRawSync(file.value);
+    const method = deflated.length < size ? 8 : 0;
+    const data = method === 8 ? deflated : file.value;
     const local = Buffer.alloc(30);
     local.writeUInt32LE(0x04034b50, 0);
     local.writeUInt16LE(20, 4);
     local.writeUInt16LE(0x0800, 6);
-    local.writeUInt16LE(0, 8);
+    local.writeUInt16LE(method, 8);
     local.writeUInt16LE(time, 10);
     local.writeUInt16LE(date, 12);
     local.writeUInt32LE(crc, 14);
-    local.writeUInt32LE(size, 18);
+    local.writeUInt32LE(data.length, 18);
     local.writeUInt32LE(size, 22);
     local.writeUInt16LE(name.length, 26);
     local.writeUInt16LE(0, 28);
-    locals.push(local, name, file.value);
+    locals.push(local, name, data);
 
     const directory = Buffer.alloc(46);
     directory.writeUInt32LE(0x02014b50, 0);
     directory.writeUInt16LE(20, 4);
     directory.writeUInt16LE(20, 6);
     directory.writeUInt16LE(0x0800, 8);
-    directory.writeUInt16LE(0, 10);
+    directory.writeUInt16LE(method, 10);
     directory.writeUInt16LE(time, 12);
     directory.writeUInt16LE(date, 14);
     directory.writeUInt32LE(crc, 16);
-    directory.writeUInt32LE(size, 20);
+    directory.writeUInt32LE(data.length, 20);
     directory.writeUInt32LE(size, 24);
     directory.writeUInt16LE(name.length, 28);
     directory.writeUInt16LE(0, 30);
@@ -1187,7 +1251,7 @@ const zipArchive = (files) => {
     directory.writeUInt32LE(0, 38);
     directory.writeUInt32LE(offset, 42);
     central.push(directory, name);
-    offset += local.length + name.length + size;
+    offset += local.length + name.length + data.length;
   }
   const centralSize = central.reduce((size, value) => size + value.length, 0);
   if (offset + centralSize > 0xffffffff) throw new Error("Backup archive is too large for ZIP without ZIP64 support.");
@@ -1203,20 +1267,25 @@ const zipArchive = (files) => {
   return Buffer.concat([...locals, ...central, end]);
 };
 
-const collectBackupFiles = async (root, directory = root) => {
+/** Read the files named by the previous manifest; unmanaged neighbors are never archived. */
+const collectBackupFiles = async (root, manifest) => {
+  const targets = [
+    ...managedTargets(root, manifest),
+    safeDestination(root, manifestName),
+    safeDestination(root, textManifestName)
+  ];
   const files = [];
-  const entries = await readdir(directory, { withFileTypes: true });
-  for (const entry of entries.sort((left, right) => left.name.localeCompare(right.name))) {
-    const path = join(directory, entry.name);
-    const stat = await lstat(path);
-    if (stat.isSymbolicLink()) throw new Error("Backup output must not traverse a symbolic link: " + path);
-    if (stat.isDirectory()) files.push(...await collectBackupFiles(root, path));
-    else if (stat.isFile()) files.push({
-      name: relative(root, path).split(sep).join("/"),
-      value: await readFile(path),
-      mtime: stat.mtime
-    });
-    else throw new Error("Backup output must contain only files and directories: " + path);
+  for (const path of [...new Set(targets)].sort()) {
+    await assertNoSymlinks(root, path, "Backup output");
+    let stat;
+    try {
+      stat = await lstat(path);
+    } catch (error) {
+      if (missing(error)) continue;
+      throw error;
+    }
+    if (!stat.isFile()) throw new Error("Backup output must be a file: " + path);
+    files.push({ name: portableRelative(root, path), value: await readFile(path), mtime: stat.mtime });
   }
   return files;
 };
@@ -1225,33 +1294,47 @@ const collectBackupFiles = async (root, directory = root) => {
 export const planOutputBackup = async (outputDirectory, {
   outputRootDirectory = outputDirectory,
   backupRootDirectory = outputRootDirectory,
-  backupPath
+  backupPath,
+  timestampName = false
 } = {}) => {
   const output = resolve(outputDirectory);
   const previous = await readManifest(output, outputRootDirectory);
-  if (!previous) throw new Error("Cannot create a backup without an existing Ravel build manifest: " + output);
+  // A first build has nothing to protect, so there is nothing to archive.
+  if (!previous) return { outputDirectory: output, path: null, skipped: "no previous Ravel build" };
   const builtAt = previous.manifest.builtAt;
   const timestamp = Date.parse(builtAt);
   if (!Number.isFinite(timestamp)) throw new Error("Build manifest has no valid build timestamp for backup: " + previous.path);
   const backupRoot = resolve(backupRootDirectory);
   await assertDirectory(backupRoot, "Backup root");
-  const path = backupPath === undefined
-    ? join(backupRoot, "backups", basename(output) + "-" + Math.floor(timestamp / 1000) + ".zip")
-    : await scopedPath(backupRoot, backupPath, "Backup path");
-  if (extname(path).toLowerCase() !== ".zip") throw new Error("Backup file must have a .zip extension: " + path);
-  if (!containedIn(backupRoot, path)) throw new Error("Backup path escapes the Ravel root: " + path);
-  await assertNoSymlinks(backupRoot, path, "Backup path");
-  if (await existingFile(path, "Backup file")) throw new Error("Backup file already exists: " + path);
+  const seconds = Math.floor(timestamp / 1000);
+  const named = backupPath === undefined ? null : await scopedPath(backupRoot, backupPath, "Backup path");
+  if (named && extname(named).toLowerCase() !== ".zip") throw new Error("Backup file must have a .zip extension: " + named);
+  // A derived name is reused by every build, so it never blocks one: when the
+  // name is taken (two builds in one second, or a retry after a failed write),
+  // a numeric suffix keeps every archive. An explicit name must be new.
+  const derived = named === null || timestampName;
+  const base = named === null
+    ? join(backupRoot, "backups", basename(output) + "-" + seconds)
+    : timestampName ? named.slice(0, -extname(named).length) + "-" + seconds : named.slice(0, -extname(named).length);
+  let path = base + ".zip";
+  for (let attempt = 2; ; attempt += 1) {
+    if (!containedIn(backupRoot, path)) throw new Error("Backup path escapes the Ravel root: " + path);
+    await assertNoSymlinks(backupRoot, path, "Backup path");
+    if (!await existingFile(path, "Backup file")) break;
+    if (!derived) throw new Error("Backup file already exists: " + path);
+    path = base + "-" + attempt + ".zip";
+  }
   return { outputDirectory: output, path, manifest: previous, builtAt };
 };
 
 /** Archive the complete current output tree before it is cleaned or replaced. */
 export const createOutputBackup = async (outputDirectory, options = {}) => {
   const plan = await planOutputBackup(outputDirectory, options);
+  if (!plan.path) return { path: null, files: [], skipped: plan.skipped };
   const backupRoot = resolve(options.backupRootDirectory ?? options.outputRootDirectory ?? outputDirectory);
   await ensureDirectoryTree(backupRoot, dirname(plan.path), "Backup path");
   if (await existingFile(plan.path, "Backup file")) throw new Error("Backup file already exists: " + plan.path);
-  const files = await collectBackupFiles(plan.outputDirectory);
+  const files = await collectBackupFiles(plan.outputDirectory, plan.manifest.manifest);
   const temporary = join(dirname(plan.path), "." + basename(plan.path) + ".ravel-stage-" + randomUUID());
   try {
     await writeFile(temporary, zipArchive(files));

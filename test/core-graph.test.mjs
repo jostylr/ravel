@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { combineMaps, formatChunkId, parseChunkId, transformGraph } from "../packages/core/src/index.js";
+import { combineMaps, formatChunkId, parseChunk, parseChunkId, transformGraph } from "../packages/core/src/index.js";
 
 const source = (uri, offset = 0) => ({
   uri,
@@ -423,4 +423,18 @@ test("resolves local, global, root, minor, and typed chunk identities", () => {
   );
   assert.deepEqual(program.chunks["guide::section"].dependencies, ["guide::section:preamble"]);
   assert.equal(program.chunks["guide::main"].references[1].chunk, "shared");
+});
+
+test("parsing a large chunk with thousands of references stays roughly linear", () => {
+  const source = { uri: "large.md", range: { start: { line: 0, column: 0, offset: 0 }, end: { line: 0, column: 0, offset: 0 } } };
+  let body = "";
+  for (let index = 0; index < 4000; index += 1) body += "line " + index + " uses _\"part" + (index % 50) + "\" and \\d+\n";
+  const started = performance.now();
+  const parsed = parseChunk(body, source);
+  // The quadratic implementation took seconds here; the budget is deliberately loose.
+  assert.ok(performance.now() - started < 1500);
+  assert.equal(parsed.nodes.filter((node) => node.type !== "literal").length, 4000);
+  // Reference positions point at the expression inside the quotes, on its own line.
+  const offset = body.lastIndexOf("_\"part") + 2;
+  assert.deepEqual(parsed.nodes.at(-2).source.range.start, { line: 3999, column: offset - body.lastIndexOf("\n", offset) - 1, offset });
 });

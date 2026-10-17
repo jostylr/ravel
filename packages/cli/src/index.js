@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { cleanManagedArtifacts, createOutputBackup, loadBuildInput, planDeliverables, planOutputBackup, planStaleDeliverables, refreshStaleArtifacts, writeBuildArtifacts, writeGraph } from "@pieceful/ravel-host-node";
+import { createOutputBackup, loadBuildInput, planDeliverables, planOutputBackup, planStaleDeliverables, refreshStaleArtifacts, writeBuildArtifacts, writeGraph } from "@pieceful/ravel-host-node";
 import {
   createDeliverableProvenanceMap,
   executeLiveProgram,
@@ -15,7 +15,7 @@ import { fileURLToPath } from "node:url";
 const EXIT_SOURCE = 1;
 const EXIT_USAGE = 2;
 const EXIT_INTERNAL = 3;
-const RAVEL_VERSION = "0.2.0";
+const RAVEL_VERSION = "0.2.1";
 const valueOptions = new Set([
   "--config",
   "--out-dir",
@@ -267,7 +267,9 @@ const printBuildResult = (result, json) => {
     console.log((result.dryRun ? "Managed outputs that would be removed:" : "Managed outputs removed:"));
     for (const deliverable of result.removed) console.log("  " + deliverable.path + " ← " + (deliverable.from ?? "previous build"));
   }
-  if (result.backup) {
+  if (result.backup?.skipped) {
+    console.log("Backup skipped: " + result.backup.skipped + ".");
+  } else if (result.backup) {
     const action = result.dryRun ? "Backup plan" : "Backup";
     const count = result.backup.files?.length;
     console.log(action + ": " + result.backup.path + (count === undefined ? "" : " (" + count + " files)"));
@@ -478,21 +480,25 @@ if (command === "--help" || command === "-h" || argumentsValue.includes("--help"
         const backupOptions = {
           outputRootDirectory: rootDirectory,
           backupRootDirectory: loaded.rootDirectory,
-          ...(typeof backupSetting === "string" ? { backupPath: backupSetting } : {})
+          ...(typeof backupSetting === "string" ? { backupPath: backupSetting } : {}),
+          // A TOML-configured name is reused on every build, so it gets the
+          // build timestamp appended; an explicit --backup name is one-shot.
+          ...(typeof backupSetting === "string" && parsed.options["--backup"] === undefined ? { timestampName: true } : {})
         };
         const backup = backupSetting
           ? parsed.options["--dry-run"]
             ? await planOutputBackup(outputDirectory, backupOptions)
             : await createOutputBackup(outputDirectory, backupOptions)
           : null;
-        const cleanup = clean
-          ? await cleanManagedArtifacts(outputDirectory, { rootDirectory, dryRun: parsed.options["--dry-run"] === true })
-          : { removed: [] };
         const retainedStale = clean ? [] : stale;
         if (parsed.options["--dry-run"]) {
+          // A clean build removes exactly the previously managed outputs it no longer produces.
+          const cleanup = { removed: clean ? stale : [] };
           printBuildResult({ ok: true, command: "build", dryRun: true, clean, ...plan, stale: retainedStale, removed: cleanup.removed, ...(backup ? { backup } : {}) }, json);
         } else {
-          const artifacts = await writeBuildArtifacts(program, outputDirectory, { rootDirectory, stale: retainedStale });
+          // Clean removes superseded managed files only after the new build commits.
+          const artifacts = await writeBuildArtifacts(program, outputDirectory, { rootDirectory, stale: retainedStale, clean });
+          const cleanup = { removed: artifacts.removed };
           if (parsed.options["--graph"]) await writeGraph(program, parsed.options["--graph"], { rootDirectory: loaded.rootDirectory });
           printBuildResult({
             ok: true,

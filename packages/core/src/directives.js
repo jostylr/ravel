@@ -12,5 +12,18 @@ export const pass = (steps, source) => ({ kind: "pass", steps, source });
  * document's canonical chunk identity. Alias is intentionally the only
  * directive that may introduce an alternate graph name for an existing node.
  */
-export const createDirective = (name, value, source) => ({ kind: "create", name, value, source });
-export const aliasDirective = (name, reference, source) => ({ kind: "alias", name, reference, source });
+export const createDirective = (name, value, source, document) => ({
+  kind: "create",
+  ...(document === undefined ? {} : { document }),
+  name,
+  // An array is a compose step list; a string is a chunk body.
+  ...(Array.isArray(value) ? { compose: value } : { body: String(value ?? "") }),
+  source
+});
+export const aliasDirective = (name, reference, source, document) => ({
+  kind: "alias",
+  ...(document === undefined ? {} : { document }),
+  name,
+  reference,
+  source
+});

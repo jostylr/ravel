@@ -168,3 +168,13 @@ test("an unterminated noweb definition retains its body and reports the opener",
   assert.equal(adapted.diagnostics[0].code, "LPA111");
   assert.equal(adapted.diagnostics[0].source.range.start.offset, 0);
 });
+
+test("noweb references stay on one line and leave shift operators as code", () => {
+  const source = "<<main>>=\nstd::cout << 1; int a = 4 << 2; int b = a >> 1;\nprint(@<<x>>);\n<<helper>>\n@\n<<helper>>=\nreturn 0;\n@\n";
+  const adapted = nowebToMap(source, { uri: "shift.nw", document: "shift" });
+  assert.deepEqual(adapted.diagnostics, []);
+  assert.deepEqual(adapted.map.chunks.map((chunk) => chunk.id), ["shift::main", "shift::helper"]);
+  const program = transformGraph(combineMaps([adapted.map]));
+  assert.deepEqual(program.diagnostics, []);
+  assert.equal(program.chunks["shift::main"].value, "std::cout << 1; int a = 4 << 2; int b = a >> 1;\nprint(<<x>>);\nreturn 0;\n\n");
+});

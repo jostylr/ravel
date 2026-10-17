@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import { createBuildManifest, createOutputBackup, loadBuildInput, loadPretransformGraph, planDeliverables, planStaleDeliverables, RavelInputError, writeBuildArtifacts, writeBuildManifest, writeDeliverables } from "../packages/host-node/src/index.js";
+import { cleanManagedArtifacts, createBuildManifest, createOutputBackup, loadBuildInput, loadPretransformGraph, planDeliverables, planStaleDeliverables, RavelInputError, writeBuildArtifacts, writeBuildManifest, writeDeliverables } from "../packages/host-node/src/index.js";
 import { JavaScriptModulePreparationError, prepareJavaScriptModules } from "../packages/js-live/src/node.js";
 import { markdownToMap } from "../packages/markdown/src/index.js";
 import { combineMaps, transformGraph } from "../packages/core/src/index.js";
@@ -802,10 +802,14 @@ test("Node host creates a no-overwrite ZIP backup of managed output", async () =
       backupRootDirectory: sandbox
     });
     assert.equal(backup.path, join(sandbox, "backups", "build-1784723696.zip"));
-    assert.deepEqual(backup.files, [".manifest.txt", ".ravel-manifest.json", "dist/main.txt", "unmanaged.txt"]);
+    // Only managed files are archived; unmanaged neighbors are left out.
+    assert.deepEqual(backup.files, [".manifest.txt", ".ravel-manifest.json", "dist/main.txt"]);
     assert.equal((await readFile(backup.path)).subarray(0, 4).toString("binary"), "PK\x03\x04");
+    // A derived name never blocks a later backup of the same build.
+    const repeat = await createOutputBackup(output, { outputRootDirectory: sandbox, backupRootDirectory: sandbox });
+    assert.equal(repeat.path, join(sandbox, "backups", "build-1784723696-2.zip"));
     await assert.rejects(
-      createOutputBackup(output, { outputRootDirectory: sandbox, backupRootDirectory: sandbox }),
+      createOutputBackup(output, { outputRootDirectory: sandbox, backupRootDirectory: sandbox, backupPath: "backups/build-1784723696.zip" }),
       /Backup file already exists/
     );
   } finally {
@@ -905,4 +909,89 @@ test("external language transforms run before delayed content is fulfilled", () 
   assert.deepEqual(program.diagnostics, []);
   assert.equal(program.chunks["page::page.pug"].value, "<html><body><h1>Hello</h1></body></html>");
   assert.match(program.trace.chunks["page::page.pug"][0].value, /RAVELSAFE/);
+});
+
+test("Node host clean refuses to delete through a symlinked output subdirectory", async () => {
+  const sandbox = await mkdtemp(join(tmpdir(), "ravel-clean-symlink-"));
+  const output = join(sandbox, "build");
+  const outside = join(sandbox, "outside");
+  const program = { version: 1, deliverables: {
+    "dist/main.txt": { name: "dist/main.txt", from: "guide::main", value: "ready\n" }
+  } };
+  try {
+    await writeBuildArtifacts(program, output, { rootDirectory: sandbox });
+    await mkdir(outside);
+    await writeFile(join(outside, "main.txt"), "precious\n");
+    await rm(join(output, "dist"), { recursive: true });
+    await symlink(outside, join(output, "dist"));
+    await assert.rejects(cleanManagedArtifacts(output, { rootDirectory: sandbox }), /must not traverse a symbolic link/);
+    assert.equal(await readFile(join(outside, "main.txt"), "utf8"), "precious\n");
+  } finally {
+    await rm(sandbox, { recursive: true, force: true });
+  }
+});
+
+test("Node host rejects deliverables that collide with the manifest or differ only by case", () => {
+  const deliverable = (name) => ({ name, from: "guide::main", value: "x\n" });
+  assert.throws(
+    () => planDeliverables({ version: 1, deliverables: { ".manifest.txt": deliverable(".manifest.txt") } }, "/tmp/out"),
+    /collides with another output or Ravel's manifest/
+  );
+  assert.throws(
+    () => planDeliverables({ version: 1, deliverables: { "README.md": deliverable("README.md"), "readme.md": deliverable("readme.md") } }, "/tmp/out"),
+    /case-insensitively/
+  );
+});
+
+test("Node host clean builds keep the previous output when the new write fails", async () => {
+  const sandbox = await mkdtemp(join(tmpdir(), "ravel-clean-order-"));
+  const output = join(sandbox, "build");
+  const first = { version: 1, deliverables: {
+    "old.txt": { name: "old.txt", from: "guide::old", value: "old\n" }
+  } };
+  const second = { version: 1, deliverables: {
+    "blocked/file.txt": { name: "blocked/file.txt", from: "guide::new", value: "new\n" }
+  } };
+  try {
+    await writeBuildArtifacts(first, output, { rootDirectory: sandbox });
+    await writeFile(join(output, "blocked"), "a file where a directory is needed\n");
+    await assert.rejects(writeBuildArtifacts(second, output, { rootDirectory: sandbox, clean: true }));
+    assert.equal(await readFile(join(output, "old.txt"), "utf8"), "old\n");
+    assert.match(await readFile(join(output, ".ravel-manifest.json"), "utf8"), /old\.txt/);
+
+    await rm(join(output, "blocked"));
+    const result = await writeBuildArtifacts(second, output, { rootDirectory: sandbox, clean: true });
+    assert.deepEqual(result.removed.map((entry) => entry.name), ["old.txt"]);
+    await assert.rejects(readFile(join(output, "old.txt"), "utf8"), { code: "ENOENT" });
+  } finally {
+    await rm(sandbox, { recursive: true, force: true });
+  }
+});
+
+test("Node host skips a backup when there is no previous build", async () => {
+  const sandbox = await mkdtemp(join(tmpdir(), "ravel-first-backup-"));
+  try {
+    const backup = await createOutputBackup(join(sandbox, "build"), { outputRootDirectory: sandbox, backupRootDirectory: sandbox });
+    assert.equal(backup.path, null);
+    assert.match(backup.skipped, /no previous Ravel build/);
+  } finally {
+    await rm(sandbox, { recursive: true, force: true });
+  }
+});
+
+test("Node host loads a document imported by several [[files]] only once", async () => {
+  const sandbox = await mkdtemp(join(tmpdir(), "ravel-shared-import-"));
+  try {
+    await writeFile(join(sandbox, "shared.md"), "```text {.ravel #greeting}\nhello\n```\n");
+    await writeFile(join(sandbox, "a.md"), "```ravel\nin(\"shared.md\")\n```\n\n```text {.ravel #a}\n_\"shared::greeting.text\" a\n```\n");
+    await writeFile(join(sandbox, "b.md"), "```ravel\nin(\"shared.md\")\n```\n\n```text {.ravel #b}\n_\"shared::greeting.text\" b\n```\n");
+    await writeFile(join(sandbox, "ravel.toml"), "version = 1\n\n[[files]]\npath = \"a.md\"\n\n[[files]]\npath = \"b.md\"\n");
+    const loaded = await loadBuildInput(join(sandbox, "ravel.toml"));
+    assert.deepEqual(loaded.pretransform.diagnostics, []);
+    const program = transformGraph(loaded.pretransform);
+    assert.deepEqual(program.diagnostics, []);
+    assert.equal(program.chunks["b::b.text"].value, "hello\n b\n");
+  } finally {
+    await rm(sandbox, { recursive: true, force: true });
+  }
 });

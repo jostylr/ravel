@@ -158,7 +158,7 @@
       "allOf": [
         { "if": { "properties": { "kind": { "const": "in" } } }, "then": { "required": ["target"] } },
         { "if": { "properties": { "kind": { "const": "out" } } }, "then": { "required": ["name", "from"] } },
-        { "if": { "properties": { "kind": { "const": "create" } } }, "then": { "required": ["document", "name", "compose"] } },
+        { "if": { "properties": { "kind": { "const": "create" } } }, "then": { "required": ["document", "name"], "anyOf": [{ "required": ["compose"] }, { "required": ["body"] }] } },
         { "if": { "properties": { "kind": { "const": "alias" } } }, "then": { "required": ["document", "name", "reference"] } }
       ],
       "properties": {

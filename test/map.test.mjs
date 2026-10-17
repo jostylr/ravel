@@ -117,3 +117,19 @@ test("map validation accepts exact and coarse fragment precision", () => {
     entry.message.includes("precision must be exact or coarse")
   ));
 });
+
+test("core directive helpers produce maps the validator accepts", async () => {
+  const { aliasDirective, createDirective } = await import("../packages/core/src/index.js");
+  const source = { uri: "helpers.ravel-map.json", range: { start: { line: 0, column: 0, offset: 0 }, end: { line: 0, column: 0, offset: 0 } } };
+  const map = {
+    version: 1,
+    document: { id: "helpers", uri: "helpers.ravel-map.json", format: "ravel-map-v1" },
+    chunks: [],
+    directives: [
+      createDirective("greeting", "hello\n", source, "helpers"),
+      createDirective("joined", [{ kind: "append", reference: "greeting" }], source, "helpers"),
+      aliasDirective("hi", "greeting", source, "helpers")
+    ]
+  };
+  assert.deepEqual(validateRavelMap(map), []);
+});

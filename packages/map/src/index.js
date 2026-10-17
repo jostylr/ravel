@@ -157,7 +157,7 @@ export const validateRavelMap = (map, { uri } = {}) => {
       if (directive.kind === "create") {
         if (!componentPattern.test(directive.document ?? "")) report(path + ".document", "is required for a create directive.");
         if (typeof directive.name !== "string" || directive.name.length === 0) report(path + ".name", "is required for a create directive.");
-        if (!Array.isArray(directive.compose)) report(path + ".compose", "is required for a create directive.");
+        if (!Array.isArray(directive.compose) && typeof directive.body !== "string") report(path + ".compose", "or body is required for a create directive.");
       }
       if (directive.kind === "alias") {
         if (!componentPattern.test(directive.document ?? "")) report(path + ".document", "is required for an alias directive.");

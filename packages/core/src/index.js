@@ -177,18 +177,32 @@ const replaceMappedOnce = (value, search, replacement) => {
   );
 };
 
+// Parsing asks for many positions in the same chunk body, so keep the newline
+// offsets of the most recent text and binary-search them instead of rescanning.
+const lineIndexCache = new Map();
+const lineStartsOf = (text) => {
+  let starts = lineIndexCache.get(text);
+  if (starts) return starts;
+  starts = [];
+  for (let i = text.indexOf("\n"); i !== -1; i = text.indexOf("\n", i + 1)) starts.push(i + 1);
+  // A handful of entries covers a chunk body and the expressions inside it.
+  if (lineIndexCache.size >= 16) lineIndexCache.delete(lineIndexCache.keys().next().value);
+  lineIndexCache.set(text, starts);
+  return starts;
+};
+
 const advance = (start, text, index) => {
-  let line = start.line;
-  let column = start.column;
-  for (let i = 0; i < index; i += 1) {
-    if (text[i] === "\n") {
-      line += 1;
-      column = 0;
-    } else {
-      column += 1;
-    }
+  const starts = lineStartsOf(text);
+  let low = 0;
+  let high = starts.length;
+  while (low < high) {
+    const middle = (low + high) >> 1;
+    if (starts[middle] <= index) low = middle + 1;
+    else high = middle;
   }
-  return { line, column, offset: start.offset + index };
+  return low === 0
+    ? { line: start.line, column: start.column + index, offset: start.offset + index }
+    : { line: start.line + low, column: index - starts[low - 1], offset: start.offset + index };
 };
 
 const span = (source, text, start, end) => ({
@@ -382,9 +396,10 @@ const parseEmitSuffix = (value) => {
   return { minor, type, inheritMinor: false };
 };
 
-const parsePipeStep = (part, expression, source, expressionOffset, diagnostics) => {
+// `text` is the string that `expressionOffset` and `part` offsets index into.
+const parsePipeStep = (part, text, source, expressionOffset, diagnostics) => {
   const match = /^([a-z][a-z0-9-]*)\s*(?:\((.*)\))?$/s.exec(part.value);
-  const location = span(source, expression, expressionOffset + part.start, expressionOffset + part.end);
+  const location = span(source, text, expressionOffset + part.start, expressionOffset + part.end);
   if (!match) {
     diagnostics.push(diagnostic("RV110", "Malformed pipeline step: " + part.value, location));
     return null;
@@ -430,7 +445,7 @@ const parsePipeStep = (part, expression, source, expressionOffset, diagnostics) 
       diagnostics.push(diagnostic("RV121", "ch requires one quoted chunk expression.", location));
       return null;
     }
-    const parsed = parseExpression(argumentsValue[0], source, expressionOffset + part.start, diagnostics, { allowDelay: false });
+    const parsed = parseExpression(argumentsValue[0], source, expressionOffset + part.start, diagnostics, { allowDelay: false, text });
     if (!parsed) return null;
     return { type: "chunk", expression: argumentsValue[0], value: parsed, source: location };
   }
@@ -438,7 +453,7 @@ const parsePipeStep = (part, expression, source, expressionOffset, diagnostics) 
   const argumentsParsed = rawArguments.map((argument) => {
     const value = parseValue(argument.value);
     if (typeof value !== "undefined") return value;
-    const nested = parsePipeStep({ value: argument.value, start: part.start + argument.start, end: part.start + argument.end }, expression, source, expressionOffset, diagnostics);
+    const nested = parsePipeStep({ value: argument.value, start: part.start + argument.start, end: part.start + argument.end }, text, source, expressionOffset, diagnostics);
     return nested?.type === "text" || nested?.type === "chunk"
       ? { kind: "ravel-command-argument", command: nested }
       : undefined;
@@ -450,12 +465,14 @@ const parsePipeStep = (part, expression, source, expressionOffset, diagnostics) 
   return { type: name === "delay" ? "delay" : "transform", name, arguments: argumentsParsed, source: location };
 };
 
-const parseExpression = (expression, source, expressionOffset, diagnostics, { allowDelay = true } = {}) => {
+// `text` is the chunk body that `expressionOffset` indexes into; positions
+// must be computed against it, not against the expression alone.
+const parseExpression = (expression, source, expressionOffset, diagnostics, { allowDelay = true, text = expression } = {}) => {
   const parts = splitTopLevel(expression, "|");
   const reference = parts.shift();
   const target = parseChunkId(reference?.value, { reference: true });
   const pipeline = parts
-    .map((part) => parsePipeStep(part, expression, source, expressionOffset, diagnostics))
+    .map((part) => parsePipeStep(part, text, source, expressionOffset, diagnostics))
     .filter(Boolean);
   if (!reference || !target) {
     const delay = pipeline.length === 1 && pipeline[0].type === "delay" ? pipeline[0] : null;
@@ -474,7 +491,7 @@ const parseExpression = (expression, source, expressionOffset, diagnostics, { al
         expression: typeof value === "string" ? value : command.expression ?? command.value,
         phase,
         safeSymbol,
-        source: span(source, expression, expressionOffset, expressionOffset + expression.length)
+        source: span(source, text, expressionOffset, expressionOffset + expression.length)
       };
     }
     if (reference?.value === "" && pipeline.length && pipeline[0].type !== "delay" &&
@@ -483,13 +500,13 @@ const parseExpression = (expression, source, expressionOffset, diagnostics, { al
         diagnostics.push(diagnostic("RV121", "delay may only appear as the sole command in _\"|delay(...)\".", pipeline.find((step) => step.type === "delay").source));
         return null;
       }
-      return { type: "pipeline", pipeline, source: span(source, expression, expressionOffset, expressionOffset + expression.length) };
+      return { type: "pipeline", pipeline, source: span(source, text, expressionOffset, expressionOffset + expression.length) };
     }
     if (pipeline.some((step) => step.type === "delay")) {
       diagnostics.push(diagnostic("RV121", "delay may only appear as the sole command in _\"|delay(...)\".", pipeline.find((step) => step.type === "delay").source));
       return null;
     }
-    diagnostics.push(diagnostic("RV110", "Malformed chunk reference: " + (reference?.value ?? ""), span(source, expression, expressionOffset, expressionOffset + expression.length)));
+    diagnostics.push(diagnostic("RV110", "Malformed chunk reference: " + (reference?.value ?? ""), span(source, text, expressionOffset, expressionOffset + expression.length)));
     return null;
   }
 
@@ -503,7 +520,7 @@ const parseExpression = (expression, source, expressionOffset, diagnostics, { al
     reference: reference.value,
     target,
     pipeline,
-    source: span(source, expression, expressionOffset, expressionOffset + expression.length)
+    source: span(source, text, expressionOffset, expressionOffset + expression.length)
   };
 };
 
@@ -532,7 +549,10 @@ export const parseDefinitionPipeline = (text, source) => {
 // on continuation lines. The first line is already positioned by the literal
 // text before the reference, so it deliberately remains untouched.
 const continuationIndentAt = (body, index) => {
-  const lineStart = Math.max(body.lastIndexOf("\n", index - 1), body.lastIndexOf("\r", index - 1)) + 1;
+  // Walk back only to the start of this line; lastIndexOf for an absent "\r"
+  // would rescan the whole body for every reference.
+  let lineStart = index;
+  while (lineStart > 0 && body[lineStart - 1] !== "\n" && body[lineStart - 1] !== "\r") lineStart -= 1;
   return /^[\t ]*/.exec(body.slice(lineStart, index))[0];
 };
 
@@ -577,6 +597,26 @@ const nowebExpression = (value, options) => {
     : canonicalName + " | " + value.slice(pipe + 1).trim();
 };
 
+/**
+ * Recognize a noweb-style `<<name>>` reference starting at `index`.
+ *
+ * A reference must close on the same line and its name must be non-empty
+ * without leading or trailing whitespace, so shift operators such as
+ * `std::cout << x` or `a << 2; b >> 1` remain ordinary code. Returns the
+ * authored text and the offset of the closing `>>`, or null.
+ */
+const countedReferencePattern = /\\([1-9][0-9]*)_(["'`])/y;
+
+export const nowebReferenceAt = (body, index) => {
+  if (!body.startsWith("<<", index)) return null;
+  const lineEnd = body.indexOf("\n", index + 2);
+  const end = body.indexOf(">>", index + 2);
+  if (end === -1 || (lineEnd !== -1 && end > lineEnd)) return null;
+  const authored = body.slice(index + 2, end);
+  if (!authored || authored !== authored.trim() || authored.startsWith("<")) return null;
+  return { authored, end };
+};
+
 export const parseChunk = (body, source, options = {}) => {
   const nodes = [];
   const diagnostics = [];
@@ -584,18 +624,23 @@ export const parseChunk = (body, source, options = {}) => {
   let index = 0;
 
   while (index < body.length) {
-    if (options.nowebReferences && body.startsWith("<<", index)) {
-      const end = body.indexOf(">>", index + 2);
-      if (end === -1) {
-        diagnostics.push(diagnostic("RV110", "Unterminated noweb chunk reference.", span(source, body, index, body.length)));
-        break;
-      }
+    if (options.nowebReferences && body.startsWith("@<<", index)) {
+      // `@<<` is noweb's escape for a literal `<<`; drop the `@`.
       if (literalStart < index) {
         nodes.push({ type: "literal", value: body.slice(literalStart, index), source: span(source, body, literalStart, index) });
       }
-      const authored = body.slice(index + 2, end);
+      literalStart = index + 1;
+      index += 3;
+      continue;
+    }
+    const noweb = options.nowebReferences ? nowebReferenceAt(body, index) : null;
+    if (noweb) {
+      const { end, authored } = noweb;
+      if (literalStart < index) {
+        nodes.push({ type: "literal", value: body.slice(literalStart, index), source: span(source, body, literalStart, index) });
+      }
       const expression = nowebExpression(authored, options);
-      const parsed = parseExpression(expression, source, index + 2, diagnostics);
+      const parsed = parseExpression(expression, source, index + 2, diagnostics, { text: body });
       if (parsed) {
         nodes.push({
           ...parsed,
@@ -608,9 +653,11 @@ export const parseChunk = (body, source, options = {}) => {
       literalStart = index;
       continue;
     }
-    const counted = options.underscoreReferences !== false && body[index] === "\\"
-      ? /^\\([1-9][0-9]*)_(["'`])/.exec(body.slice(index))
-      : null;
+    let counted = null;
+    if (options.underscoreReferences !== false && body[index] === "\\") {
+      countedReferencePattern.lastIndex = index;
+      counted = countedReferencePattern.exec(body);
+    }
     if (counted) {
       const quote = counted[2];
       const expressionStart = index + counted[0].length;
@@ -630,7 +677,7 @@ export const parseChunk = (body, source, options = {}) => {
         nodes.push({ type: "literal", value: body.slice(literalStart, index), source: span(source, body, literalStart, index) });
       }
       const expression = body.slice(expressionStart, end);
-      const parsed = parseExpression(expression, source, expressionStart, diagnostics, { allowDelay: false });
+      const parsed = parseExpression(expression, source, expressionStart, diagnostics, { allowDelay: false, text: body });
       if (parsed) {
         nodes.push({
           type: "delay",
@@ -682,7 +729,7 @@ export const parseChunk = (body, source, options = {}) => {
       nodes.push({ type: "literal", value: body.slice(literalStart, index), source: span(source, body, literalStart, index) });
     }
     const expression = body.slice(index + 2, end);
-    const parsed = parseExpression(expression, source, index + 2, diagnostics);
+    const parsed = parseExpression(expression, source, index + 2, diagnostics, { text: body });
     if (parsed) nodes.push({ ...parsed, continuationIndent: continuationIndentAt(body, index) });
     index = end + 1;
     literalStart = index;

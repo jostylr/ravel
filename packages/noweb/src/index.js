@@ -1,4 +1,4 @@
-import { parseDefinitionPipeline } from "@pieceful/ravel-core";
+import { nowebReferenceAt, parseDefinitionPipeline } from "@pieceful/ravel-core";
 
 const componentPattern = /^[a-z][a-z0-9-]*$/;
 const dialects = new Set(["noweb", "noweb-plus"]);
@@ -168,9 +168,12 @@ const referencesFrom = (body, source, extended) => {
   while (index < body.length) {
     const start = body.indexOf("<<", index);
     if (start === -1) break;
-    const end = body.indexOf(">>", start + 2);
-    if (end === -1) break;
-    const authored = body.slice(start + 2, end);
+    const reference = start > 0 && body[start - 1] === "@" ? null : nowebReferenceAt(body, start);
+    if (!reference) {
+      index = start + 2;
+      continue;
+    }
+    const { end, authored } = reference;
     const split = splitNamePipeline(authored, extended);
     references.push({
       authored,
