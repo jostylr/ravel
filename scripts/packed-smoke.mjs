@@ -70,7 +70,8 @@ const expectedPackages = new Set([
   "@pieceful/ravel-noweb",
   "@pieceful/ravel-org",
   "@pieceful/ravel-projection",
-  "@pieceful/ravel-quarto"
+  "@pieceful/ravel-quarto",
+  "@pieceful/ravel-transforms"
 ]);
 
 const publicWorkspacePaths = [];
@@ -191,6 +192,9 @@ try {
     'const browserHost = await import("@pieceful/ravel-host-browser");',
     'await import("@pieceful/ravel-host-node");',
     'const map = await import("@pieceful/ravel-map");',
+    'const transforms = await import("@pieceful/ravel-transforms");',
+    'if (transforms.markdown("# Hi") !== "<h1>Hi</h1>") process.exit(1);',
+    'if (transforms.template("{{ a }}", { arguments: [{ a: "ok" }] }) !== "ok") process.exit(1);',
     'await import("@pieceful/ravel");',
     'if (typeof languageBridge.createBridgeCapabilities !== "function") process.exit(1);',
     'if (typeof languageBridgeTesting.createFakeLanguageBridge !== "function") process.exit(1);',
@@ -236,7 +240,7 @@ try {
   const binary = join(sandbox, "node_modules", ".bin", process.platform === "win32" ? "ravel.cmd" : "ravel");
   const cliOptions = { cwd: sandbox, ...(process.platform === "win32" ? { shell: true } : {}) };
   assert.match((await run(binary, ["--help"], cliOptions)).stderr, /Usage: ravel check/);
-  assert.equal((await run(binary, ["--version"], cliOptions)).stdout.trim(), "0.2.1");
+  assert.equal((await run(binary, ["--version"], cliOptions)).stdout.trim(), "0.3.0");
   await run(binary, ["build", "smoke.ravel-map.json", "--out-dir", "build"], cliOptions);
   assert.equal(await readFile(join(sandbox, "build", "dist", "smoke.js"), "utf8"), "export const smoke = true;\n");
   const manifest = JSON.parse(await readFile(join(sandbox, "build", ".ravel-manifest.json"), "utf8"));

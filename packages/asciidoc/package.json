@@ -1,6 +1,6 @@
 {
   "name": "@pieceful/ravel-asciidoc",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "type": "module",
   "description": "Lossless AsciiDoc section, block, cross-reference, and directive adapter for Ravel.",
   "license": "MIT",
@@ -36,6 +36,6 @@
     "LICENSE"
   ],
   "dependencies": {
-    "@pieceful/ravel-core": "0.2.1"
+    "@pieceful/ravel-core": "0.3.0"
   }
 }
