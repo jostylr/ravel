@@ -15,7 +15,7 @@ import { fileURLToPath } from "node:url";
 const EXIT_SOURCE = 1;
 const EXIT_USAGE = 2;
 const EXIT_INTERNAL = 3;
-const RAVEL_VERSION = "0.2.1";
+const RAVEL_VERSION = "0.3.0";
 const valueOptions = new Set([
   "--config",
   "--out-dir",
@@ -425,6 +425,7 @@ if (command === "--help" || command === "-h" || argumentsValue.includes("--help"
         mode: parsed.options["--mode"]
       });
       let program = transformGraph(loaded.pretransform, {
+        transforms: loaded.transforms,
         deferLiveResults: new Set(["build", "run", "check"]).has(parsed.command)
       });
       const initialErrors = program.diagnostics.filter((entry) => entry.severity === "error");
@@ -433,7 +434,7 @@ if (command === "--help" || command === "-h" || argumentsValue.includes("--help"
       if (!initialErrors.length && parsed.command === "build" && hasLiveBlocks(program)) {
         const liveResult = await runLiveProgram(program, loaded);
         if (liveResult.ok) {
-          program = transformGraph(loaded.pretransform, { liveResults: liveResult });
+          program = transformGraph(loaded.pretransform, { transforms: loaded.transforms, liveResults: liveResult });
         } else {
           liveFailure = liveResult;
         }
@@ -444,6 +445,11 @@ if (command === "--help" || command === "-h" || argumentsValue.includes("--help"
         if (!livePlan.ok) liveFailure = livePlan;
       }
       const completedErrors = program.diagnostics.filter((entry) => entry.severity === "error");
+      // Warnings never fail a command, but a person should still see them;
+      // JSON callers receive them in check output or the program itself.
+      if (!json && parsed.command !== "check" && !initialErrors.length && !liveFailure && !completedErrors.length) {
+        printDiagnostics(program.diagnostics.filter((entry) => entry.severity !== "error"), false);
+      }
       if (initialErrors.length) {
         printDiagnostics(program.diagnostics, json);
         process.exitCode = EXIT_SOURCE;
@@ -456,7 +462,10 @@ if (command === "--help" || command === "-h" || argumentsValue.includes("--help"
       } else if (parsed.command === "check") {
         const diagnostics = [...program.diagnostics, ...liveDiagnostics];
         if (json) console.log(JSON.stringify({ ok: true, command: "check", diagnostics }, null, 2));
-        else console.log("Ravel check passed.");
+        else {
+          printDiagnostics(diagnostics, false);
+          console.log("Ravel check passed" + (diagnostics.length ? " with " + diagnostics.length + " warning" + (diagnostics.length === 1 ? "" : "s") : "") + ".");
+        }
       } else if (parsed.command === "inspect") {
         printInspectResult(inspectProgram(program, parsed.options), json);
       } else if (parsed.command === "run") {

@@ -13,3 +13,5 @@ export interface MarkdownOptions {
 }
 export function modernMarkdownToMap(text: string, options?: MarkdownOptions): { map: MarkdownRavelMap; diagnostics: Diagnostic[] };
 export function markdownToMap(text: string, options?: MarkdownOptions): { map: MarkdownRavelMap; diagnostics: Diagnostic[] };
+
+export function parseFrontMatter(text: string): { data: Record<string, unknown> | undefined; start: number; end: number; bodyStart: number };

@@ -1,6 +1,6 @@
 {
   "name": "@pieceful/ravel-host-browser",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "type": "module",
   "sideEffects": false,
   "description": "Portable in-memory Markdown host for the Ravel graph engine.",
@@ -38,8 +38,9 @@
     "LICENSE"
   ],
   "dependencies": {
-    "@pieceful/ravel-core": "0.2.1",
-    "@pieceful/ravel-map": "0.2.1",
-    "@pieceful/ravel-markdown": "0.2.1"
+    "@pieceful/ravel-core": "0.3.0",
+    "@pieceful/ravel-map": "0.3.0",
+    "@pieceful/ravel-markdown": "0.3.0",
+    "@pieceful/ravel-transforms": "0.3.0"
   }
 }

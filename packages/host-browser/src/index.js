@@ -5,6 +5,7 @@ import {
 } from "@pieceful/ravel-core";
 import { validateRavelMap } from "@pieceful/ravel-map";
 import { markdownToMap } from "@pieceful/ravel-markdown";
+import { builtinTransforms } from "@pieceful/ravel-transforms";
 
 const point = () => ({ line: 0, column: 0, offset: 0 });
 
@@ -36,7 +37,8 @@ export const renderMarkdownDocument = (source, options = {}) => {
     });
     const validationDiagnostics = validateRavelMap(adapted.map, { uri });
     const program = transformGraph(combineMaps([adapted.map]), {
-      transforms: options.transforms
+      // Built-in transforms are always available; caller transforms win.
+      transforms: { ...builtinTransforms, ...options.transforms }
     });
     const diagnostics = [
       ...adapted.diagnostics,

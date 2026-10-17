@@ -62,6 +62,24 @@ const frontMatterEndOffset = (text) => {
   return firstEnd + 1 + close.index + close[0].length;
 };
 
+/**
+ * Split leading YAML front matter from a document. Returns the parsed data
+ * (or `undefined` when there is none), the front matter's source offsets, and
+ * the offset where the body starts. Throws when front matter is present but
+ * is not valid YAML, so callers can report it instead of silently losing it.
+ */
+export const parseFrontMatter = (text) => {
+  const bodyStart = frontMatterEndOffset(text);
+  if (bodyStart === 0) return { data: undefined, start: 0, end: 0, bodyStart: 0 };
+  const firstEnd = text.indexOf("\n");
+  const close = /^---\s*\r?$/m.exec(text.slice(firstEnd + 1));
+  const yamlText = text.slice(firstEnd + 1, firstEnd + 1 + close.index);
+  const data = parseYaml(yamlText);
+  // Consume the newline after the closing delimiter so the body starts on its own line.
+  const afterClose = text.startsWith("\r\n", bodyStart) ? bodyStart + 2 : text.startsWith("\n", bodyStart) ? bodyStart + 1 : bodyStart;
+  return { data: data ?? {}, start: 0, end: bodyStart, bodyStart: afterClose };
+};
+
 const documentFromFrontMatter = (text) => {
   const data = frontMatterFrom(text);
   return data?.lp?.document ?? data?.ravel?.document;

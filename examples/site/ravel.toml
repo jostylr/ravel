@@ -1,0 +1,21 @@
+version = 1
+
+[build]
+out_dir = ".ravel/build/site"
+
+# The layout, the home page, and the stylesheet live in site.md.
+[[files]]
+path = "site.md"
+
+# Every Markdown file under pages/ becomes one HTML page.
+[[collections]]
+name = "pages"
+glob = "pages/**/*.md"
+out = "{dir}/{slug}.html"
+layout = "site::layout.html"
+pipe = "markdown | smartquotes"
+
+# A project transform: any ES module exporting (value, context) => string.
+[[transforms]]
+name = "smartquotes"
+module = "transforms/smartquotes.mjs"

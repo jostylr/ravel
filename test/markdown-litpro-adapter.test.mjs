@@ -235,10 +235,32 @@ test("legacy links become portable directives or inert planned effects", () => {
     ""
   ].join("\n"), { uri: "directives.md", document: "directives" });
 
-  assert.deepEqual(adapted.diagnostics, []);
+  // Dropped or unapplied legacy behavior is reported as warnings, never silently.
+  assert.deepEqual(adapted.diagnostics.map((entry) => [entry.code, entry.severity]), [["LPA202", "warning"], ["LPA201", "warning"]]);
+  assert.match(adapted.diagnostics[0].message, /save arguments are not applied to "result\.txt".*\| legacy tidy/);
+  assert.match(adapted.diagnostics[1].message, /custom: \(argument\) has no Ravel equivalent/);
   assert.deepEqual(adapted.map.directives.map((directive) => directive.kind), ["in", "out"]);
   assert.equal(adapted.map.directives[0].metadata.legacy.alias, "shared");
   assert.equal(adapted.map.directives[1].from, "directives::main");
   assert.equal(adapted.map.metadata.plannedEffects[0].directive, "custom");
   assert.equal(adapted.map.metadata.legacyComments.length, 1);
+});
+
+test("LitPro shell, define, and link-heading commands produce specific warnings", () => {
+  const adapted = litproMarkdownToMap([
+    "# Main",
+    "",
+    "    value",
+    "",
+    "[copy](# \"exec: cp a b\")",
+    "[helper](# \"define: \")",
+    "[js](#js \"h5:\")",
+    ""
+  ].join("\n"), { uri: "dropped.md", document: "dropped" });
+  const messages = adapted.diagnostics.map((entry) => entry.code + " " + entry.message);
+  assert.equal(adapted.diagnostics.every((entry) => entry.severity === "warning"), true);
+  assert.match(messages[0], /^LPA201 LitPro exec: \(cp a b\) runs a shell command/);
+  assert.match(messages[1], /^LPA201 LitPro define: .*\[\[transforms\]\]/);
+  assert.match(messages[2], /^LPA201 LitPro h5: link headings .* Write a real ##### heading/);
+  assert.equal(adapted.diagnostics[0].source.range.start.line, 4);
 });

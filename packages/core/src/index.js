@@ -948,9 +948,12 @@ const applyTransform = (value, step, diagnostics, transforms, context = {}) => {
   const transform = customTransform(transforms, step.name);
   if (typeof transform === "function") {
     try {
-      const result = transform(value, { ...context, arguments: clone(step.arguments), transform: step.name });
+      // `parts: true` invites a transform to describe which output came from
+      // its input or arguments; a plain string result is always accepted.
+      const result = transform(value, { ...context, arguments: clone(step.arguments), transform: step.name, parts: true });
       if (typeof result === "string") return result;
-      diagnostics.push(diagnostic("RV121", "Transform " + step.name + " must return a string.", step.source));
+      if (Array.isArray(result?.parts)) return result;
+      diagnostics.push(diagnostic("RV121", "Transform " + step.name + " must return a string or { parts }.", step.source));
     } catch (error) {
       diagnostics.push(diagnostic("RV121", "Transform " + step.name + " failed: " + (error?.message ?? String(error)), step.source));
     }
@@ -1282,14 +1285,52 @@ export const transformGraph = (pretransform, options = {}) => {
     return (hash >>> 0).toString(36).toUpperCase();
   };
 
+  // Assemble a `{ parts }` transform result: input and argument ranges keep
+  // their provenance; literal parts are attributed to the transform step.
+  const mappedTransformParts = (input, parts, step, definition, argumentValues = []) => {
+    const derivation = { kind: "transform", name: step.name, source: clone(step.source) };
+    const argumentMapped = (index) => argumentValues[index] ??
+      (typeof step.arguments[index] === "string" ? coarseMapped(step.arguments[index], step.source, definition.id, "transform", [derivation]) : null);
+    const validRange = (text, start, end) => Number.isInteger(start) && Number.isInteger(end) && start >= 0 && start <= end && end <= text.length;
+    let value = mappedValue();
+    for (const part of parts) {
+      let piece = null;
+      if (typeof part === "string") {
+        piece = coarseMapped(part, step.source, definition.id, "transform", [derivation]);
+      } else if (Array.isArray(part?.input) && validRange(input.text, part.input[0], part.input[1])) {
+        piece = withMappedDerivation(sliceMapped(input, part.input[0], part.input[1]), derivation);
+      } else if (Number.isInteger(part?.argument) && typeof part.text === "string") {
+        const source = argumentMapped(part.argument);
+        piece = source
+          ? coarseDerivedMapped(part.text, step.source, definition.id, "transform", [derivation], source)
+          : coarseMapped(part.text, step.source, definition.id, "transform", [derivation]);
+      } else if (Number.isInteger(part?.argument)) {
+        const source = argumentMapped(part.argument);
+        if (source && validRange(source.text, part.start, part.end)) {
+          piece = withMappedDerivation(sliceMapped(source, part.start, part.end), derivation);
+        }
+      }
+      if (!piece) {
+        diagnostics.push(diagnostic("RV121", "Transform " + step.name + " returned an invalid part.", step.source));
+        return null;
+      }
+      value = concatMapped(value, piece);
+    }
+    return value;
+  };
+
   const evaluateTransformMapped = (input, step, definition, context = {}) => {
+    const { argumentValues, ...transformContext } = context;
     const output = applyTransform(
       input.text,
       step,
       diagnostics,
       options.transforms,
-      { chunk: definition, ...context }
+      { chunk: definition, ...transformContext }
     );
+    if (typeof output !== "string") {
+      return mappedTransformParts(input, output.parts, step, definition, argumentValues) ?? input;
+    }
     return mapBuiltinTransform(input, output, step, definition.id) ?? coarseDerivedMapped(
       output,
       step.source,
@@ -1405,8 +1446,16 @@ export const transformGraph = (pretransform, options = {}) => {
       } else if (step.type === "chunk") {
         value = evaluateExpression(step.value, owner);
       } else if (step.type === "transform") {
-        const argumentsValue = step.arguments.map((argument) => evaluateArgument(argument, owner));
-        value = evaluateTransformMapped(value, { ...step, arguments: argumentsValue }, owner.definition);
+        // Evaluate each ch()/text() argument once, keeping its mapped value so
+        // a parts-aware transform can carry its provenance through.
+        const argumentValues = step.arguments.map((argument) => {
+          const command = argument?.kind === "ravel-command-argument" ? argument.command : null;
+          if (command?.type === "chunk") return evaluateExpression(command.value, owner);
+          if (command?.type === "text") return coarseMapped(command.value, command.source ?? step.source, owner.definition.id, "text");
+          return null;
+        });
+        const argumentsValue = step.arguments.map((argument, index) => argumentValues[index]?.text ?? evaluateArgument(argument, owner));
+        value = evaluateTransformMapped(value, { ...step, arguments: argumentsValue }, owner.definition, { argumentValues });
       }
     }
     return value;

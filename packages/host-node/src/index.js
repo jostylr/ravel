@@ -1,4 +1,4 @@
-import { lstat, readFile, mkdir, rename, unlink, writeFile } from "node:fs/promises";
+import { lstat, readFile, readdir, mkdir, rename, unlink, writeFile } from "node:fs/promises";
 import { createHash, randomUUID } from "node:crypto";
 import { deflateRawSync } from "node:zlib";
 import { basename, dirname, extname, isAbsolute, join, relative, resolve, sep } from "node:path";
@@ -11,14 +11,17 @@ import {
 } from "@pieceful/ravel-core";
 import { asciidocToMap } from "@pieceful/ravel-asciidoc";
 import { htmlToMap } from "@pieceful/ravel-html";
-import { markdownToMap } from "@pieceful/ravel-markdown";
+import { markdownToMap, parseFrontMatter } from "@pieceful/ravel-markdown";
 import { isLitproMarkdown, litproMarkdownToMap } from "@pieceful/ravel-markdown-litpro";
 import { assertRavelMap } from "@pieceful/ravel-map";
 import { mystToMap } from "@pieceful/ravel-myst";
 import { nowebToMap } from "@pieceful/ravel-noweb";
 import { orgToMap } from "@pieceful/ravel-org";
+import { builtinTransforms } from "@pieceful/ravel-transforms";
+import { pathToFileURL } from "node:url";
 
 const missing = (error) => error?.code === "ENOENT";
+const componentPattern = /^[a-z][a-z0-9-]*$/;
 
 const throwIfAborted = (signal) => {
   if (!signal?.aborted) return;
@@ -459,6 +462,252 @@ const reportUnknownKeys = (value, allowed, description, configPath) => {
   }
 };
 
+// Names core evaluates itself; a project transform cannot replace them.
+const coreTransformNames = new Set([
+  "concat", "trim", "normalize-eol", "indent", "dedent", "replace", "quote-reference",
+  "jsontext", "emit", "text", "ch", "delay"
+]);
+
+/**
+ * Load `[[transforms]]` entries: project-local ES modules whose export is a
+ * `(value, context) => string` function. These run as ordinary Node code with
+ * the host's privileges, so they are configured only in the TOML file, never by
+ * a document. Ravel's built-in transforms are always available and a project
+ * module may replace one of them (for example to use another Markdown engine).
+ */
+const loadProjectTransforms = async (entries, scope, absoluteConfig) => {
+  const transforms = { ...builtinTransforms };
+  if (entries === undefined) return transforms;
+  if (!Array.isArray(entries)) throw inputError("RC102", "transforms must contain [[transforms]] entries.", absoluteConfig);
+  const seen = new Set();
+  for (const [index, entry] of entries.entries()) {
+    const path = "transforms[" + index + "]";
+    if (!entry || typeof entry !== "object" || Array.isArray(entry)) throw inputError("RC102", path + " must be a table.", absoluteConfig);
+    reportUnknownKeys(entry, new Set(["name", "module", "export"]), path, absoluteConfig);
+    const name = requireConfigString(entry.name, path + ".name", absoluteConfig);
+    if (!/^[a-z][a-z0-9-]*$/.test(name)) throw inputError("RC102", path + ".name must be a lowercase transform name such as \"markdown-it\".", absoluteConfig);
+    if (coreTransformNames.has(name)) throw inputError("RC102", path + ".name " + JSON.stringify(name) + " is a core command and cannot be replaced.", absoluteConfig);
+    if (seen.has(name)) throw inputError("RC102", path + ".name " + JSON.stringify(name) + " is defined more than once.", absoluteConfig);
+    seen.add(name);
+    const modulePath = await scope.path(requireConfigString(entry.module, path + ".module", absoluteConfig), path + ".module");
+    const exportName = entry.export === undefined ? "default" : requireConfigString(entry.export, path + ".export", absoluteConfig);
+    let namespace;
+    try {
+      // The content hash keeps a long-lived host (an editor) from reusing a
+      // stale module after the file changes.
+      const url = pathToFileURL(modulePath);
+      url.search = "ravel=" + contentHash(await readFile(modulePath, "utf8")).slice(0, 16);
+      namespace = await import(url.href);
+    } catch (error) {
+      throw inputError("RC103", path + " could not load " + modulePath + ": " + (error?.message ?? String(error)), absoluteConfig);
+    }
+    const transform = namespace[exportName];
+    if (typeof transform !== "function") {
+      throw inputError("RC103", path + " module " + modulePath + " has no function export " + JSON.stringify(exportName) + ".", absoluteConfig);
+    }
+    transforms[name] = transform;
+  }
+  return transforms;
+};
+
+const escapeRegExp = (value) => value.replace(/[.+^${}()|[\]\\]/g, "\\$&");
+
+/** Translate a `/`-separated glob (`*`, `**`, `?`) into an anchored RegExp. */
+const globPattern = (glob) => {
+  let pattern = "";
+  for (let index = 0; index < glob.length; index += 1) {
+    const character = glob[index];
+    if (character === "*" && glob[index + 1] === "*") {
+      const slash = glob[index + 2] === "/";
+      pattern += slash ? "(?:[^/]+/)*" : ".*";
+      index += slash ? 2 : 1;
+    } else if (character === "*") pattern += "[^/]*";
+    else if (character === "?") pattern += "[^/]";
+    else pattern += escapeRegExp(character);
+  }
+  return new RegExp("^" + pattern + "$");
+};
+
+/**
+ * List files under `root` matching `glob`, in a deterministic code-point
+ * order. Dot-files and dot-directories are skipped; a symbolic link anywhere
+ * in the walk is an error, as everywhere else in the Node host.
+ */
+const globFiles = async (root, glob, description) => {
+  if (isAbsolute(glob) || glob.split("/").includes("..")) {
+    throw new Error(description + " must be a relative glob inside the Ravel root: " + glob);
+  }
+  const segments = glob.split("/");
+  const firstWild = segments.findIndex((segment) => /[*?]/.test(segment));
+  const base = firstWild === -1 ? segments.slice(0, -1) : segments.slice(0, firstWild);
+  const start = join(root, ...base);
+  const matcher = globPattern(glob);
+  const matches = [];
+  const walk = async (directory) => {
+    let entries;
+    try {
+      entries = await readdir(directory, { withFileTypes: true });
+    } catch (error) {
+      if (missing(error)) return;
+      throw error;
+    }
+    for (const entry of entries) {
+      if (entry.name.startsWith(".")) continue;
+      const path = join(directory, entry.name);
+      if (entry.isSymbolicLink()) throw new Error(description + " must not traverse a symbolic link: " + path);
+      if (entry.isDirectory()) await walk(path);
+      else if (entry.isFile() && matcher.test(portableRelative(root, path))) matches.push(path);
+    }
+  };
+  await assertNoSymlinks(root, start, description);
+  await walk(start);
+  return matches.sort((left, right) => {
+    const a = portableRelative(root, left);
+    const b = portableRelative(root, right);
+    return a < b ? -1 : a > b ? 1 : 0;
+  });
+};
+
+const positionAt = (text, offset) => {
+  let line = 0;
+  let lineStart = 0;
+  for (let index = text.indexOf("\n"); index !== -1 && index < offset; index = text.indexOf("\n", index + 1)) {
+    line += 1;
+    lineStart = index + 1;
+  }
+  return { line, column: offset - lineStart, offset };
+};
+
+const slugify = (value) => String(value).toLowerCase().normalize("NFKD")
+  .replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+
+const fillPattern = (pattern, values, description, configPath) => pattern.replace(/\{([a-z][a-z0-9_-]*)\}/gi, (match, key) => {
+  const value = values[key];
+  if (value === undefined || value === null || typeof value === "object") {
+    throw inputError("RC104", description + " uses {" + key + "}, which is not a text value for this item.", configPath);
+  }
+  return String(value);
+});
+
+/**
+ * Expand `[[collections]]`: every file matching `glob` becomes an item
+ * document with a `body` chunk (the text after any front matter, mapped to its
+ * exact source range), a `data.json` chunk (front matter plus slug, name, path,
+ * and output), and a `page` chunk that pipes the body through `pipe` and, when
+ * `layout` names a chunk, fills that layout with `template`. Each item gets one
+ * `out` directive from the `out` pattern. A `<name>::index.json` chunk lists
+ * every item's data, in order, for index pages.
+ */
+const loadCollections = async (entries, scope, absoluteConfig, overlays) => {
+  const empty = { maps: [], inputPaths: [], texts: new Map() };
+  if (entries === undefined) return empty;
+  if (!Array.isArray(entries)) throw inputError("RC102", "collections must contain [[collections]] entries.", absoluteConfig);
+  const maps = [];
+  const inputPaths = [];
+  const texts = new Map();
+  const names = new Set();
+  const configUri = portableRelative(scope.root, absoluteConfig);
+  for (const [index, entry] of entries.entries()) {
+    const path = "collections[" + index + "]";
+    if (!entry || typeof entry !== "object" || Array.isArray(entry)) throw inputError("RC102", path + " must be a table.", absoluteConfig);
+    reportUnknownKeys(entry, new Set(["name", "glob", "out", "layout", "pipe", "references"]), path, absoluteConfig);
+    const name = requireConfigString(entry.name, path + ".name", absoluteConfig);
+    if (!componentPattern.test(name)) throw inputError("RC102", path + ".name must be a lowercase identifier such as \"pages\".", absoluteConfig);
+    if (names.has(name)) throw inputError("RC102", path + ".name " + JSON.stringify(name) + " is used by more than one collection.", absoluteConfig);
+    names.add(name);
+    const glob = requireConfigString(entry.glob, path + ".glob", absoluteConfig);
+    const outPattern = requireConfigString(entry.out, path + ".out", absoluteConfig);
+    const layout = entry.layout === undefined ? null : requireConfigString(entry.layout, path + ".layout", absoluteConfig);
+    const pipe = entry.pipe === undefined ? "markdown" : entry.pipe;
+    if (typeof pipe !== "string") throw inputError("RC102", path + ".pipe must be a pipeline string such as \"markdown\" or \"\".", absoluteConfig);
+    if (entry.references !== undefined && typeof entry.references !== "boolean") {
+      throw inputError("RC102", path + ".references must be true or false.", absoluteConfig);
+    }
+    for (const [field, value] of [["layout", layout ?? ""], ["pipe", pipe]]) {
+      if (value.includes("`")) throw inputError("RC102", path + "." + field + " must not contain a backtick.", absoluteConfig);
+    }
+    let files;
+    try {
+      files = await globFiles(scope.root, glob, path + ".glob");
+    } catch (error) {
+      throw inputError("RC104", error.message, absoluteConfig);
+    }
+    const items = [];
+    const slugs = new Map();
+    for (const file of files) {
+      const uri = portableRelative(scope.root, file);
+      const text = await readInputText(file, "collection item", "RC101", overlays);
+      let front;
+      try {
+        front = parseFrontMatter(text);
+      } catch (error) {
+        throw inputError("RC104", "Invalid front matter in " + uri + ": " + (error?.message ?? String(error)), file);
+      }
+      const data = front.data ?? {};
+      if (typeof data !== "object" || Array.isArray(data)) throw inputError("RC104", "Front matter in " + uri + " must be a mapping.", file);
+      const stem = basename(uri, extname(uri));
+      const slug = slugify(typeof data.slug === "string" ? data.slug : stem);
+      if (!slug) throw inputError("RC104", "Could not derive a slug for " + uri + "; add a `slug` to its front matter.", file);
+      if (slugs.has(slug)) throw inputError("RC104", uri + " and " + slugs.get(slug) + " both produce the slug " + JSON.stringify(slug) + " in collection " + name + ".", file);
+      slugs.set(slug, uri);
+      const dir = dirname(uri) === "." ? "" : dirname(uri);
+      const values = { ...data, slug, name: stem, dir, path: uri.slice(0, uri.length - extname(uri).length) };
+      const output = fillPattern(outPattern, values, path + ".out", absoluteConfig);
+      items.push({ file, uri, text, front, data: { ...data, slug, name: stem, dir, path: uri, out: output, collection: name }, output });
+    }
+    const sourceAt = (uri, text, start, end) => ({ uri, range: { start: positionAt(text, start), end: positionAt(text, end) } });
+    const literalSyntax = (enabled) => ({ data: { ravel: { referenceSyntax: { underscore: enabled } } } });
+    for (const item of items) {
+      const document = name + "-" + item.data.slug;
+      if (!componentPattern.test(document)) throw inputError("RC104", "Collection item " + item.uri + " produces the invalid document id " + document + ".", item.file);
+      const chunk = (chunkName, type, body, source, metadata) => ({
+        id: document + "::" + chunkName + (type ? "." + type : ""),
+        identity: { document, chunk: chunkName, minor: null, type },
+        name: chunkName,
+        body,
+        definitionPipeline: [],
+        metadata,
+        source
+      });
+      const bodySource = sourceAt(item.uri, item.text, item.front.bodyStart, item.text.length);
+      const frontSource = sourceAt(item.uri, item.text, 0, item.front.end);
+      const content = "ch('" + document + "::body" + (pipe.trim() ? " | " + pipe.trim() : "") + "')";
+      const page = layout
+        ? "_`" + layout + " | template(ch('" + document + "::data.json'), 'content', " + content + ")`"
+        : "_`" + document + "::body" + (pipe.trim() ? " | " + pipe.trim() : "") + "`";
+      maps.push({
+        version: 1,
+        document: { id: document, uri: item.uri, format: "ravel-collection-item-v1" },
+        chunks: [
+          chunk("body", null, item.text.slice(item.front.bodyStart), bodySource, { language: "markdown", tags: ["collection"], ...literalSyntax(entry.references === true) }),
+          chunk("data", "json", JSON.stringify(item.data, null, 2) + "\n", frontSource, { language: "json", tags: ["collection"], ...literalSyntax(false) })
+        ],
+        directives: [
+          { kind: "create", document, name: "page", body: page, source: configSource(absoluteConfig) },
+          { kind: "out", name: item.output, from: document + "::page", source: configSource(absoluteConfig) }
+        ]
+      });
+      inputPaths.push(item.file);
+      texts.set(item.file, item.text);
+    }
+    maps.push({
+      version: 1,
+      document: { id: name, uri: configUri, format: "ravel-collection-index-v1" },
+      chunks: [{
+        id: name + "::index.json",
+        identity: { document: name, chunk: "index", minor: null, type: "json" },
+        name: "index",
+        body: JSON.stringify(items.map((item) => item.data), null, 2) + "\n",
+        definitionPipeline: [],
+        metadata: { language: "json", tags: ["collection"], ...literalSyntax(false) },
+        source: configSource(absoluteConfig)
+      }],
+      directives: []
+    });
+  }
+  return { maps, inputPaths, texts };
+};
+
 const loadLiveConfiguration = async (
   live,
   scope,
@@ -548,10 +797,13 @@ export const loadTomlBuild = async (configPath, options = {}) => {
     if (Array.isArray(error?.diagnostics)) throw error;
     throw inputError("RC101", "Invalid Ravel TOML config: " + (error?.message ?? String(error)), absoluteConfig);
   }
-  reportUnknownKeys(config, new Set(["version", "files", "build", "outputs", "live"]), "config", absoluteConfig);
+  reportUnknownKeys(config, new Set(["version", "files", "collections", "build", "outputs", "live", "transforms"]), "config", absoluteConfig);
   if (config.version !== 1) throw inputError("RC102", "version must be 1.", absoluteConfig);
-  if (!Array.isArray(config.files) || config.files.length === 0) {
-    throw inputError("RC102", "files must contain one or more [[files]] entries.", absoluteConfig);
+  if (config.files !== undefined && !Array.isArray(config.files)) {
+    throw inputError("RC102", "files must contain [[files]] entries.", absoluteConfig);
+  }
+  if (!config.files?.length && !config.collections?.length) {
+    throw inputError("RC102", "files must contain one or more [[files]] entries, or the config must define [[collections]].", absoluteConfig);
   }
   if (config.build !== undefined && (!config.build || typeof config.build !== "object" || Array.isArray(config.build))) {
     throw inputError("RC102", "build must be a [build] table.", absoluteConfig);
@@ -580,7 +832,7 @@ export const loadTomlBuild = async (configPath, options = {}) => {
     options.overlays,
     { readResources: options.readLiveResources !== false }
   );
-  const results = await Promise.all(config.files.map(async (file, index) => {
+  const results = await Promise.all((config.files ?? []).map(async (file, index) => {
     if (!file || typeof file !== "object") throw inputError("RC102", "files[" + index + "] must be a table.", absoluteConfig);
     reportUnknownKeys(file, new Set([
       "path", "document", "mode", "profile", "adapter", "dialect",
@@ -669,12 +921,13 @@ export const loadTomlBuild = async (configPath, options = {}) => {
   // Several [[files]] may import the same document; load it once, keeping the
   // first occurrence in configuration order.
   const seenMapPaths = new Set();
-  const pretransform = combineMaps(results.flatMap((result) => result.maps.filter((_, index) => {
+  const collections = await loadCollections(config.collections, scope, absoluteConfig, options.overlays);
+  const pretransform = combineMaps([...results.flatMap((result) => result.maps.filter((_, index) => {
     const path = result.mapPaths[index];
     if (seenMapPaths.has(path)) return false;
     seenMapPaths.add(path);
     return true;
-  })));
+  })), ...collections.maps]);
   pretransform.diagnostics.push(...results.flatMap((result) => result.diagnostics));
   for (const output of config.outputs ?? []) {
     if (!output || typeof output !== "object") throw inputError("RC102", "Each [[outputs]] entry must be a table.", absoluteConfig);
@@ -688,11 +941,17 @@ export const loadTomlBuild = async (configPath, options = {}) => {
   }
   return {
     pretransform: relativizeSourceUris(pretransform, scope.root),
-    authoredSourceUris: [...new Set(results.flatMap(authoredSourceUris))].sort(),
-    authoredSourceTexts: Object.assign({}, ...results.map(authoredSourceTexts)),
+    authoredSourceUris: [...new Set([
+      ...results.flatMap(authoredSourceUris),
+      ...collections.inputPaths.map((path) => portableRelative(scope.root, path))
+    ])].sort(),
+    authoredSourceTexts: Object.assign({}, ...results.map(authoredSourceTexts), Object.fromEntries(
+      [...collections.texts.entries()].map(([path, text]) => [portableRelative(scope.root, path), text])
+    )),
     loadedInputUris: [...new Set([
       relative(scope.root, absoluteConfig).split(sep).join("/"),
-      ...results.flatMap(loadedInputUris)
+      ...results.flatMap(loadedInputUris),
+      ...collections.inputPaths.map((path) => portableRelative(scope.root, path))
     ])].sort(),
     sourceEditsAllowed: results.every((result) => !result.containsJsonMaps),
     ...(outDirectory === undefined ? {} : { outputDirectory: await scope.path(outDirectory, "build.out_dir") }),
@@ -701,6 +960,7 @@ export const loadTomlBuild = async (configPath, options = {}) => {
       clean: build.clean === true,
       backup: build.backup ?? false
     },
+    transforms: await loadProjectTransforms(config.transforms, scope, absoluteConfig),
     ...(live ? { live } : {})
   };
 };
@@ -728,7 +988,8 @@ export const loadBuildInput = async (inputPath, options = {}) => {
       authoredSourceUris: authoredSourceUris(collected),
       authoredSourceTexts: authoredSourceTexts(collected),
       loadedInputUris: loadedInputUris(collected),
-      sourceEditsAllowed: !collected.containsJsonMaps
+      sourceEditsAllowed: !collected.containsJsonMaps,
+      transforms: { ...builtinTransforms }
     };
   }
   throw inputError("RH101", "Ravel input must be a .json map, supported markup document, or .toml build config.", inputPath);

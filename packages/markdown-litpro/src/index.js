@@ -6,6 +6,16 @@ const componentPattern = /^[a-z][a-z0-9-]*$/;
 const dialects = new Set(["litpro-2017", "pieceful-2020", "litpro-plus"]);
 const headingModes = new Set(["legacy", "flat", "none"]);
 
+// Legacy commands Ravel deliberately never runs. They are kept as inert
+// `plannedEffects` metadata; the warning makes the gap visible to a migrator.
+const droppedDirectiveMessage = (name, argumentsText) => {
+  const shown = argumentsText ? " (" + argumentsText + ")" : "";
+  if (name === "exec") return "LitPro exec:" + shown + " runs a shell command; Ravel does not run shell commands, so it was dropped. Do this step outside Ravel.";
+  if (name === "define") return "LitPro define:" + shown + " defines a JavaScript command; Ravel does not run document code as host code, so it was dropped. Port it to a module registered with [[transforms]] in ravel.toml.";
+  if (name === "h5" || name === "h6") return "LitPro " + name + ": link headings" + shown + " are not supported, so the block switch was dropped. Write a real " + (name === "h5" ? "#####" : "######") + " heading instead.";
+  return "LitPro " + name + ":" + shown + " has no Ravel equivalent and was dropped; it is kept only as metadata.";
+};
+
 const diagnostic = (code, message, source, severity = "error") => ({
   code, severity, message, source
 });
@@ -529,6 +539,9 @@ export const litproMarkdownToMap = (text, options = {}) => {
       };
       directives.push(directive);
       surface.directives.push({ kind: "in", source: nodeSource, target: href });
+      if (argumentsText) {
+        diagnostics.push(diagnostic("LPA202", "LitPro load arguments are not applied by Ravel and were kept only as metadata: " + argumentsText, nodeSource, "warning"));
+      }
     } else if (directiveName === "save" || directiveName === "out") {
       const from = targetFromHref(href, ambient);
       if (!from) {
@@ -544,7 +557,18 @@ export const litproMarkdownToMap = (text, options = {}) => {
       };
       directives.push(directive);
       surface.directives.push({ kind: "out", source: nodeSource, target: linkText });
+      if (argumentsText) {
+        diagnostics.push(diagnostic(
+          "LPA202",
+          "LitPro " + directiveName + " arguments are not applied to " + JSON.stringify(linkText) +
+            " and were kept only as metadata: " + argumentsText +
+            ". Move an output pipeline onto the source reference, e.g. _\"piece | transform\".",
+          nodeSource,
+          "warning"
+        ));
+      }
     } else {
+      diagnostics.push(diagnostic("LPA201", droppedDirectiveMessage(directiveName, argumentsText), nodeSource, "warning"));
       plannedEffects.push({
         kind: "legacy-directive",
         directive: directiveName,

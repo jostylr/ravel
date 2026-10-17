@@ -876,7 +876,7 @@ const evaluateProject = async (
     signal
   });
   signal?.throwIfAborted();
-  const program = transformGraph(loaded.pretransform);
+  const program = transformGraph(loaded.pretransform, { transforms: loaded.transforms });
   signal?.throwIfAborted();
   const context = {
     program,
