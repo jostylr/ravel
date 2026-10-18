@@ -3,7 +3,7 @@
 All notable user-facing changes are recorded here. Ravel follows semantic
 versioning for its published packages and versioned public contracts.
 
-## 0.3.0 — unreleased
+## 0.3.0 — 2026-10-18
 
 ### Added
 
@@ -33,7 +33,9 @@ versioning for its published packages and versioned public contracts.
 - A runnable static-site example in `examples/site` and a
   "Transforms and collections" guide.
 
-## 0.2.1 — unreleased
+## 0.2.1 — not published separately
+
+These fixes were released as part of 0.3.0.
 
 ### Fixed
 
